@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { motion, useScroll, useTransform } from "framer-motion";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import {
   Download,
   Mail,
@@ -26,7 +26,9 @@ import { Navbar } from "@/components/portfolio/Navbar";
 import { TerminalBox, Prompt } from "@/components/portfolio/TerminalBox";
 import { Section } from "@/components/portfolio/Section";
 import { Typewriter } from "@/components/portfolio/Typewriter";
-import { ParticleField } from "@/components/portfolio/ParticleField";
+import { MonoMatrixBg } from "@/components/portfolio/MonoMatrixBg";
+import { GlitchTitle } from "@/components/portfolio/GlitchTitle";
+import { DetailDialog } from "@/components/portfolio/DetailDialog";
 import {
   profile,
   stats,
