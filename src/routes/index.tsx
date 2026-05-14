@@ -114,7 +114,7 @@ function PortfolioContentProvider({ children }: { children: ReactNode }) {
           projectRes,
           skillRes,
         ] = await Promise.all([
-          supabase.from("profile_settings").select("*").limit(1).maybeSingle(),
+          supabase.from("profile_public").select("*").limit(1).maybeSingle(),
           supabase.from("experiences").select("*").order("order_index", { ascending: true }),
           supabase.from("certifications").select("*").order("order_index", { ascending: true }),
           supabase.from("education").select("*").order("order_index", { ascending: true }),
@@ -139,8 +139,8 @@ function PortfolioContentProvider({ children }: { children: ReactNode }) {
                 name: profileRow.branding_name,
                 fullName: profileRow.full_name,
                 role: profileRow.subtitle,
-                email: profileRow.email,
-                whatsapp: profileRow.whatsapp,
+                email: fallbackProfile.email,
+                whatsapp: fallbackProfile.whatsapp,
                 location: profileRow.location,
                 status: profileRow.availability,
                 typing: profileRow.typing_texts?.length

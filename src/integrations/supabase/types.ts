@@ -239,6 +239,60 @@ export type Database = {
         };
         Relationships: [];
       };
+      profile_public: {
+        Row: {
+          about: string;
+          availability: string;
+          branding_name: string;
+          cv_url: string | null;
+          full_name: string;
+          github_url: string | null;
+          id: string;
+          instagram_url: string | null;
+          linkedin_url: string | null;
+          location: string;
+          profile_image_url: string | null;
+          subtitle: string;
+          tiktok_url: string | null;
+          typing_texts: string[];
+          updated_at: string;
+        };
+        Insert: {
+          about: string;
+          availability: string;
+          branding_name: string;
+          cv_url?: string | null;
+          full_name: string;
+          github_url?: string | null;
+          id: string;
+          instagram_url?: string | null;
+          linkedin_url?: string | null;
+          location: string;
+          profile_image_url?: string | null;
+          subtitle: string;
+          tiktok_url?: string | null;
+          typing_texts?: string[];
+          updated_at?: string;
+        };
+        Update: {
+          about?: string;
+          availability?: string;
+          branding_name?: string;
+          cv_url?: string | null;
+          full_name?: string;
+          github_url?: string | null;
+          id?: string;
+          instagram_url?: string | null;
+          linkedin_url?: string | null;
+          location?: string;
+          profile_image_url?: string | null;
+          subtitle?: string;
+          tiktok_url?: string | null;
+          typing_texts?: string[];
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       profile_settings: {
         Row: {
           about: string;
