@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, Terminal } from "lucide-react";
 import { navItems } from "@/data/portfolio";
+import { A11yToggle } from "./A11yToggle";
 
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
