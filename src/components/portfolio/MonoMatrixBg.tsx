@@ -1,10 +1,11 @@
 import { useEffect, useRef } from "react";
+import { cn } from "@/lib/utils";
 
 /**
  * Subtle monochrome "code rain" background.
  * White-on-black, low opacity, slow — premium feel, not noisy.
  */
-export function MonoMatrixBg() {
+export function MonoMatrixBg({ className }: { className?: string }) {
   const ref = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -15,7 +16,7 @@ export function MonoMatrixBg() {
 
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     let raf = 0;
-    const chars = "01{}<>/$_=*+#abcdefABCDEF".split("");
+    const chars = "01{}<>/$_=*+#abcdefABCDEFfunctionreturnconstasyncawait".split("");
     const fontSize = 14;
     let cols = 0;
     let drops: number[] = [];
@@ -24,7 +25,9 @@ export function MonoMatrixBg() {
       c.width = c.offsetWidth;
       c.height = c.offsetHeight;
       cols = Math.floor(c.width / fontSize);
-      drops = Array(cols).fill(0).map(() => Math.random() * (c.height / fontSize));
+      drops = Array(cols)
+        .fill(0)
+        .map(() => Math.random() * (c.height / fontSize));
     };
     resize();
     window.addEventListener("resize", resize);
@@ -35,7 +38,7 @@ export function MonoMatrixBg() {
       if (t - last > interval) {
         last = t;
         // soft fade trail
-        ctx.fillStyle = "rgba(10, 10, 10, 0.10)";
+        ctx.fillStyle = "rgba(10, 10, 10, 0.085)";
         ctx.fillRect(0, 0, c.width, c.height);
         ctx.font = `${fontSize}px JetBrains Mono, ui-monospace, monospace`;
         for (let i = 0; i < cols; i++) {
@@ -43,10 +46,7 @@ export function MonoMatrixBg() {
           const x = i * fontSize;
           const y = drops[i] * fontSize;
           // head bright, trail dim — pure white
-          ctx.fillStyle =
-            drops[i] < 1.5
-              ? "rgba(255,255,255,0.85)"
-              : "rgba(255,255,255,0.28)";
+          ctx.fillStyle = drops[i] < 1.5 ? "rgba(255,255,255,0.78)" : "rgba(255,255,255,0.24)";
           ctx.fillText(ch, x, y);
           if (y > c.height && Math.random() > 0.985) drops[i] = 0;
           drops[i] += 1;
@@ -65,7 +65,11 @@ export function MonoMatrixBg() {
     <canvas
       ref={ref}
       aria-hidden
-      className="absolute inset-0 w-full h-full pointer-events-none opacity-[0.18] [mask-image:radial-gradient(ellipse_at_center,black_40%,transparent_85%)]"
+      className={cn(
+        "fixed inset-0 z-0 h-screen w-screen pointer-events-none opacity-[0.20]",
+        "[mask-image:linear-gradient(to_bottom,transparent,black_12%,black_88%,transparent)]",
+        className,
+      )}
     />
   );
 }

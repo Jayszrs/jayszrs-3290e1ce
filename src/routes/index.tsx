@@ -237,17 +237,22 @@ function Index() {
   return (
     <PortfolioContentProvider>
       <div className="relative min-h-screen overflow-hidden">
+        <MonoMatrixBg className="opacity-[0.16]" />
+        <div className="fixed inset-0 z-0 pointer-events-none bg-[radial-gradient(circle_at_50%_0%,rgba(255,255,255,0.13),transparent_35%),linear-gradient(to_bottom,rgba(0,0,0,0.12),rgba(0,0,0,0.88))]" />
+        <div className="fixed inset-0 z-0 scanlines pointer-events-none opacity-20" />
         <Navbar />
-        <Hero />
-        <About />
-        <Experience />
-        <Certification />
-        <Education />
-        <Volunteer />
-        <Projects />
-        <Skills />
-        <Contact />
-        <Footer />
+        <main className="relative z-10">
+          <Hero />
+          <About />
+          <Experience />
+          <Certification />
+          <Education />
+          <Volunteer />
+          <Projects />
+          <Skills />
+          <Contact />
+          <Footer />
+        </main>
       </div>
     </PortfolioContentProvider>
   );
@@ -264,9 +269,6 @@ function Hero() {
 
   return (
     <section id="home" ref={ref} className="relative min-h-screen flex items-center pt-28 pb-16">
-      <MonoMatrixBg />
-      <div className="absolute inset-0 scanlines pointer-events-none opacity-20" />
-
       <motion.div
         style={{ opacity }}
         className="relative mx-auto max-w-6xl px-4 grid lg:grid-cols-[1.2fr_1fr] gap-12 items-center"

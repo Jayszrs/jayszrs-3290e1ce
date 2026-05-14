@@ -3,6 +3,7 @@ import { useEffect, useState, FormEvent } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
+import { MonoMatrixBg } from "@/components/portfolio/MonoMatrixBg";
 import {
   LogOut,
   Upload,
@@ -27,6 +28,11 @@ export const Route = createFileRoute("/admin")({
 
 const ADMIN_USERNAME = "jayszrs";
 const ADMIN_EMAIL = "jayszrs@admin.local";
+const ADMIN_LOGIN_EMAILS = [
+  ADMIN_EMAIL,
+  "jaelanisuryasaputra@gmail.com",
+  "jaelanisurya.akademicrypto@gmail.com",
+] as const;
 type AppRole = "admin" | "user";
 type AdminUserRow = {
   user_id: string;
@@ -167,61 +173,96 @@ function AuthForm() {
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     setBusy(true);
-    const loginEmail = email.trim().toLowerCase() === ADMIN_USERNAME ? ADMIN_EMAIL : email.trim();
-    const fn =
-      mode === "login"
-        ? supabase.auth.signInWithPassword({ email: loginEmail, password: pass })
-        : supabase.auth.signUp({
-            email: loginEmail,
-            password: pass,
-            options: { emailRedirectTo: `${window.location.origin}/admin` },
-          });
-    const { error } = await fn;
+    const normalizedLogin = email.trim().toLowerCase();
+    const loginEmails =
+      normalizedLogin === ADMIN_USERNAME ? [...ADMIN_LOGIN_EMAILS] : [email.trim()];
+
+    let error: { message: string } | null = null;
+    if (mode === "login") {
+      for (const loginEmail of loginEmails) {
+        const result = await supabase.auth.signInWithPassword({
+          email: loginEmail,
+          password: pass,
+        });
+        error = result.error;
+        if (!result.error) break;
+      }
+    } else {
+      const result = await supabase.auth.signUp({
+        email: loginEmails[0],
+        password: pass,
+        options: { emailRedirectTo: `${window.location.origin}/admin` },
+      });
+      error = result.error;
+    }
     setBusy(false);
-    if (error) toast.error(error.message);
-    else if (mode === "signup") toast.success("Account created. First user becomes admin.");
+    if (error) {
+      const hint =
+        normalizedLogin === ADMIN_USERNAME
+          ? "Login admin belum tersinkron. Apply migration Supabase terbaru lalu coba lagi: jayszrs / SZRS86."
+          : error.message;
+      toast.error(hint);
+    } else if (mode === "signup") toast.success("Account created. First user becomes admin.");
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 bg-background">
+    <div className="relative min-h-screen overflow-hidden bg-background px-4">
+      <MonoMatrixBg className="opacity-[0.22]" />
+      <div className="fixed inset-0 z-0 pointer-events-none bg-[radial-gradient(circle_at_50%_18%,rgba(255,255,255,0.12),transparent_30%),linear-gradient(to_bottom,rgba(0,0,0,0.1),rgba(0,0,0,0.9))]" />
       <Toaster position="top-center" />
-      <form onSubmit={submit} className="glass rounded-2xl p-8 w-full max-w-sm space-y-4">
-        <div className="font-mono text-xs text-neon">$ admin.{mode}</div>
-        <h1 className="text-2xl font-bold text-neon glow-text">JAY SZRS</h1>
-        <p className="text-xs text-muted-foreground font-mono">Default admin username: jayszrs.</p>
-        <input
-          required
-          type="text"
-          placeholder="username or email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="w-full bg-surface/60 border border-border rounded-md px-3 py-2.5 text-sm font-mono outline-none focus:border-neon"
-        />
-        <input
-          required
-          type="password"
-          placeholder="password"
-          value={pass}
-          onChange={(e) => setPass(e.target.value)}
-          minLength={6}
-          className="w-full bg-surface/60 border border-border rounded-md px-3 py-2.5 text-sm font-mono outline-none focus:border-neon"
-        />
-        <button
-          disabled={busy}
-          className="w-full py-3 bg-neon text-primary-foreground font-mono text-sm font-semibold rounded-md glow-neon disabled:opacity-50"
-        >
-          {busy ? "..." : mode === "login" ? "sign in" : "sign up"}
-        </button>
-        <button
-          type="button"
-          onClick={() => setMode(mode === "login" ? "signup" : "login")}
-          className="w-full text-xs text-muted-foreground hover:text-neon"
-        >
-          {mode === "login" ? "no account? sign up" : "have account? sign in"}
-        </button>
-        <Link to="/" className="block text-center text-xs text-muted-foreground hover:text-neon">
-          ← back to portfolio
-        </Link>
+      <form
+        onSubmit={submit}
+        className="relative z-10 mx-auto flex min-h-screen w-full max-w-md flex-col justify-center py-10"
+      >
+        <div className="glass relative overflow-hidden rounded-xl p-7 shadow-[0_0_60px_rgba(255,255,255,0.08)]">
+          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-foreground/70 to-transparent" />
+          <div className="mb-6 flex items-center justify-between gap-3">
+            <div className="font-mono text-xs text-neon">$ admin.{mode}</div>
+            <span className="rounded border border-border bg-surface/60 px-2 py-1 font-mono text-[10px] text-muted-foreground">
+              secure shell
+            </span>
+          </div>
+          <h1 className="text-3xl font-black tracking-tight text-neon glow-text">JAY SZRS</h1>
+          <p className="mt-2 text-xs text-muted-foreground font-mono">
+            Login admin: <span className="text-foreground">jayszrs</span> /{" "}
+            <span className="text-foreground">SZRS86</span>
+          </p>
+          <div className="mt-6 space-y-4">
+            <input
+              required
+              type="text"
+              placeholder="username or email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full bg-surface/60 border border-border rounded-md px-3 py-2.5 text-sm font-mono outline-none focus:border-neon"
+            />
+            <input
+              required
+              type="password"
+              placeholder="password"
+              value={pass}
+              onChange={(e) => setPass(e.target.value)}
+              minLength={6}
+              className="w-full bg-surface/60 border border-border rounded-md px-3 py-2.5 text-sm font-mono outline-none focus:border-neon"
+            />
+            <button
+              disabled={busy}
+              className="w-full py-3 bg-neon text-primary-foreground font-mono text-sm font-semibold rounded-md glow-neon disabled:opacity-50"
+            >
+              {busy ? "..." : mode === "login" ? "sign in" : "sign up"}
+            </button>
+          </div>
+          <button
+            type="button"
+            onClick={() => setMode(mode === "login" ? "signup" : "login")}
+            className="w-full text-xs text-muted-foreground hover:text-neon"
+          >
+            {mode === "login" ? "no account? sign up" : "have account? sign in"}
+          </button>
+          <Link to="/" className="block text-center text-xs text-muted-foreground hover:text-neon">
+            ← back to portfolio
+          </Link>
+        </div>
       </form>
     </div>
   );
@@ -231,57 +272,70 @@ function Dashboard() {
   const [tab, setTab] = useState<string>("overview");
 
   return (
-    <div className="min-h-screen flex bg-background">
+    <div className="relative min-h-screen overflow-hidden bg-background">
+      <MonoMatrixBg className="opacity-[0.12]" />
+      <div className="fixed inset-0 z-0 pointer-events-none bg-[linear-gradient(to_bottom,rgba(0,0,0,0.15),rgba(0,0,0,0.88))]" />
       <Toaster position="top-center" />
-      <aside className="w-60 glass border-r border-border min-h-screen p-4 hidden md:block">
-        <div className="font-mono text-xs text-neon mb-6">$ admin@jay-szrs</div>
-        <nav className="space-y-1 text-sm">
-          <NavBtn id="overview" tab={tab} setTab={setTab} icon={HomeIcon} label="Overview" />
-          <NavBtn id="roles" tab={tab} setTab={setTab} icon={ShieldCheck} label="Role Management" />
-          <NavBtn id="profile" tab={tab} setTab={setTab} icon={FileText} label="Profile & CV" />
-          {TABLES.map((t) => (
+      <div className="relative z-10 flex min-h-screen">
+        <aside className="w-64 glass border-r border-border min-h-screen p-4 hidden md:block">
+          <div className="font-mono text-xs text-neon mb-6">$ admin@jay-szrs</div>
+          <nav className="space-y-1 text-sm">
+            <NavBtn id="overview" tab={tab} setTab={setTab} icon={HomeIcon} label="Overview" />
             <NavBtn
-              key={t.key}
-              id={t.key}
+              id="roles"
               tab={tab}
               setTab={setTab}
-              icon={t.icon}
-              label={t.label}
+              icon={ShieldCheck}
+              label="Role Management"
             />
-          ))}
-          <NavBtn id="messages" tab={tab} setTab={setTab} icon={Mail} label="Messages" />
-        </nav>
-        <button
-          onClick={() => supabase.auth.signOut()}
-          className="mt-8 inline-flex items-center gap-2 text-xs text-muted-foreground hover:text-destructive font-mono"
-        >
-          <LogOut className="size-3" /> sign out
-        </button>
-        <Link to="/" className="block mt-3 text-xs text-muted-foreground hover:text-neon font-mono">
-          ← view site
-        </Link>
-      </aside>
+            <NavBtn id="profile" tab={tab} setTab={setTab} icon={FileText} label="Profile & CV" />
+            {TABLES.map((t) => (
+              <NavBtn
+                key={t.key}
+                id={t.key}
+                tab={tab}
+                setTab={setTab}
+                icon={t.icon}
+                label={t.label}
+              />
+            ))}
+            <NavBtn id="messages" tab={tab} setTab={setTab} icon={Mail} label="Messages" />
+          </nav>
+          <button
+            onClick={() => supabase.auth.signOut()}
+            className="mt-8 inline-flex items-center gap-2 text-xs text-muted-foreground hover:text-destructive font-mono"
+          >
+            <LogOut className="size-3" /> sign out
+          </button>
+          <Link
+            to="/"
+            className="block mt-3 text-xs text-muted-foreground hover:text-neon font-mono"
+          >
+            ← view site
+          </Link>
+        </aside>
 
-      <main className="flex-1 p-4 md:p-8 overflow-x-auto">
-        <div className="md:hidden mb-4 flex flex-wrap gap-2">
-          {["overview", "roles", "profile", ...TABLES.map((t) => t.key), "messages"].map((k) => (
-            <button
-              key={k}
-              onClick={() => setTab(k)}
-              className={`px-3 py-1.5 text-xs font-mono rounded ${tab === k ? "bg-neon text-primary-foreground" : "glass"}`}
-            >
-              {k}
-            </button>
-          ))}
-        </div>
-        {tab === "overview" && <Overview />}
-        {tab === "roles" && <RoleManagement />}
-        {tab === "profile" && <ProfileEditor />}
-        {tab === "messages" && <MessagesView />}
-        {TABLES.find((t) => t.key === tab) && (
-          <CrudTable config={TABLES.find((t) => t.key === tab)!} />
-        )}
-      </main>
+        <main className="flex-1 p-4 md:p-8 overflow-x-auto">
+          <div className="md:hidden mb-4 flex flex-wrap gap-2">
+            {["overview", "roles", "profile", ...TABLES.map((t) => t.key), "messages"].map((k) => (
+              <button
+                key={k}
+                onClick={() => setTab(k)}
+                className={`px-3 py-1.5 text-xs font-mono rounded ${tab === k ? "bg-neon text-primary-foreground" : "glass"}`}
+              >
+                {k}
+              </button>
+            ))}
+          </div>
+          {tab === "overview" && <Overview />}
+          {tab === "roles" && <RoleManagement />}
+          {tab === "profile" && <ProfileEditor />}
+          {tab === "messages" && <MessagesView />}
+          {TABLES.find((t) => t.key === tab) && (
+            <CrudTable config={TABLES.find((t) => t.key === tab)!} />
+          )}
+        </main>
+      </div>
     </div>
   );
 }
@@ -446,7 +500,8 @@ function ProfileEditor() {
     setBusy(true);
     const { error } = await supabase.from("profile_settings").update(profile).eq("id", profile.id);
     setBusy(false);
-    error ? toast.error(error.message) : toast.success("Profile updated");
+    if (error) toast.error(error.message);
+    else toast.success("Profile updated");
   };
 
   const uploadCV = async (file: File) => {
