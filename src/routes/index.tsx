@@ -87,19 +87,19 @@ function Hero() {
 
   return (
     <section id="home" ref={ref} className="relative min-h-screen flex items-center pt-28 pb-16">
-      <ParticleField />
-      <div className="absolute inset-0 scanlines pointer-events-none opacity-40" />
+      <MonoMatrixBg />
+      <div className="absolute inset-0 scanlines pointer-events-none opacity-20" />
 
       <motion.div style={{ opacity }} className="relative mx-auto max-w-6xl px-4 grid lg:grid-cols-[1.2fr_1fr] gap-12 items-center">
         <motion.div style={{ y: yText }} className="space-y-6">
           <div className="font-mono text-xs text-muted-foreground flex items-center gap-2">
-            <span className="size-2 rounded-full bg-neon animate-pulse" style={{ boxShadow: "0 0 8px var(--neon)" }} />
+            <span className="size-2 rounded-full bg-foreground animate-pulse" style={{ boxShadow: "0 0 10px var(--foreground)" }} />
             system.online — portfolio.v1.0.0
           </div>
 
           <h1 className="font-display font-black tracking-tighter text-6xl md:text-8xl lg:text-9xl leading-[0.85]">
-            <span className="block text-foreground">JAY</span>
-            <span className="block text-neon glow-text">SZRS<span className="text-foreground">.</span></span>
+            <span className="block"><GlitchTitle text="JAY" /></span>
+            <span className="block"><GlitchTitle text="SZRS" /><span className="text-muted-foreground">.</span></span>
           </h1>
 
           <p className="text-muted-foreground text-sm md:text-base font-mono">
