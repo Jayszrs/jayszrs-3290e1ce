@@ -277,20 +277,24 @@ function Experience() {
 
 /* ---------- CERTIFICATION ---------- */
 function Certification() {
+  const [open, setOpen] = useState<number | null>(null);
+  const active = open !== null ? certifications[open] : null;
   return (
     <Section id="certification" command="find certs/ -type f" title="certification & badges" description="Verified credentials and achievements.">
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {certifications.map((c, i) => (
-          <motion.div
+          <motion.button
+            type="button"
+            onClick={() => setOpen(i)}
             key={i}
             initial={{ opacity: 0, scale: 0.95 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
             transition={{ delay: i * 0.05 }}
-            className="group relative glass rounded-xl p-5 hover:border-neon/60 hover:-translate-y-1 transition-all"
+            className="group relative glass rounded-xl p-5 text-left hover:border-neon/60 hover:-translate-y-1 transition-all"
           >
             <div className="flex items-start justify-between">
-              <div className="size-12 rounded-lg bg-gradient-to-br from-neon/30 to-lime/10 border border-neon/40 flex items-center justify-center">
+              <div className="size-12 rounded-lg bg-foreground/10 border border-foreground/40 flex items-center justify-center">
                 <Award className="size-6 text-neon" />
               </div>
               <span className="font-mono text-[10px] px-2 py-0.5 rounded border border-border text-muted-foreground">
@@ -299,12 +303,36 @@ function Certification() {
             </div>
             <h3 className="mt-4 font-semibold text-foreground leading-snug">{c.title}</h3>
             <div className="mt-1 text-sm text-muted-foreground font-mono">{c.issuer} · {c.year}</div>
-            <button className="mt-4 inline-flex items-center gap-1 text-xs font-mono text-neon opacity-0 group-hover:opacity-100 transition">
+            <span className="mt-4 inline-flex items-center gap-1 text-xs font-mono text-neon opacity-0 group-hover:opacity-100 transition">
               view <ExternalLink className="size-3" />
-            </button>
-          </motion.div>
+            </span>
+          </motion.button>
         ))}
       </div>
+
+      <DetailDialog
+        open={active !== null}
+        onOpenChange={(v) => !v && setOpen(null)}
+        title={active?.title ?? ""}
+        subtitle={active ? `${active.issuer} · ${active.year} · ${active.category}` : ""}
+      >
+        {active && (
+          <>
+            <p>
+              Sertifikasi <span className="text-neon">{active.title}</span> diterbitkan oleh{" "}
+              <span className="text-foreground">{active.issuer}</span> pada tahun {active.year}.
+            </p>
+            <div className="grid grid-cols-2 gap-3 font-mono text-xs">
+              <div className="glass rounded-md p-3"><div className="text-muted-foreground">issuer</div><div>{active.issuer}</div></div>
+              <div className="glass rounded-md p-3"><div className="text-muted-foreground">year</div><div>{active.year}</div></div>
+              <div className="glass rounded-md p-3 col-span-2"><div className="text-muted-foreground">category</div><div>{active.category}</div></div>
+            </div>
+            <button className="mt-2 inline-flex items-center gap-2 px-4 py-2 bg-foreground text-background font-mono text-xs rounded-md hover:opacity-90">
+              <ExternalLink className="size-3" /> Verify Certificate
+            </button>
+          </>
+        )}
+      </DetailDialog>
     </Section>
   );
 }
