@@ -339,18 +339,22 @@ function Certification() {
 
 /* ---------- EDUCATION ---------- */
 function Education() {
+  const [open, setOpen] = useState<number | null>(null);
+  const active = open !== null ? education[open] : null;
   return (
     <Section id="education" command="cat education.json" title="education" description="Academic journey & focus areas.">
       <div className="space-y-4">
         {education.map((ed, i) => (
-          <motion.div
+          <motion.button
+            type="button"
+            onClick={() => setOpen(i)}
             key={i}
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="glass rounded-2xl p-6 md:p-8 flex flex-col md:flex-row gap-6 hover:border-neon/60 transition"
+            className="w-full text-left glass rounded-2xl p-6 md:p-8 flex flex-col md:flex-row gap-6 hover:border-neon/60 transition"
           >
-            <div className="size-16 rounded-xl bg-neon/10 border border-neon/40 flex items-center justify-center shrink-0">
+            <div className="size-16 rounded-xl bg-foreground/10 border border-foreground/40 flex items-center justify-center shrink-0">
               <GraduationCap className="size-8 text-neon" />
             </div>
             <div className="flex-1">
@@ -359,40 +363,83 @@ function Education() {
               <div className="text-sm text-muted-foreground font-mono">{ed.major}</div>
               <p className="mt-3 text-foreground/80">{ed.description}</p>
             </div>
-          </motion.div>
+          </motion.button>
         ))}
       </div>
+
+      <DetailDialog
+        open={active !== null}
+        onOpenChange={(v) => !v && setOpen(null)}
+        title={active?.institution ?? ""}
+        subtitle={active ? `${active.major} · ${active.period}` : ""}
+      >
+        {active && (
+          <>
+            <p>{active.description}</p>
+            <div className="grid grid-cols-2 gap-3 font-mono text-xs">
+              <div className="glass rounded-md p-3"><div className="text-muted-foreground">period</div><div>{active.period}</div></div>
+              <div className="glass rounded-md p-3"><div className="text-muted-foreground">major</div><div>{active.major}</div></div>
+            </div>
+          </>
+        )}
+      </DetailDialog>
     </Section>
   );
 }
 
 /* ---------- VOLUNTEER ---------- */
 function Volunteer() {
+  const [open, setOpen] = useState<number | null>(null);
+  const active = open !== null ? volunteers[open] : null;
   return (
     <Section id="volunteer" command="ls volunteer/" title="volunteer & organization" description="Communities, events, and roles.">
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {volunteers.map((v, i) => (
-          <motion.div
+          <motion.button
+            type="button"
+            onClick={() => setOpen(i)}
             key={i}
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: i * 0.07 }}
-            className="glass rounded-xl p-5 hover:border-neon/60 transition group"
+            className="text-left glass rounded-xl p-5 hover:border-neon/60 transition group"
           >
             <Heart className="size-5 text-neon mb-3 group-hover:scale-110 transition" />
             <div className="font-mono text-[10px] text-muted-foreground">{v.category} · {v.year}</div>
             <h3 className="mt-1 font-semibold text-foreground">{v.name}</h3>
             <div className="text-sm text-neon/90 font-mono">{v.role}</div>
-          </motion.div>
+          </motion.button>
         ))}
       </div>
+
+      <DetailDialog
+        open={active !== null}
+        onOpenChange={(v) => !v && setOpen(null)}
+        title={active?.name ?? ""}
+        subtitle={active ? `${active.role} · ${active.year}` : ""}
+      >
+        {active && (
+          <>
+            <p>
+              Berkontribusi sebagai <span className="text-neon">{active.role}</span> dalam kegiatan{" "}
+              <span className="text-foreground">{active.name}</span> ({active.category}, {active.year}).
+            </p>
+            <div className="grid grid-cols-2 gap-3 font-mono text-xs">
+              <div className="glass rounded-md p-3"><div className="text-muted-foreground">role</div><div>{active.role}</div></div>
+              <div className="glass rounded-md p-3"><div className="text-muted-foreground">category</div><div>{active.category}</div></div>
+            </div>
+          </>
+        )}
+      </DetailDialog>
     </Section>
   );
 }
 
 /* ---------- PROJECTS ---------- */
 function Projects() {
+  const [open, setOpen] = useState<number | null>(null);
+  const active = open !== null ? projects[open] : null;
   return (
     <Section id="projects" command="tree projects/" title="projects" description="Selected works across design, code, and content.">
       <div className="glass rounded-2xl overflow-hidden">
@@ -401,13 +448,15 @@ function Projects() {
         </div>
         <div className="divide-y divide-border">
           {projects.map((p, i) => (
-            <motion.div
+            <motion.button
+              type="button"
+              onClick={() => setOpen(i)}
               key={p.name}
               initial={{ opacity: 0, x: -10 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.04 }}
-              className="group grid md:grid-cols-[auto_1fr_auto] items-center gap-4 px-5 py-4 hover:bg-neon/5 transition cursor-pointer"
+              className="group w-full text-left grid md:grid-cols-[auto_1fr_auto] items-center gap-4 px-5 py-4 hover:bg-foreground/5 transition cursor-pointer"
             >
               <div className="flex items-center gap-3 font-mono text-sm">
                 <span className="text-muted-foreground">{String(i + 1).padStart(2, "0")}</span>
@@ -426,15 +475,40 @@ function Projects() {
                 <span className="font-mono text-[10px] text-neon">{p.year}</span>
                 <ArrowRight className="size-4 text-muted-foreground group-hover:text-neon group-hover:translate-x-1 transition" />
               </div>
-            </motion.div>
+            </motion.button>
           ))}
         </div>
       </div>
+
+      <DetailDialog
+        open={active !== null}
+        onOpenChange={(v) => !v && setOpen(null)}
+        title={active?.name ?? ""}
+        subtitle={active ? `${active.category} · ${active.year}` : ""}
+      >
+        {active && (
+          <>
+            <p>{active.description}</p>
+            <div className="space-y-2">
+              <div className="font-mono text-xs text-muted-foreground">// stack</div>
+              <div className="flex flex-wrap gap-2">
+                {active.stack.map((s) => (
+                  <span key={s} className="font-mono text-[10px] px-2 py-1 rounded border border-border bg-surface text-foreground/90">
+                    {s}
+                  </span>
+                ))}
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3 font-mono text-xs pt-1">
+              <div className="glass rounded-md p-3"><div className="text-muted-foreground">category</div><div>{active.category}</div></div>
+              <div className="glass rounded-md p-3"><div className="text-muted-foreground">year</div><div>{active.year}</div></div>
+            </div>
+          </>
+        )}
+      </DetailDialog>
     </Section>
   );
 }
-
-/* ---------- SKILLS ---------- */
 function Skills() {
   return (
     <Section id="skills" command="cat skills/*.txt" title="skills" description="Stacks and tools I work with.">
