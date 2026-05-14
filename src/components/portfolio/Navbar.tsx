@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, Terminal } from "lucide-react";
 import { navItems } from "@/data/portfolio";
+import { A11yToggle } from "./A11yToggle";
 
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -62,13 +63,16 @@ export function Navbar() {
             ))}
           </nav>
 
-          <button
-            onClick={() => setOpen(!open)}
-            className="lg:hidden p-2 text-neon"
-            aria-label="menu"
-          >
-            {open ? <X className="size-5" /> : <Menu className="size-5" />}
-          </button>
+          <div className="flex items-center gap-2">
+            <A11yToggle />
+            <button
+              onClick={() => setOpen(!open)}
+              className="lg:hidden p-2 text-neon"
+              aria-label="menu"
+            >
+              {open ? <X className="size-5" /> : <Menu className="size-5" />}
+            </button>
+          </div>
         </div>
       </div>
 

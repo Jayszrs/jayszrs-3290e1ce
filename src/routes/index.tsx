@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { motion, useScroll, useTransform } from "framer-motion";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import {
   Download,
   Mail,
@@ -26,7 +26,9 @@ import { Navbar } from "@/components/portfolio/Navbar";
 import { TerminalBox, Prompt } from "@/components/portfolio/TerminalBox";
 import { Section } from "@/components/portfolio/Section";
 import { Typewriter } from "@/components/portfolio/Typewriter";
-import { ParticleField } from "@/components/portfolio/ParticleField";
+import { MonoMatrixBg } from "@/components/portfolio/MonoMatrixBg";
+import { GlitchTitle } from "@/components/portfolio/GlitchTitle";
+import { DetailDialog } from "@/components/portfolio/DetailDialog";
 import {
   profile,
   stats,
@@ -85,19 +87,19 @@ function Hero() {
 
   return (
     <section id="home" ref={ref} className="relative min-h-screen flex items-center pt-28 pb-16">
-      <ParticleField />
-      <div className="absolute inset-0 scanlines pointer-events-none opacity-40" />
+      <MonoMatrixBg />
+      <div className="absolute inset-0 scanlines pointer-events-none opacity-20" />
 
       <motion.div style={{ opacity }} className="relative mx-auto max-w-6xl px-4 grid lg:grid-cols-[1.2fr_1fr] gap-12 items-center">
         <motion.div style={{ y: yText }} className="space-y-6">
           <div className="font-mono text-xs text-muted-foreground flex items-center gap-2">
-            <span className="size-2 rounded-full bg-neon animate-pulse" style={{ boxShadow: "0 0 8px var(--neon)" }} />
+            <span className="size-2 rounded-full bg-foreground animate-pulse" style={{ boxShadow: "0 0 10px var(--foreground)" }} />
             system.online — portfolio.v1.0.0
           </div>
 
           <h1 className="font-display font-black tracking-tighter text-6xl md:text-8xl lg:text-9xl leading-[0.85]">
-            <span className="block text-foreground">JAY</span>
-            <span className="block text-neon glow-text">SZRS<span className="text-foreground">.</span></span>
+            <span className="block"><GlitchTitle text="JAY" /></span>
+            <span className="block"><GlitchTitle text="SZRS" /><span className="text-muted-foreground">.</span></span>
           </h1>
 
           <p className="text-muted-foreground text-sm md:text-base font-mono">
@@ -275,20 +277,24 @@ function Experience() {
 
 /* ---------- CERTIFICATION ---------- */
 function Certification() {
+  const [open, setOpen] = useState<number | null>(null);
+  const active = open !== null ? certifications[open] : null;
   return (
     <Section id="certification" command="find certs/ -type f" title="certification & badges" description="Verified credentials and achievements.">
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {certifications.map((c, i) => (
-          <motion.div
+          <motion.button
+            type="button"
+            onClick={() => setOpen(i)}
             key={i}
             initial={{ opacity: 0, scale: 0.95 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
             transition={{ delay: i * 0.05 }}
-            className="group relative glass rounded-xl p-5 hover:border-neon/60 hover:-translate-y-1 transition-all"
+            className="group relative glass rounded-xl p-5 text-left hover:border-neon/60 hover:-translate-y-1 transition-all"
           >
             <div className="flex items-start justify-between">
-              <div className="size-12 rounded-lg bg-gradient-to-br from-neon/30 to-lime/10 border border-neon/40 flex items-center justify-center">
+              <div className="size-12 rounded-lg bg-foreground/10 border border-foreground/40 flex items-center justify-center">
                 <Award className="size-6 text-neon" />
               </div>
               <span className="font-mono text-[10px] px-2 py-0.5 rounded border border-border text-muted-foreground">
@@ -297,30 +303,58 @@ function Certification() {
             </div>
             <h3 className="mt-4 font-semibold text-foreground leading-snug">{c.title}</h3>
             <div className="mt-1 text-sm text-muted-foreground font-mono">{c.issuer} · {c.year}</div>
-            <button className="mt-4 inline-flex items-center gap-1 text-xs font-mono text-neon opacity-0 group-hover:opacity-100 transition">
+            <span className="mt-4 inline-flex items-center gap-1 text-xs font-mono text-neon opacity-0 group-hover:opacity-100 transition">
               view <ExternalLink className="size-3" />
-            </button>
-          </motion.div>
+            </span>
+          </motion.button>
         ))}
       </div>
+
+      <DetailDialog
+        open={active !== null}
+        onOpenChange={(v) => !v && setOpen(null)}
+        title={active?.title ?? ""}
+        subtitle={active ? `${active.issuer} · ${active.year} · ${active.category}` : ""}
+      >
+        {active && (
+          <>
+            <p>
+              Sertifikasi <span className="text-neon">{active.title}</span> diterbitkan oleh{" "}
+              <span className="text-foreground">{active.issuer}</span> pada tahun {active.year}.
+            </p>
+            <div className="grid grid-cols-2 gap-3 font-mono text-xs">
+              <div className="glass rounded-md p-3"><div className="text-muted-foreground">issuer</div><div>{active.issuer}</div></div>
+              <div className="glass rounded-md p-3"><div className="text-muted-foreground">year</div><div>{active.year}</div></div>
+              <div className="glass rounded-md p-3 col-span-2"><div className="text-muted-foreground">category</div><div>{active.category}</div></div>
+            </div>
+            <button className="mt-2 inline-flex items-center gap-2 px-4 py-2 bg-foreground text-background font-mono text-xs rounded-md hover:opacity-90">
+              <ExternalLink className="size-3" /> Verify Certificate
+            </button>
+          </>
+        )}
+      </DetailDialog>
     </Section>
   );
 }
 
 /* ---------- EDUCATION ---------- */
 function Education() {
+  const [open, setOpen] = useState<number | null>(null);
+  const active = open !== null ? education[open] : null;
   return (
     <Section id="education" command="cat education.json" title="education" description="Academic journey & focus areas.">
       <div className="space-y-4">
         {education.map((ed, i) => (
-          <motion.div
+          <motion.button
+            type="button"
+            onClick={() => setOpen(i)}
             key={i}
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="glass rounded-2xl p-6 md:p-8 flex flex-col md:flex-row gap-6 hover:border-neon/60 transition"
+            className="w-full text-left glass rounded-2xl p-6 md:p-8 flex flex-col md:flex-row gap-6 hover:border-neon/60 transition"
           >
-            <div className="size-16 rounded-xl bg-neon/10 border border-neon/40 flex items-center justify-center shrink-0">
+            <div className="size-16 rounded-xl bg-foreground/10 border border-foreground/40 flex items-center justify-center shrink-0">
               <GraduationCap className="size-8 text-neon" />
             </div>
             <div className="flex-1">
@@ -329,40 +363,83 @@ function Education() {
               <div className="text-sm text-muted-foreground font-mono">{ed.major}</div>
               <p className="mt-3 text-foreground/80">{ed.description}</p>
             </div>
-          </motion.div>
+          </motion.button>
         ))}
       </div>
+
+      <DetailDialog
+        open={active !== null}
+        onOpenChange={(v) => !v && setOpen(null)}
+        title={active?.institution ?? ""}
+        subtitle={active ? `${active.major} · ${active.period}` : ""}
+      >
+        {active && (
+          <>
+            <p>{active.description}</p>
+            <div className="grid grid-cols-2 gap-3 font-mono text-xs">
+              <div className="glass rounded-md p-3"><div className="text-muted-foreground">period</div><div>{active.period}</div></div>
+              <div className="glass rounded-md p-3"><div className="text-muted-foreground">major</div><div>{active.major}</div></div>
+            </div>
+          </>
+        )}
+      </DetailDialog>
     </Section>
   );
 }
 
 /* ---------- VOLUNTEER ---------- */
 function Volunteer() {
+  const [open, setOpen] = useState<number | null>(null);
+  const active = open !== null ? volunteers[open] : null;
   return (
     <Section id="volunteer" command="ls volunteer/" title="volunteer & organization" description="Communities, events, and roles.">
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {volunteers.map((v, i) => (
-          <motion.div
+          <motion.button
+            type="button"
+            onClick={() => setOpen(i)}
             key={i}
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: i * 0.07 }}
-            className="glass rounded-xl p-5 hover:border-neon/60 transition group"
+            className="text-left glass rounded-xl p-5 hover:border-neon/60 transition group"
           >
             <Heart className="size-5 text-neon mb-3 group-hover:scale-110 transition" />
             <div className="font-mono text-[10px] text-muted-foreground">{v.category} · {v.year}</div>
             <h3 className="mt-1 font-semibold text-foreground">{v.name}</h3>
             <div className="text-sm text-neon/90 font-mono">{v.role}</div>
-          </motion.div>
+          </motion.button>
         ))}
       </div>
+
+      <DetailDialog
+        open={active !== null}
+        onOpenChange={(v) => !v && setOpen(null)}
+        title={active?.name ?? ""}
+        subtitle={active ? `${active.role} · ${active.year}` : ""}
+      >
+        {active && (
+          <>
+            <p>
+              Berkontribusi sebagai <span className="text-neon">{active.role}</span> dalam kegiatan{" "}
+              <span className="text-foreground">{active.name}</span> ({active.category}, {active.year}).
+            </p>
+            <div className="grid grid-cols-2 gap-3 font-mono text-xs">
+              <div className="glass rounded-md p-3"><div className="text-muted-foreground">role</div><div>{active.role}</div></div>
+              <div className="glass rounded-md p-3"><div className="text-muted-foreground">category</div><div>{active.category}</div></div>
+            </div>
+          </>
+        )}
+      </DetailDialog>
     </Section>
   );
 }
 
 /* ---------- PROJECTS ---------- */
 function Projects() {
+  const [open, setOpen] = useState<number | null>(null);
+  const active = open !== null ? projects[open] : null;
   return (
     <Section id="projects" command="tree projects/" title="projects" description="Selected works across design, code, and content.">
       <div className="glass rounded-2xl overflow-hidden">
@@ -371,13 +448,15 @@ function Projects() {
         </div>
         <div className="divide-y divide-border">
           {projects.map((p, i) => (
-            <motion.div
+            <motion.button
+              type="button"
+              onClick={() => setOpen(i)}
               key={p.name}
               initial={{ opacity: 0, x: -10 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.04 }}
-              className="group grid md:grid-cols-[auto_1fr_auto] items-center gap-4 px-5 py-4 hover:bg-neon/5 transition cursor-pointer"
+              className="group w-full text-left grid md:grid-cols-[auto_1fr_auto] items-center gap-4 px-5 py-4 hover:bg-foreground/5 transition cursor-pointer"
             >
               <div className="flex items-center gap-3 font-mono text-sm">
                 <span className="text-muted-foreground">{String(i + 1).padStart(2, "0")}</span>
@@ -396,15 +475,40 @@ function Projects() {
                 <span className="font-mono text-[10px] text-neon">{p.year}</span>
                 <ArrowRight className="size-4 text-muted-foreground group-hover:text-neon group-hover:translate-x-1 transition" />
               </div>
-            </motion.div>
+            </motion.button>
           ))}
         </div>
       </div>
+
+      <DetailDialog
+        open={active !== null}
+        onOpenChange={(v) => !v && setOpen(null)}
+        title={active?.name ?? ""}
+        subtitle={active ? `${active.category} · ${active.year}` : ""}
+      >
+        {active && (
+          <>
+            <p>{active.description}</p>
+            <div className="space-y-2">
+              <div className="font-mono text-xs text-muted-foreground">// stack</div>
+              <div className="flex flex-wrap gap-2">
+                {active.stack.map((s) => (
+                  <span key={s} className="font-mono text-[10px] px-2 py-1 rounded border border-border bg-surface text-foreground/90">
+                    {s}
+                  </span>
+                ))}
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3 font-mono text-xs pt-1">
+              <div className="glass rounded-md p-3"><div className="text-muted-foreground">category</div><div>{active.category}</div></div>
+              <div className="glass rounded-md p-3"><div className="text-muted-foreground">year</div><div>{active.year}</div></div>
+            </div>
+          </>
+        )}
+      </DetailDialog>
     </Section>
   );
 }
-
-/* ---------- SKILLS ---------- */
 function Skills() {
   return (
     <Section id="skills" command="cat skills/*.txt" title="skills" description="Stacks and tools I work with.">

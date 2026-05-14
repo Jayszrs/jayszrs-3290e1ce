@@ -191,3 +191,46 @@
   0% { transform: translateY(-100%); }
   100% { transform: translateY(100vh); }
 }
+
+/* ---- Accessibility modes ---- */
+.a11y-large {
+  font-size: 18px;
+}
+.a11y-large body {
+  letter-spacing: 0.005em;
+}
+.a11y-large p,
+.a11y-large li,
+.a11y-large .text-sm {
+  font-size: 1.05rem !important;
+  line-height: 1.7 !important;
+}
+.a11y-large .text-xs,
+.a11y-large .font-mono.text-xs {
+  font-size: 0.95rem !important;
+}
+
+.a11y-contrast {
+  --background: oklch(0 0 0);
+  --foreground: oklch(1 0 0);
+  --muted-foreground: oklch(0.92 0 0);
+  --border: oklch(1 0 0 / 0.55);
+  --input: oklch(1 0 0 / 0.6);
+  --surface: oklch(0.08 0 0);
+  --surface-elevated: oklch(0.12 0 0);
+  --neon: oklch(1 0 0);
+  --ring: oklch(1 0 0 / 0.9);
+}
+.a11y-contrast body {
+  background-image: none !important;
+  background-color: #000 !important;
+}
+.a11y-contrast .glass {
+  background: rgba(0, 0, 0, 0.85) !important;
+  backdrop-filter: none !important;
+  border-color: rgba(255, 255, 255, 0.55) !important;
+}
+.a11y-contrast .scanlines,
+.a11y-contrast .noise::before {
+  display: none !important;
+}
