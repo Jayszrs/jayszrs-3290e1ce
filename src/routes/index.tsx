@@ -24,6 +24,7 @@ import {
 
 import jayPhoto from "@/assets/jay-profile.jpg";
 import jayWordmark from "@/assets/jay-szrs-wordmark.png";
+import cyberSecurityBg from "@/assets/cyber-security-bg.webp";
 import { Navbar } from "@/components/portfolio/Navbar";
 import { TerminalBox, Prompt } from "@/components/portfolio/TerminalBox";
 import { Section } from "@/components/portfolio/Section";
@@ -237,6 +238,12 @@ function Index() {
   return (
     <PortfolioContentProvider>
       <div className="relative min-h-screen overflow-hidden">
+        <img
+          src={cyberSecurityBg}
+          alt=""
+          aria-hidden
+          className="fixed inset-0 z-0 h-screen w-screen object-cover opacity-45"
+        />
         <MonoMatrixBg className="opacity-[0.16]" />
         <div className="fixed inset-0 z-0 pointer-events-none bg-[radial-gradient(circle_at_50%_0%,rgba(255,255,255,0.13),transparent_35%),linear-gradient(to_bottom,rgba(0,0,0,0.12),rgba(0,0,0,0.88))]" />
         <div className="fixed inset-0 z-0 scanlines pointer-events-none opacity-20" />

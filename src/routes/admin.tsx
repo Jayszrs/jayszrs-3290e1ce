@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
 import { MonoMatrixBg } from "@/components/portfolio/MonoMatrixBg";
 import jayWordmark from "@/assets/jay-szrs-wordmark.png";
+import cyberSecurityBg from "@/assets/cyber-security-bg.webp";
 import {
   LogOut,
   Upload,
@@ -208,6 +209,12 @@ function AuthForm() {
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-background px-4">
+      <img
+        src={cyberSecurityBg}
+        alt=""
+        aria-hidden
+        className="fixed inset-0 z-0 h-screen w-screen object-cover opacity-35"
+      />
       <MonoMatrixBg className="opacity-[0.22]" />
       <div className="fixed inset-0 z-0 pointer-events-none bg-[radial-gradient(circle_at_50%_18%,rgba(255,255,255,0.12),transparent_30%),linear-gradient(to_bottom,rgba(0,0,0,0.1),rgba(0,0,0,0.9))]" />
       <Toaster position="top-center" />
@@ -282,6 +289,12 @@ function Dashboard() {
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-background">
+      <img
+        src={cyberSecurityBg}
+        alt=""
+        aria-hidden
+        className="fixed inset-0 z-0 h-screen w-screen object-cover opacity-25"
+      />
       <MonoMatrixBg className="opacity-[0.12]" />
       <div className="fixed inset-0 z-0 pointer-events-none bg-[linear-gradient(to_bottom,rgba(0,0,0,0.15),rgba(0,0,0,0.88))]" />
       <Toaster position="top-center" />
