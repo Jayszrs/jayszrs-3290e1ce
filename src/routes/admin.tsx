@@ -145,7 +145,7 @@ function Overview() {
   const [counts, setCounts] = useState<Record<string, number>>({});
   useEffect(() => {
     Promise.all([...TABLES.map(t => t.key), "contact_messages", "skills", "gallery"].map(async (k) => {
-      const { count } = await supabase.from(k).select("*", { count: "exact", head: true });
+      const { count } = await supabase.from(k as any).select("*", { count: "exact", head: true });
       return [k, count || 0] as const;
     })).then(arr => setCounts(Object.fromEntries(arr)));
   }, []);
