@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { motion, useScroll, useTransform } from "framer-motion";
-import { useRef, useState } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
+import type { ReactNode } from "react";
 import {
   Download,
   Mail,
@@ -29,15 +30,16 @@ import { Typewriter } from "@/components/portfolio/Typewriter";
 import { MonoMatrixBg } from "@/components/portfolio/MonoMatrixBg";
 import { GlitchTitle } from "@/components/portfolio/GlitchTitle";
 import { DetailDialog } from "@/components/portfolio/DetailDialog";
+import { supabase } from "@/integrations/supabase/client";
 import {
-  profile,
-  stats,
-  experiences,
-  certifications,
-  education,
-  volunteers,
-  projects,
-  skills,
+  profile as fallbackProfile,
+  stats as fallbackStats,
+  experiences as fallbackExperiences,
+  certifications as fallbackCertifications,
+  education as fallbackEducation,
+  volunteers as fallbackVolunteers,
+  projects as fallbackProjects,
+  skills as fallbackSkills,
 } from "@/data/portfolio";
 
 export const Route = createFileRoute("/")({
@@ -59,26 +61,201 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
+const fallbackContent = {
+  profile: fallbackProfile,
+  stats: fallbackStats,
+  experiences: fallbackExperiences,
+  certifications: fallbackCertifications,
+  education: fallbackEducation,
+  volunteers: fallbackVolunteers,
+  projects: fallbackProjects,
+  skills: fallbackSkills,
+};
+
+type PortfolioContent = {
+  profile: typeof fallbackProfile;
+  stats: typeof fallbackStats;
+  experiences: typeof fallbackExperiences;
+  certifications: Array<
+    (typeof fallbackCertifications)[number] & {
+      credentialId?: string;
+      certificateUrl?: string;
+      badgeUrl?: string;
+      verificationUrl?: string;
+      description?: string;
+    }
+  >;
+  education: typeof fallbackEducation;
+  volunteers: Array<(typeof fallbackVolunteers)[number] & { description?: string }>;
+  projects: typeof fallbackProjects;
+  skills: Record<string, string[]>;
+};
+
+const PortfolioContentContext = createContext<PortfolioContent>(fallbackContent);
+
+function usePortfolioContent() {
+  return useContext(PortfolioContentContext);
+}
+
+function PortfolioContentProvider({ children }: { children: ReactNode }) {
+  const [content, setContent] = useState<PortfolioContent>(fallbackContent);
+
+  useEffect(() => {
+    let active = true;
+
+    async function load() {
+      try {
+        const [
+          profileRes,
+          experienceRes,
+          certificationRes,
+          educationRes,
+          volunteerRes,
+          projectRes,
+          skillRes,
+        ] = await Promise.all([
+          supabase.from("profile_settings").select("*").limit(1).maybeSingle(),
+          supabase.from("experiences").select("*").order("order_index", { ascending: true }),
+          supabase.from("certifications").select("*").order("order_index", { ascending: true }),
+          supabase.from("education").select("*").order("order_index", { ascending: true }),
+          supabase.from("volunteers").select("*").order("order_index", { ascending: true }),
+          supabase.from("projects").select("*").order("order_index", { ascending: true }),
+          supabase.from("skills").select("*").order("order_index", { ascending: true }),
+        ]);
+
+        if (!active) return;
+
+        const profileRow = profileRes.data;
+        const skillRows = skillRes.data || [];
+        const dynamicSkills = skillRows.reduce<Record<string, string[]>>((acc, item) => {
+          acc[item.category] = [...(acc[item.category] || []), item.name];
+          return acc;
+        }, {});
+
+        setContent({
+          profile: profileRow
+            ? {
+                ...fallbackProfile,
+                name: profileRow.branding_name,
+                fullName: profileRow.full_name,
+                role: profileRow.subtitle,
+                email: profileRow.email,
+                whatsapp: profileRow.whatsapp,
+                location: profileRow.location,
+                status: profileRow.availability,
+                typing: profileRow.typing_texts?.length
+                  ? profileRow.typing_texts
+                  : fallbackProfile.typing,
+              }
+            : fallbackProfile,
+          stats: [
+            { label: "Projects", value: projectRes.data?.length || fallbackProjects.length },
+            {
+              label: "Certificates",
+              value: certificationRes.data?.length || fallbackCertifications.length,
+            },
+            {
+              label: "Experience",
+              value: experienceRes.data?.length || fallbackExperiences.length,
+            },
+            { label: "Volunteer", value: volunteerRes.data?.length || fallbackVolunteers.length },
+          ],
+          experiences: experienceRes.data?.length
+            ? experienceRes.data.map((item) => ({
+                title: item.title,
+                company: item.company,
+                date: item.duration_months
+                  ? `${item.date_range} (${item.duration_months} bulan)`
+                  : item.date_range,
+                status: item.status,
+                description: item.description || "",
+                category: item.category || item.employment_type || "Work",
+              }))
+            : fallbackExperiences,
+          certifications: certificationRes.data?.length
+            ? certificationRes.data.map((item) => ({
+                title: item.title,
+                issuer: item.issuer,
+                year: item.year,
+                category: item.category || "Certificate",
+                credentialId: item.credential_id || "",
+                certificateUrl: item.certificate_url || "",
+                badgeUrl: item.badge_url || "",
+                verificationUrl: item.verification_url || "",
+                description: item.description || "",
+              }))
+            : fallbackCertifications,
+          education: educationRes.data?.length
+            ? educationRes.data.map((item) => ({
+                institution: item.institution,
+                major: item.field_of_study ? `${item.major} - ${item.field_of_study}` : item.major,
+                period: item.period,
+                description: item.activities
+                  ? `${item.description || ""} ${item.activities}`.trim()
+                  : item.description || "",
+              }))
+            : fallbackEducation,
+          volunteers: volunteerRes.data?.length
+            ? volunteerRes.data.map((item) => ({
+                name: item.name,
+                role: item.role,
+                year: item.duration_months
+                  ? `${item.year} (${item.duration_months} bulan)`
+                  : item.year,
+                category: item.category || item.cause || "Organization",
+                description: item.description || "",
+              }))
+            : fallbackVolunteers,
+          projects: projectRes.data?.length
+            ? projectRes.data.map((item) => ({
+                name: item.title,
+                category: item.category,
+                year: item.year,
+                stack: item.tech_stack?.length ? item.tech_stack : ["Portfolio"],
+                description: item.description || "",
+              }))
+            : fallbackProjects,
+          skills: Object.keys(dynamicSkills).length ? dynamicSkills : fallbackSkills,
+        });
+      } catch (error) {
+        console.warn("[portfolio] using fallback content", error);
+      }
+    }
+
+    load();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  return (
+    <PortfolioContentContext.Provider value={content}>{children}</PortfolioContentContext.Provider>
+  );
+}
+
 function Index() {
   return (
-    <div className="relative min-h-screen overflow-hidden">
-      <Navbar />
-      <Hero />
-      <About />
-      <Experience />
-      <Certification />
-      <Education />
-      <Volunteer />
-      <Projects />
-      <Skills />
-      <Contact />
-      <Footer />
-    </div>
+    <PortfolioContentProvider>
+      <div className="relative min-h-screen overflow-hidden">
+        <Navbar />
+        <Hero />
+        <About />
+        <Experience />
+        <Certification />
+        <Education />
+        <Volunteer />
+        <Projects />
+        <Skills />
+        <Contact />
+        <Footer />
+      </div>
+    </PortfolioContentProvider>
   );
 }
 
 /* ---------- HERO ---------- */
 function Hero() {
+  const { profile } = usePortfolioContent();
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
   const yPhoto = useTransform(scrollYProgress, [0, 1], [0, 120]);
@@ -90,21 +267,30 @@ function Hero() {
       <MonoMatrixBg />
       <div className="absolute inset-0 scanlines pointer-events-none opacity-20" />
 
-      <motion.div style={{ opacity }} className="relative mx-auto max-w-6xl px-4 grid lg:grid-cols-[1.2fr_1fr] gap-12 items-center">
+      <motion.div
+        style={{ opacity }}
+        className="relative mx-auto max-w-6xl px-4 grid lg:grid-cols-[1.2fr_1fr] gap-12 items-center"
+      >
         <motion.div style={{ y: yText }} className="space-y-6">
           <div className="font-mono text-xs text-muted-foreground flex items-center gap-2">
-            <span className="size-2 rounded-full bg-foreground animate-pulse" style={{ boxShadow: "0 0 10px var(--foreground)" }} />
+            <span
+              className="size-2 rounded-full bg-foreground animate-pulse"
+              style={{ boxShadow: "0 0 10px var(--foreground)" }}
+            />
             system.online — portfolio.v1.0.0
           </div>
 
           <h1 className="font-display font-black tracking-tighter text-6xl md:text-8xl lg:text-9xl leading-[0.85]">
-            <span className="block"><GlitchTitle text="JAY" /></span>
-            <span className="block"><GlitchTitle text="SZRS" /><span className="text-muted-foreground">.</span></span>
+            <span className="block">
+              <GlitchTitle text="JAY" />
+            </span>
+            <span className="block">
+              <GlitchTitle text="SZRS" />
+              <span className="text-muted-foreground">.</span>
+            </span>
           </h1>
 
-          <p className="text-muted-foreground text-sm md:text-base font-mono">
-            {profile.role}
-          </p>
+          <p className="text-muted-foreground text-sm md:text-base font-mono">{profile.role}</p>
 
           <div className="font-mono text-base md:text-lg min-h-[1.5em]">
             <span className="text-neon">&gt; </span>
@@ -134,15 +320,22 @@ function Hero() {
           </div>
 
           <TerminalBox title="jay@szrs:~">
-            <Prompt><span className="text-neon">whoami</span></Prompt>
+            <Prompt>
+              <span className="text-neon">whoami</span>
+            </Prompt>
             <p className="pl-4 text-foreground/80 mt-1">
               Jay SZRS — Informatics student, designer, content creator, and IT enthusiast.
             </p>
-            <Prompt><span className="text-neon">status</span></Prompt>
+            <Prompt>
+              <span className="text-neon">status</span>
+            </Prompt>
             <p className="pl-4 text-foreground/80 mt-1">
               Available for collaboration, internship, freelance, and creative tech projects.
             </p>
-            <div className="flex gap-2 pt-2"><span className="text-neon">$</span><span className="terminal-cursor"></span></div>
+            <div className="flex gap-2 pt-2">
+              <span className="text-neon">$</span>
+              <span className="terminal-cursor"></span>
+            </div>
           </TerminalBox>
         </motion.div>
 
@@ -173,7 +366,9 @@ function Hero() {
           animate={{ y: [0, 8, 0] }}
           transition={{ repeat: Infinity, duration: 1.5 }}
           className="text-neon"
-        >▼</motion.span>
+        >
+          ▼
+        </motion.span>
       </div>
     </section>
   );
@@ -181,15 +376,22 @@ function Hero() {
 
 /* ---------- ABOUT ---------- */
 function About() {
+  const { stats } = usePortfolioContent();
   return (
-    <Section id="about" command="cat about.md" title="about" description="Personal information block.">
+    <Section
+      id="about"
+      command="cat about.md"
+      title="about"
+      description="Personal information block."
+    >
       <div className="grid lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 glass rounded-2xl p-6 md:p-8 relative noise overflow-hidden">
           <div className="font-mono text-xs text-neon mb-4">// bio</div>
           <p className="text-lg leading-relaxed text-foreground/90">
-            Hi, I'm <span className="text-neon glow-text font-semibold">Jay SZRS</span>. I'm an Informatics
-            Engineering student with strong interest in technology, UI/UX design, graphic design,
-            video editing, content creation, networking, programming, and cyber security basics.
+            Hi, I'm <span className="text-neon glow-text font-semibold">Jay SZRS</span>. I'm an
+            Informatics Engineering student with strong interest in technology, UI/UX design,
+            graphic design, video editing, content creation, networking, programming, and cyber
+            security basics.
           </p>
           <p className="mt-4 text-muted-foreground leading-relaxed">
             I enjoy building digital products, creating visual content, designing user interfaces,
@@ -203,7 +405,10 @@ function About() {
               { k: "location", v: "Indonesia", icon: MapPin },
               { k: "status", v: "Open for opportunities", icon: CheckCircle2 },
             ].map((it) => (
-              <div key={it.k} className="flex items-center gap-3 px-4 py-3 rounded-lg bg-surface/60 border border-border">
+              <div
+                key={it.k}
+                className="flex items-center gap-3 px-4 py-3 rounded-lg bg-surface/60 border border-border"
+              >
                 <it.icon className="size-4 text-neon shrink-0" />
                 <span className="text-muted-foreground">{it.k}:</span>
                 <span className="text-foreground">{it.v}</span>
@@ -223,8 +428,12 @@ function About() {
               className="glass rounded-xl p-5 flex items-center justify-between hover:border-neon/60 transition"
             >
               <div>
-                <div className="font-mono text-xs text-muted-foreground">./{s.label.toLowerCase()}</div>
-                <div className="text-3xl font-display font-bold text-neon glow-text">{s.value}+</div>
+                <div className="font-mono text-xs text-muted-foreground">
+                  ./{s.label.toLowerCase()}
+                </div>
+                <div className="text-3xl font-display font-bold text-neon glow-text">
+                  {s.value}+
+                </div>
               </div>
               <div className="size-10 rounded-lg bg-neon/10 border border-neon/30 flex items-center justify-center">
                 <Sparkles className="size-5 text-neon" />
@@ -239,8 +448,14 @@ function About() {
 
 /* ---------- EXPERIENCE ---------- */
 function Experience() {
+  const { experiences } = usePortfolioContent();
   return (
-    <Section id="experience" command="ls -la experience/" title="experience" description="Timeline of roles, projects, and contributions.">
+    <Section
+      id="experience"
+      command="ls -la experience/"
+      title="experience"
+      description="Timeline of roles, projects, and contributions."
+    >
       <div className="relative">
         <div className="absolute left-4 md:left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-transparent via-neon/60 to-transparent" />
         <div className="space-y-10">
@@ -258,7 +473,9 @@ function Experience() {
                 <div className="glass rounded-xl p-5 hover:border-neon/60 transition group">
                   <div className="flex items-center gap-2 font-mono text-xs text-neon">
                     <Calendar className="size-3" /> {e.date}
-                    <span className={`ml-auto px-2 py-0.5 rounded text-[10px] ${e.status === "Active" ? "bg-neon/20 text-neon border border-neon/40" : "bg-muted text-muted-foreground"}`}>
+                    <span
+                      className={`ml-auto px-2 py-0.5 rounded text-[10px] ${e.status === "Active" ? "bg-neon/20 text-neon border border-neon/40" : "bg-muted text-muted-foreground"}`}
+                    >
                       {e.status}
                     </span>
                   </div>
@@ -277,10 +494,16 @@ function Experience() {
 
 /* ---------- CERTIFICATION ---------- */
 function Certification() {
+  const { certifications } = usePortfolioContent();
   const [open, setOpen] = useState<number | null>(null);
   const active = open !== null ? certifications[open] : null;
   return (
-    <Section id="certification" command="find certs/ -type f" title="certification & badges" description="Verified credentials and achievements.">
+    <Section
+      id="certification"
+      command="find certs/ -type f"
+      title="certification & badges"
+      description="Verified credentials and achievements."
+    >
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {certifications.map((c, i) => (
           <motion.button
@@ -302,7 +525,9 @@ function Certification() {
               </span>
             </div>
             <h3 className="mt-4 font-semibold text-foreground leading-snug">{c.title}</h3>
-            <div className="mt-1 text-sm text-muted-foreground font-mono">{c.issuer} · {c.year}</div>
+            <div className="mt-1 text-sm text-muted-foreground font-mono">
+              {c.issuer} · {c.year}
+            </div>
             <span className="mt-4 inline-flex items-center gap-1 text-xs font-mono text-neon opacity-0 group-hover:opacity-100 transition">
               view <ExternalLink className="size-3" />
             </span>
@@ -323,13 +548,47 @@ function Certification() {
               <span className="text-foreground">{active.issuer}</span> pada tahun {active.year}.
             </p>
             <div className="grid grid-cols-2 gap-3 font-mono text-xs">
-              <div className="glass rounded-md p-3"><div className="text-muted-foreground">issuer</div><div>{active.issuer}</div></div>
-              <div className="glass rounded-md p-3"><div className="text-muted-foreground">year</div><div>{active.year}</div></div>
-              <div className="glass rounded-md p-3 col-span-2"><div className="text-muted-foreground">category</div><div>{active.category}</div></div>
+              <div className="glass rounded-md p-3">
+                <div className="text-muted-foreground">issuer</div>
+                <div>{active.issuer}</div>
+              </div>
+              <div className="glass rounded-md p-3">
+                <div className="text-muted-foreground">year</div>
+                <div>{active.year}</div>
+              </div>
+              {active.credentialId && (
+                <div className="glass rounded-md p-3 col-span-2">
+                  <div className="text-muted-foreground">credential</div>
+                  <div>{active.credentialId}</div>
+                </div>
+              )}
+              <div className="glass rounded-md p-3 col-span-2">
+                <div className="text-muted-foreground">category</div>
+                <div>{active.category}</div>
+              </div>
             </div>
-            <button className="mt-2 inline-flex items-center gap-2 px-4 py-2 bg-foreground text-background font-mono text-xs rounded-md hover:opacity-90">
-              <ExternalLink className="size-3" /> Verify Certificate
-            </button>
+            <div className="flex flex-wrap gap-2">
+              {active.verificationUrl && (
+                <a
+                  href={active.verificationUrl}
+                  target="_blank"
+                  rel="noopener"
+                  className="mt-2 inline-flex items-center gap-2 px-4 py-2 bg-foreground text-background font-mono text-xs rounded-md hover:opacity-90"
+                >
+                  <ExternalLink className="size-3" /> Verify Certificate
+                </a>
+              )}
+              {active.certificateUrl && (
+                <a
+                  href={active.certificateUrl}
+                  target="_blank"
+                  rel="noopener"
+                  className="mt-2 inline-flex items-center gap-2 px-4 py-2 glass border border-neon/40 text-neon font-mono text-xs rounded-md"
+                >
+                  <Download className="size-3" /> PDF Certificate
+                </a>
+              )}
+            </div>
           </>
         )}
       </DetailDialog>
@@ -339,10 +598,16 @@ function Certification() {
 
 /* ---------- EDUCATION ---------- */
 function Education() {
+  const { education } = usePortfolioContent();
   const [open, setOpen] = useState<number | null>(null);
   const active = open !== null ? education[open] : null;
   return (
-    <Section id="education" command="cat education.json" title="education" description="Academic journey & focus areas.">
+    <Section
+      id="education"
+      command="cat education.json"
+      title="education"
+      description="Academic journey & focus areas."
+    >
       <div className="space-y-4">
         {education.map((ed, i) => (
           <motion.button
@@ -377,8 +642,14 @@ function Education() {
           <>
             <p>{active.description}</p>
             <div className="grid grid-cols-2 gap-3 font-mono text-xs">
-              <div className="glass rounded-md p-3"><div className="text-muted-foreground">period</div><div>{active.period}</div></div>
-              <div className="glass rounded-md p-3"><div className="text-muted-foreground">major</div><div>{active.major}</div></div>
+              <div className="glass rounded-md p-3">
+                <div className="text-muted-foreground">period</div>
+                <div>{active.period}</div>
+              </div>
+              <div className="glass rounded-md p-3">
+                <div className="text-muted-foreground">major</div>
+                <div>{active.major}</div>
+              </div>
             </div>
           </>
         )}
@@ -389,10 +660,16 @@ function Education() {
 
 /* ---------- VOLUNTEER ---------- */
 function Volunteer() {
+  const { volunteers } = usePortfolioContent();
   const [open, setOpen] = useState<number | null>(null);
   const active = open !== null ? volunteers[open] : null;
   return (
-    <Section id="volunteer" command="ls volunteer/" title="volunteer & organization" description="Communities, events, and roles.">
+    <Section
+      id="volunteer"
+      command="ls volunteer/"
+      title="volunteer & organization"
+      description="Communities, events, and roles."
+    >
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {volunteers.map((v, i) => (
           <motion.button
@@ -406,7 +683,9 @@ function Volunteer() {
             className="text-left glass rounded-xl p-5 hover:border-neon/60 transition group"
           >
             <Heart className="size-5 text-neon mb-3 group-hover:scale-110 transition" />
-            <div className="font-mono text-[10px] text-muted-foreground">{v.category} · {v.year}</div>
+            <div className="font-mono text-[10px] text-muted-foreground">
+              {v.category} · {v.year}
+            </div>
             <h3 className="mt-1 font-semibold text-foreground">{v.name}</h3>
             <div className="text-sm text-neon/90 font-mono">{v.role}</div>
           </motion.button>
@@ -423,11 +702,18 @@ function Volunteer() {
           <>
             <p>
               Berkontribusi sebagai <span className="text-neon">{active.role}</span> dalam kegiatan{" "}
-              <span className="text-foreground">{active.name}</span> ({active.category}, {active.year}).
+              <span className="text-foreground">{active.name}</span> ({active.category},{" "}
+              {active.year}).
             </p>
             <div className="grid grid-cols-2 gap-3 font-mono text-xs">
-              <div className="glass rounded-md p-3"><div className="text-muted-foreground">role</div><div>{active.role}</div></div>
-              <div className="glass rounded-md p-3"><div className="text-muted-foreground">category</div><div>{active.category}</div></div>
+              <div className="glass rounded-md p-3">
+                <div className="text-muted-foreground">role</div>
+                <div>{active.role}</div>
+              </div>
+              <div className="glass rounded-md p-3">
+                <div className="text-muted-foreground">category</div>
+                <div>{active.category}</div>
+              </div>
             </div>
           </>
         )}
@@ -438,10 +724,16 @@ function Volunteer() {
 
 /* ---------- PROJECTS ---------- */
 function Projects() {
+  const { projects } = usePortfolioContent();
   const [open, setOpen] = useState<number | null>(null);
   const active = open !== null ? projects[open] : null;
   return (
-    <Section id="projects" command="tree projects/" title="projects" description="Selected works across design, code, and content.">
+    <Section
+      id="projects"
+      command="tree projects/"
+      title="projects"
+      description="Selected works across design, code, and content."
+    >
       <div className="glass rounded-2xl overflow-hidden">
         <div className="px-5 py-3 border-b border-border font-mono text-xs text-muted-foreground flex items-center gap-2">
           <Folder className="size-3.5 text-neon" /> /home/jay/projects
@@ -463,12 +755,13 @@ function Projects() {
                 <FileCode className="size-4 text-neon" />
                 <span className="text-foreground group-hover:text-neon transition">{p.name}</span>
               </div>
-              <div className="text-sm text-muted-foreground md:pl-8">
-                {p.description}
-              </div>
+              <div className="text-sm text-muted-foreground md:pl-8">{p.description}</div>
               <div className="flex items-center gap-2">
                 {p.stack.slice(0, 2).map((s) => (
-                  <span key={s} className="font-mono text-[10px] px-2 py-0.5 rounded bg-surface border border-border text-muted-foreground">
+                  <span
+                    key={s}
+                    className="font-mono text-[10px] px-2 py-0.5 rounded bg-surface border border-border text-muted-foreground"
+                  >
                     {s}
                   </span>
                 ))}
@@ -493,15 +786,24 @@ function Projects() {
               <div className="font-mono text-xs text-muted-foreground">// stack</div>
               <div className="flex flex-wrap gap-2">
                 {active.stack.map((s) => (
-                  <span key={s} className="font-mono text-[10px] px-2 py-1 rounded border border-border bg-surface text-foreground/90">
+                  <span
+                    key={s}
+                    className="font-mono text-[10px] px-2 py-1 rounded border border-border bg-surface text-foreground/90"
+                  >
                     {s}
                   </span>
                 ))}
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3 font-mono text-xs pt-1">
-              <div className="glass rounded-md p-3"><div className="text-muted-foreground">category</div><div>{active.category}</div></div>
-              <div className="glass rounded-md p-3"><div className="text-muted-foreground">year</div><div>{active.year}</div></div>
+              <div className="glass rounded-md p-3">
+                <div className="text-muted-foreground">category</div>
+                <div>{active.category}</div>
+              </div>
+              <div className="glass rounded-md p-3">
+                <div className="text-muted-foreground">year</div>
+                <div>{active.year}</div>
+              </div>
             </div>
           </>
         )}
@@ -510,8 +812,14 @@ function Projects() {
   );
 }
 function Skills() {
+  const { skills } = usePortfolioContent();
   return (
-    <Section id="skills" command="cat skills/*.txt" title="skills" description="Stacks and tools I work with.">
+    <Section
+      id="skills"
+      command="cat skills/*.txt"
+      title="skills"
+      description="Stacks and tools I work with."
+    >
       <div className="grid md:grid-cols-3 gap-4">
         {Object.entries(skills).map(([cat, items], idx) => (
           <motion.div
@@ -542,44 +850,110 @@ function Skills() {
 
 /* ---------- CONTACT ---------- */
 function Contact() {
+  const { profile } = usePortfolioContent();
   return (
-    <Section id="contact" command="./contact --jay" title="contact" description="Let's build something together.">
+    <Section
+      id="contact"
+      command="./contact --jay"
+      title="contact"
+      description="Let's build something together."
+    >
       <div className="grid lg:grid-cols-2 gap-6">
         <TerminalBox title="contact.sh" className="lg:row-span-2">
-          <Prompt><span className="text-neon">contact --jay</span></Prompt>
+          <Prompt>
+            <span className="text-neon">contact --jay</span>
+          </Prompt>
           <div className="mt-3 space-y-2 pl-4 text-sm">
-            <div><span className="text-muted-foreground">Email:</span> <a href={`mailto:${profile.email}`} className="text-neon hover:underline">{profile.email}</a></div>
-            <div><span className="text-muted-foreground">WhatsApp:</span> <a href={`https://wa.me/${profile.whatsapp}`} target="_blank" rel="noopener" className="text-neon hover:underline">+{profile.whatsapp}</a></div>
-            <div><span className="text-muted-foreground">Location:</span> {profile.location}</div>
-            <div><span className="text-muted-foreground">Status:</span> <span className="text-neon">{profile.status}</span></div>
+            <div>
+              <span className="text-muted-foreground">Email:</span>{" "}
+              <a href={`mailto:${profile.email}`} className="text-neon hover:underline">
+                {profile.email}
+              </a>
+            </div>
+            <div>
+              <span className="text-muted-foreground">WhatsApp:</span>{" "}
+              <a
+                href={`https://wa.me/${profile.whatsapp}`}
+                target="_blank"
+                rel="noopener"
+                className="text-neon hover:underline"
+              >
+                +{profile.whatsapp}
+              </a>
+            </div>
+            <div>
+              <span className="text-muted-foreground">Location:</span> {profile.location}
+            </div>
+            <div>
+              <span className="text-muted-foreground">Status:</span>{" "}
+              <span className="text-neon">{profile.status}</span>
+            </div>
           </div>
           <div className="mt-5 flex flex-wrap gap-2">
-            <a href={`https://wa.me/${profile.whatsapp}`} target="_blank" rel="noopener" className="inline-flex items-center gap-2 px-4 py-2 bg-neon text-primary-foreground font-mono text-xs rounded-md glow-neon">
+            <a
+              href={`https://wa.me/${profile.whatsapp}`}
+              target="_blank"
+              rel="noopener"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-neon text-primary-foreground font-mono text-xs rounded-md glow-neon"
+            >
               <MessageCircle className="size-4" /> WhatsApp
             </a>
-            <a href={`mailto:${profile.email}`} className="inline-flex items-center gap-2 px-4 py-2 glass border border-neon/40 text-neon font-mono text-xs rounded-md">
+            <a
+              href={`mailto:${profile.email}`}
+              className="inline-flex items-center gap-2 px-4 py-2 glass border border-neon/40 text-neon font-mono text-xs rounded-md"
+            >
               <Mail className="size-4" /> Email
             </a>
           </div>
           <div className="mt-5 flex gap-3 text-muted-foreground">
-            <a href="#" className="hover:text-neon transition"><Github className="size-5" /></a>
-            <a href="#" className="hover:text-neon transition"><Linkedin className="size-5" /></a>
-            <a href="#" className="hover:text-neon transition"><Instagram className="size-5" /></a>
+            <a href="#" className="hover:text-neon transition">
+              <Github className="size-5" />
+            </a>
+            <a href="#" className="hover:text-neon transition">
+              <Linkedin className="size-5" />
+            </a>
+            <a href="#" className="hover:text-neon transition">
+              <Instagram className="size-5" />
+            </a>
           </div>
         </TerminalBox>
 
         <form
-          onSubmit={(e) => { e.preventDefault(); alert("Message form akan tersimpan ke database setelah backend admin aktif."); }}
+          onSubmit={(e) => {
+            e.preventDefault();
+            alert("Message form akan tersimpan ke database setelah backend admin aktif.");
+          }}
           className="glass rounded-2xl p-6 space-y-4 lg:col-start-2"
         >
           <div className="font-mono text-xs text-neon">// send.message</div>
           <div className="grid sm:grid-cols-2 gap-3">
-            <input required placeholder="name" className="bg-surface/60 border border-border rounded-md px-3 py-2.5 text-sm font-mono outline-none focus:border-neon transition" />
-            <input required type="email" placeholder="email" className="bg-surface/60 border border-border rounded-md px-3 py-2.5 text-sm font-mono outline-none focus:border-neon transition" />
+            <input
+              required
+              placeholder="name"
+              className="bg-surface/60 border border-border rounded-md px-3 py-2.5 text-sm font-mono outline-none focus:border-neon transition"
+            />
+            <input
+              required
+              type="email"
+              placeholder="email"
+              className="bg-surface/60 border border-border rounded-md px-3 py-2.5 text-sm font-mono outline-none focus:border-neon transition"
+            />
           </div>
-          <input required placeholder="subject" className="w-full bg-surface/60 border border-border rounded-md px-3 py-2.5 text-sm font-mono outline-none focus:border-neon transition" />
-          <textarea required rows={5} placeholder="message..." className="w-full bg-surface/60 border border-border rounded-md px-3 py-2.5 text-sm font-mono outline-none focus:border-neon transition resize-none" />
-          <button type="submit" className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 bg-neon text-primary-foreground font-mono text-sm font-semibold rounded-md glow-neon hover:scale-[1.02] transition">
+          <input
+            required
+            placeholder="subject"
+            className="w-full bg-surface/60 border border-border rounded-md px-3 py-2.5 text-sm font-mono outline-none focus:border-neon transition"
+          />
+          <textarea
+            required
+            rows={5}
+            placeholder="message..."
+            className="w-full bg-surface/60 border border-border rounded-md px-3 py-2.5 text-sm font-mono outline-none focus:border-neon transition resize-none"
+          />
+          <button
+            type="submit"
+            className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 bg-neon text-primary-foreground font-mono text-sm font-semibold rounded-md glow-neon hover:scale-[1.02] transition"
+          >
             transmit <ArrowRight className="size-4" />
           </button>
         </form>
@@ -594,11 +968,16 @@ function Footer() {
     <footer className="relative border-t border-border mt-20">
       <div className="mx-auto max-w-6xl px-4 py-10 grid md:grid-cols-2 gap-6 items-center font-mono text-xs">
         <div className="text-muted-foreground">
-          © 2026 <span className="text-neon">Jay SZRS</span>. Built with passion, creativity, and technology.
+          © 2026 <span className="text-neon">Jay SZRS</span>. Built with passion, creativity, and
+          technology.
         </div>
         <div className="md:text-right space-y-1 text-muted-foreground">
-          <div>system.status: <span className="text-neon">online</span></div>
-          <div>portfolio.version: <span className="text-neon">1.0.0</span></div>
+          <div>
+            system.status: <span className="text-neon">online</span>
+          </div>
+          <div>
+            portfolio.version: <span className="text-neon">1.0.0</span>
+          </div>
         </div>
       </div>
     </footer>
