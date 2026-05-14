@@ -72,14 +72,18 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
+      { title: "Jay Szrs" },
+      { name: "description", content: "Jay SZRS Digital OS is a modern, interactive, and responsive personal portfolio website." },
       { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { property: "og:title", content: "Jay Szrs" },
+      { property: "og:description", content: "Jay SZRS Digital OS is a modern, interactive, and responsive personal portfolio website." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:title", content: "Jay Szrs" },
+      { name: "twitter:description", content: "Jay SZRS Digital OS is a modern, interactive, and responsive personal portfolio website." },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/okMP9RxHkcSQUol765XhfPQ77Ck2/social-images/social-1778752084186-Screenshot_2026-05-14_164746.webp" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/okMP9RxHkcSQUol765XhfPQ77Ck2/social-images/social-1778752084186-Screenshot_2026-05-14_164746.webp" },
     ],
     links: [
       {
