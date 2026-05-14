@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
 import { MonoMatrixBg } from "@/components/portfolio/MonoMatrixBg";
+import jayWordmark from "@/assets/jay-szrs-wordmark.png";
 import {
   LogOut,
   Upload,
@@ -222,7 +223,15 @@ function AuthForm() {
               secure shell
             </span>
           </div>
-          <h1 className="text-3xl font-black tracking-tight text-neon glow-text">JAY SZRS</h1>
+          <h1 aria-label="JAY SZRS">
+            <img
+              src={jayWordmark}
+              alt="JAY SZRS"
+              width={2173}
+              height={443}
+              className="h-auto w-full max-w-[310px] drop-shadow-[0_0_18px_rgba(255,255,255,0.5)]"
+            />
+          </h1>
           <p className="mt-2 text-xs text-muted-foreground font-mono">
             Login admin: <span className="text-foreground">jayszrs</span> /{" "}
             <span className="text-foreground">SZRS86</span>
