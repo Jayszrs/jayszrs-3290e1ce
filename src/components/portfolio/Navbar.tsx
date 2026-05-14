@@ -13,7 +13,8 @@ export function Navbar() {
       setScrolled(window.scrollY > 30);
       const sections = navItems.map((n) => document.getElementById(n.id)).filter(Boolean) as HTMLElement[];
       const y = window.scrollY + 120;
-      const cur = sections.findLast((s) => s.offsetTop <= y);
+      let cur: HTMLElement | undefined;
+      for (const s of sections) if (s.offsetTop <= y) cur = s;
       if (cur) setActive(cur.id);
     };
     window.addEventListener("scroll", onScroll);
