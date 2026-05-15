@@ -14,8 +14,10 @@ const CONTENT_TABLES = [
   "volunteers",
   "projects",
 ] as const;
+const STORAGE_BUCKETS = ["cv", "certificates", "badges", "gallery", "documents", "avatars"] as const;
 
 type ContentTable = (typeof CONTENT_TABLES)[number];
+type StorageBucket = (typeof STORAGE_BUCKETS)[number];
 type ContentMutationInput = {
   accessToken: string;
   table: ContentTable;
@@ -32,6 +34,13 @@ type ProfileMutationInput = {
   accessToken: string;
   id: string;
   payload: Record<string, unknown>;
+};
+type UploadInput = {
+  accessToken: string;
+  bucket: StorageBucket;
+  path: string;
+  contentType: string;
+  base64: string;
 };
 
 function readContentMutationInput(input: unknown): ContentMutationInput {
@@ -130,6 +139,37 @@ export const mutateAdminProfile = createServerFn({ method: "POST" })
     const { error } = await admin.from("profile_settings").update(payload).eq("id", data.id);
     if (error) throw new Error(error.message);
     return { ok: true };
+  });
+
+export const uploadAdminFile = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown): UploadInput => {
+    const fields = (input && typeof input === "object" ? input : {}) as Record<string, unknown>;
+    const bucket = String(fields.bucket || "");
+
+    return {
+      accessToken: String(fields.accessToken || ""),
+      bucket: STORAGE_BUCKETS.includes(bucket as StorageBucket) ? (bucket as StorageBucket) : "documents",
+      path: String(fields.path || ""),
+      contentType: String(fields.contentType || "application/octet-stream"),
+      base64: String(fields.base64 || ""),
+    };
+  })
+  .handler(async ({ data }) => {
+    if (!data.path || !data.base64) throw new Error("File upload tidak lengkap.");
+    const admin = await assertSeedAdmin(data.accessToken);
+    const bytes = Uint8Array.from(atob(data.base64), (char) => char.charCodeAt(0));
+    const fileBody = new Blob([bytes], { type: data.contentType });
+
+    const { error } = await admin.storage.from(data.bucket).upload(data.path, fileBody, {
+      cacheControl: "3600",
+      contentType: data.contentType,
+      upsert: true,
+    });
+
+    if (error) throw new Error(error.message);
+
+    const { data: publicData } = admin.storage.from(data.bucket).getPublicUrl(data.path);
+    return { publicUrl: publicData.publicUrl };
   });
 
 export const listAdminUsersFallback = createServerFn({ method: "POST" })

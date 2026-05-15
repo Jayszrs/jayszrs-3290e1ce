@@ -13,6 +13,7 @@ import {
   mutateAdminProfile,
   removeAdminUserRoleFallback,
   setAdminUserRoleFallback,
+  uploadAdminFile,
 } from "@/server-functions/admin-content";
 import {
   LogOut,
@@ -688,22 +689,30 @@ function ProfileEditor() {
   };
 
   const uploadCV = async (file: File) => {
-    const path = `cv-${Date.now()}-${file.name}`;
-    const { error } = await supabase.storage.from("cv").upload(path, file, { upsert: true });
-    if (error) return toast.error(error.message);
-    const { data } = supabase.storage.from("cv").getPublicUrl(path);
-    const nextProfile = { ...profile, cv_url: data.publicUrl };
+    const cleanName = file.name.replace(/[^a-zA-Z0-9._-]/g, "-");
+    const path = `cv-${Date.now()}-${cleanName}`;
+    let publicUrl = "";
+
+    try {
+      publicUrl = await uploadFileWithAdminFallback(file, "cv", path);
+    } catch (uploadError) {
+      return toast.error(
+        uploadError instanceof Error ? uploadError.message : "CV upload failed",
+      );
+    }
+
+    const nextProfile = { ...profile, cv_url: publicUrl };
     setProfile(nextProfile);
     const { error: updateError } = await supabase
       .from("profile_settings")
-      .update({ cv_url: data.publicUrl })
+      .update({ cv_url: publicUrl })
       .eq("id", profile.id);
 
     if (updateError) {
       const token = (await supabase.auth.getSession()).data.session?.access_token || "";
       try {
         await mutateAdminProfile({
-          data: { accessToken: token, id: profile.id, payload: { cv_url: data.publicUrl } },
+          data: { accessToken: token, id: profile.id, payload: { cv_url: publicUrl } },
         });
       } catch (fallbackError) {
         return toast.error(
@@ -800,6 +809,47 @@ function Field({
       />
     </div>
   );
+}
+
+async function fileToBase64(file: File) {
+  const buffer = await file.arrayBuffer();
+  const bytes = new Uint8Array(buffer);
+  let binary = "";
+
+  for (let index = 0; index < bytes.length; index += 0x8000) {
+    binary += String.fromCharCode(...bytes.subarray(index, index + 0x8000));
+  }
+
+  return btoa(binary);
+}
+
+async function uploadFileWithAdminFallback(
+  file: File,
+  bucket: MediaField["bucket"] | "cv",
+  path: string,
+) {
+  const direct = await supabase.storage.from(bucket).upload(path, file, {
+    cacheControl: "3600",
+    upsert: true,
+  });
+
+  if (!direct.error) {
+    const { data } = supabase.storage.from(bucket).getPublicUrl(path);
+    return data.publicUrl;
+  }
+
+  const token = (await supabase.auth.getSession()).data.session?.access_token || "";
+  const fallback = await uploadAdminFile({
+    data: {
+      accessToken: token,
+      bucket,
+      path,
+      contentType: file.type || "application/octet-stream",
+      base64: await fileToBase64(file),
+    },
+  });
+
+  return fallback.publicUrl;
 }
 
 function CrudTable({ config }: { config: (typeof TABLES)[number] }) {
@@ -996,13 +1046,18 @@ function MediaFiles({
   const upload = async (file: File, item: MediaField) => {
     const cleanName = file.name.replace(/[^a-zA-Z0-9._-]/g, "-");
     const path = `${tableKey}/${Date.now()}-${cleanName}`;
-    const { error } = await supabase.storage.from(item.bucket).upload(path, file, {
-      cacheControl: "3600",
-      upsert: true,
-    });
-    if (error) return toast.error(error.message);
-    const { data } = supabase.storage.from(item.bucket).getPublicUrl(path);
-    setEditing({ ...editing, [item.name]: data.publicUrl });
+
+    let publicUrl = "";
+
+    try {
+      publicUrl = await uploadFileWithAdminFallback(file, item.bucket, path);
+    } catch (uploadError) {
+      return toast.error(
+        uploadError instanceof Error ? uploadError.message : `${item.label} upload failed`,
+      );
+    }
+
+    setEditing({ ...editing, [item.name]: publicUrl });
     toast.success(`${item.label} uploaded`);
   };
 
