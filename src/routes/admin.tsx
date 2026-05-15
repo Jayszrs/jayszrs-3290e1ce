@@ -7,6 +7,7 @@ import { MonoMatrixBg } from "@/components/portfolio/MonoMatrixBg";
 import { NeonWordmark } from "@/components/portfolio/NeonWordmark";
 import cyberSecurityBg from "@/assets/cyber-security-bg.webp";
 import { bootstrapAdminLogin } from "@/server-functions/admin-bootstrap";
+import { listAdminUsersFallback, mutateAdminContent } from "@/server-functions/admin-content";
 import {
   LogOut,
   Upload,
@@ -473,12 +474,28 @@ function RoleManagement() {
   const [newUserId, setNewUserId] = useState("");
   const [newRole, setNewRole] = useState<AppRole>("user");
   const [busy, setBusy] = useState(false);
+  const [roleError, setRoleError] = useState("");
 
   const load = async () => {
     setBusy(true);
     const { data, error } = await supabase.rpc("admin_list_users");
     setBusy(false);
-    if (error) return toast.error(error.message);
+    if (error) {
+      const token = (await supabase.auth.getSession()).data.session?.access_token || "";
+      try {
+        const fallbackUsers = await listAdminUsersFallback({ data: { accessToken: token } });
+        setRoleError("");
+        setUsers(fallbackUsers || []);
+      } catch {
+        setRoleError(
+          error.message.includes("schema cache")
+            ? "Role Management belum aktif di Supabase live. Apply migration terbaru lalu refresh halaman."
+            : error.message,
+        );
+      }
+      return;
+    }
+    setRoleError("");
     setUsers(data || []);
   };
 
@@ -515,6 +532,12 @@ function RoleManagement() {
           <RefreshCw className="size-3" /> refresh
         </button>
       </div>
+
+      {roleError && (
+        <div className="glass rounded-lg border-destructive/50 p-4 font-mono text-xs text-destructive">
+          {roleError}
+        </div>
+      )}
 
       <div className="glass rounded-lg p-4 grid md:grid-cols-[1fr_auto_auto] gap-3">
         <input
@@ -741,7 +764,27 @@ function CrudTable({ config }: { config: (typeof TABLES)[number] }) {
     const { error } = editing.id
       ? await supabase.from(config.key).update(payload).eq("id", editing.id)
       : await supabase.from(config.key).insert(payload);
-    if (error) return toast.error(error.message);
+
+    if (error) {
+      const token = (await supabase.auth.getSession()).data.session?.access_token || "";
+
+      try {
+        await mutateAdminContent({
+          data: {
+            accessToken: token,
+            table: config.key,
+            action: editing.id ? "update" : "insert",
+            id: editing.id,
+            payload,
+          },
+        });
+      } catch (fallbackError) {
+        return toast.error(
+          fallbackError instanceof Error ? fallbackError.message : error.message,
+        );
+      }
+    }
+
     toast.success("Saved");
     setEditing(null);
     load();
@@ -750,7 +793,21 @@ function CrudTable({ config }: { config: (typeof TABLES)[number] }) {
   const del = async (id: string) => {
     if (!confirm("Delete this entry?")) return;
     const { error } = await supabase.from(config.key).delete().eq("id", id);
-    if (error) return toast.error(error.message);
+
+    if (error) {
+      const token = (await supabase.auth.getSession()).data.session?.access_token || "";
+
+      try {
+        await mutateAdminContent({
+          data: { accessToken: token, table: config.key, action: "delete", id },
+        });
+      } catch (fallbackError) {
+        return toast.error(
+          fallbackError instanceof Error ? fallbackError.message : error.message,
+        );
+      }
+    }
+
     toast.success("Deleted");
     load();
   };
