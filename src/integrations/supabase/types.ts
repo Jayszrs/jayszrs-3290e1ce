@@ -406,7 +406,60 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      profile_public: {
+        Row: {
+          about: string | null
+          availability: string | null
+          branding_name: string | null
+          cv_url: string | null
+          full_name: string | null
+          github_url: string | null
+          id: string | null
+          instagram_url: string | null
+          linkedin_url: string | null
+          location: string | null
+          profile_image_url: string | null
+          subtitle: string | null
+          tiktok_url: string | null
+          typing_texts: string[] | null
+          updated_at: string | null
+        }
+        Insert: {
+          about?: string | null
+          availability?: string | null
+          branding_name?: string | null
+          cv_url?: string | null
+          full_name?: string | null
+          github_url?: string | null
+          id?: string | null
+          instagram_url?: string | null
+          linkedin_url?: string | null
+          location?: string | null
+          profile_image_url?: string | null
+          subtitle?: string | null
+          tiktok_url?: string | null
+          typing_texts?: string[] | null
+          updated_at?: string | null
+        }
+        Update: {
+          about?: string | null
+          availability?: string | null
+          branding_name?: string | null
+          cv_url?: string | null
+          full_name?: string | null
+          github_url?: string | null
+          id?: string | null
+          instagram_url?: string | null
+          linkedin_url?: string | null
+          location?: string | null
+          profile_image_url?: string | null
+          subtitle?: string | null
+          tiktok_url?: string | null
+          typing_texts?: string[] | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       has_role: {
