@@ -22,12 +22,12 @@ export function DetailDialog({
 }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="glass border-foreground/30 max-w-2xl">
+      <DialogContent className="glass border-foreground/30 max-w-2xl rounded-2xl">
         <DialogHeader>
           <div className="font-mono text-xs text-muted-foreground">
             $ cat ./{title.toLowerCase().replace(/\s+/g, "_")}.md
           </div>
-          <DialogTitle className="font-display text-2xl glow-text">{title}</DialogTitle>
+          <DialogTitle className="section-heading font-display text-2xl">{title}</DialogTitle>
           {subtitle && (
             <DialogDescription className="font-mono text-xs">{subtitle}</DialogDescription>
           )}

@@ -34,9 +34,9 @@ export function A11yToggle() {
           setContrast(v);
           apply("a11y-contrast", v);
         }}
-        className={`p-2 rounded-md border font-mono text-xs transition ${
+        className={`glass p-2 rounded-full border font-mono text-xs transition ${
           contrast
-            ? "bg-foreground text-background border-foreground"
+            ? "liquid-toggle-active border-foreground"
             : "border-border text-muted-foreground hover:text-foreground hover:border-foreground/60"
         }`}
       >
@@ -51,9 +51,9 @@ export function A11yToggle() {
           setLarge(v);
           apply("a11y-large", v);
         }}
-        className={`p-2 rounded-md border font-mono text-xs transition ${
+        className={`glass p-2 rounded-full border font-mono text-xs transition ${
           large
-            ? "bg-foreground text-background border-foreground"
+            ? "liquid-toggle-active border-foreground"
             : "border-border text-muted-foreground hover:text-foreground hover:border-foreground/60"
         }`}
       >

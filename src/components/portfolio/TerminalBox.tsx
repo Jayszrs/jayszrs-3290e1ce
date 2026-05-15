@@ -10,8 +10,8 @@ export function TerminalBox({
   className?: string;
 }) {
   return (
-    <div className={`glass rounded-lg overflow-hidden font-mono text-sm ${className}`}>
-      <div className="flex items-center gap-2 px-3 py-2 border-b border-border bg-surface/50">
+    <div className={`glass rounded-2xl overflow-hidden font-mono text-sm ${className}`}>
+      <div className="flex items-center gap-2 px-3 py-2 border-b border-border bg-white/5">
         <span className="size-2.5 rounded-full bg-destructive/70" />
         <span className="size-2.5 rounded-full bg-yellow-500/70" />
         <span className="size-2.5 rounded-full bg-neon/80" />

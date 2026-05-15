@@ -203,7 +203,9 @@ function PortfolioContentProvider({ children }: { children: ReactNode }) {
                 };
                 return {
                   institution: item.institution,
-                  major: item.field_of_study ? `${item.major} - ${item.field_of_study}` : item.major,
+                  major: item.field_of_study
+                    ? `${item.major} - ${item.field_of_study}`
+                    : item.major,
                   period: item.period,
                   description: item.activities
                     ? `${item.description || ""} ${item.activities}`.trim()
@@ -256,18 +258,42 @@ function PortfolioContentProvider({ children }: { children: ReactNode }) {
 }
 
 function Index() {
+  useLiquidGlassEffects();
+
   return (
     <PortfolioContentProvider>
-      <div className="relative min-h-screen overflow-hidden">
+      <div className="liquid-app relative min-h-screen overflow-hidden">
+        <svg aria-hidden="true" className="pointer-events-none fixed size-0">
+          <filter id="liquid-distortion">
+            <feTurbulence
+              type="fractalNoise"
+              baseFrequency="0.012 0.024"
+              numOctaves="2"
+              seed="7"
+              result="noise"
+            />
+            <feDisplacementMap
+              in="SourceGraphic"
+              in2="noise"
+              scale="2"
+              xChannelSelector="R"
+              yChannelSelector="G"
+            />
+          </filter>
+        </svg>
         <img
           src={cyberSecurityBg}
           alt=""
           aria-hidden
-          className="fixed inset-0 z-0 h-screen w-screen object-cover opacity-45"
+          className="liquid-background-image fixed inset-0 z-0 h-screen w-screen object-cover opacity-20"
         />
-        <MonoMatrixBg className="opacity-[0.16]" />
-        <div className="fixed inset-0 z-0 pointer-events-none bg-[radial-gradient(circle_at_50%_0%,rgba(255,255,255,0.13),transparent_35%),linear-gradient(to_bottom,rgba(0,0,0,0.12),rgba(0,0,0,0.88))]" />
-        <div className="fixed inset-0 z-0 scanlines pointer-events-none opacity-20" />
+        <MonoMatrixBg className="opacity-[0.045]" />
+        <div className="liquid-light-field liquid-light-field--one" />
+        <div className="liquid-light-field liquid-light-field--two" />
+        <div className="liquid-light-field liquid-light-field--three" />
+        <div className="liquid-caustics" />
+        <div className="fixed inset-0 z-0 pointer-events-none bg-[linear-gradient(to_bottom,rgba(5,5,8,0.1),rgba(5,5,8,0.72))]" />
+        <div className="fixed inset-0 z-0 scanlines pointer-events-none opacity-10" />
         <Navbar />
         <main className="relative z-10">
           <Hero />
@@ -286,6 +312,46 @@ function Index() {
   );
 }
 
+function useLiquidGlassEffects() {
+  useEffect(() => {
+    let ticking = false;
+
+    const syncScroll = () => {
+      document.documentElement.style.setProperty("--liquid-scroll", `${window.scrollY}px`);
+      ticking = false;
+    };
+
+    const onScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(syncScroll);
+        ticking = true;
+      }
+    };
+
+    const onPointerMove = (event: PointerEvent) => {
+      const target = (event.target as HTMLElement | null)?.closest?.(
+        ".glass",
+      ) as HTMLElement | null;
+      if (!target) return;
+      const rect = target.getBoundingClientRect();
+      const x = ((event.clientX - rect.left) / rect.width) * 100;
+      const y = ((event.clientY - rect.top) / rect.height) * 100;
+      target.style.setProperty("--shine-x", `${Math.max(0, Math.min(100, x))}%`);
+      target.style.setProperty("--shine-y", `${Math.max(0, Math.min(100, y))}%`);
+      target.style.setProperty("--shine-shift", `${(x - 50) * 0.08}px`);
+    };
+
+    syncScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("pointermove", onPointerMove, { passive: true });
+
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("pointermove", onPointerMove);
+    };
+  }, []);
+}
+
 /* ---------- HERO ---------- */
 function Hero() {
   const { profile } = usePortfolioContent();
@@ -301,7 +367,7 @@ function Hero() {
         style={{ opacity }}
         className="relative mx-auto max-w-6xl px-4 grid lg:grid-cols-[1.2fr_1fr] gap-12 items-center"
       >
-        <motion.div style={{ y: yText }} className="space-y-6">
+        <motion.div style={{ y: yText }} className="liquid-hero-copy glass space-y-6">
           <div className="font-mono text-xs text-muted-foreground flex items-center gap-2">
             <span
               className="size-2 rounded-full bg-foreground animate-pulse"
@@ -324,19 +390,19 @@ function Hero() {
           <div className="flex flex-wrap gap-3 pt-2">
             <a
               href="#projects"
-              className="group inline-flex items-center gap-2 px-5 py-3 bg-neon text-primary-foreground font-mono text-sm font-semibold rounded-md glow-neon hover:scale-105 transition"
+              className="liquid-button liquid-button-primary group inline-flex items-center gap-2 px-5 py-3 font-mono text-sm font-semibold rounded-full"
             >
               Explore Portfolio
               <ArrowRight className="size-4 group-hover:translate-x-1 transition" />
             </a>
             <a
               href="#contact"
-              className="inline-flex items-center gap-2 px-5 py-3 glass border border-neon/40 text-neon font-mono text-sm rounded-md hover:bg-neon/10 transition"
+              className="liquid-button inline-flex items-center gap-2 px-5 py-3 glass border border-neon/40 text-neon font-mono text-sm rounded-full"
             >
               <Mail className="size-4" /> Contact Me
             </a>
             <button
-              className="inline-flex items-center gap-2 px-5 py-3 font-mono text-sm text-muted-foreground hover:text-neon transition"
+              className="liquid-button inline-flex items-center gap-2 px-5 py-3 font-mono text-sm text-muted-foreground hover:text-neon transition"
               onClick={() => alert("CV upload tersedia di /admin (next iteration)")}
             >
               <Download className="size-4" /> CV
@@ -366,10 +432,10 @@ function Hero() {
         <motion.div style={{ y: yPhoto }} className="relative mx-auto w-full max-w-sm">
           <div className="absolute -inset-4 rounded-3xl bg-gradient-to-br from-neon/30 via-transparent to-lime/20 blur-2xl" />
           <div className="relative glass rounded-2xl p-3 border border-neon/40">
-            <div className="absolute -top-3 left-4 px-2 py-0.5 bg-background border border-neon/50 rounded font-mono text-[10px] text-neon">
+            <div className="glass-badge absolute -top-3 left-4 px-2 py-0.5 border border-neon/50 rounded-full font-mono text-[10px] text-neon">
               ./profile.jpg
             </div>
-            <div className="absolute -bottom-3 right-4 px-2 py-0.5 bg-background border border-neon/50 rounded font-mono text-[10px] text-neon">
+            <div className="glass-badge absolute -bottom-3 right-4 px-2 py-0.5 border border-neon/50 rounded-full font-mono text-[10px] text-neon">
               200×250 · 1:1.25
             </div>
             <img
@@ -431,7 +497,7 @@ function About() {
             ].map((it) => (
               <div
                 key={it.k}
-                className="flex items-center gap-3 px-4 py-3 rounded-lg bg-surface/60 border border-border"
+                className="glass-badge flex items-center gap-3 px-4 py-3 rounded-full border border-border"
               >
                 <it.icon className="size-4 text-neon shrink-0" />
                 <span className="text-muted-foreground">{it.k}:</span>
@@ -498,7 +564,7 @@ function Experience() {
                   <div className="flex items-center gap-2 font-mono text-xs text-neon">
                     <Calendar className="size-3" /> {e.date}
                     <span
-                      className={`ml-auto px-2 py-0.5 rounded text-[10px] ${e.status === "Active" ? "bg-neon/20 text-neon border border-neon/40" : "bg-muted text-muted-foreground"}`}
+                      className={`glass-badge ml-auto px-2 py-0.5 rounded-full text-[10px] ${e.status === "Active" ? "text-neon border border-neon/40" : "text-muted-foreground"}`}
                     >
                       {e.status}
                     </span>
@@ -597,7 +663,7 @@ function Certification() {
                   href={active.verificationUrl}
                   target="_blank"
                   rel="noopener"
-                  className="mt-2 inline-flex items-center gap-2 px-4 py-2 bg-foreground text-background font-mono text-xs rounded-md hover:opacity-90"
+                  className="liquid-button liquid-button-primary mt-2 inline-flex items-center gap-2 px-4 py-2 font-mono text-xs rounded-full hover:opacity-90"
                 >
                   <ExternalLink className="size-3" /> Verify Certificate
                 </a>
@@ -607,7 +673,7 @@ function Certification() {
                   href={active.certificateUrl}
                   target="_blank"
                   rel="noopener"
-                  className="mt-2 inline-flex items-center gap-2 px-4 py-2 glass border border-neon/40 text-neon font-mono text-xs rounded-md"
+                  className="liquid-button mt-2 inline-flex items-center gap-2 px-4 py-2 glass border border-neon/40 text-neon font-mono text-xs rounded-full"
                 >
                   <Download className="size-3" /> PDF Certificate
                 </a>
@@ -784,7 +850,7 @@ function Projects() {
                 {p.stack.slice(0, 2).map((s) => (
                   <span
                     key={s}
-                    className="font-mono text-[10px] px-2 py-0.5 rounded bg-surface border border-border text-muted-foreground"
+                    className="glass-badge font-mono text-[10px] px-2 py-0.5 rounded-full border border-border text-muted-foreground"
                   >
                     {s}
                   </span>
@@ -812,7 +878,7 @@ function Projects() {
                 {active.stack.map((s) => (
                   <span
                     key={s}
-                    className="font-mono text-[10px] px-2 py-1 rounded border border-border bg-surface text-foreground/90"
+                    className="glass-badge font-mono text-[10px] px-2 py-1 rounded-full border border-border text-foreground/90"
                   >
                     {s}
                   </span>
@@ -859,7 +925,7 @@ function Skills() {
               {items.map((s) => (
                 <span
                   key={s}
-                  className="px-3 py-1.5 rounded-md text-xs font-mono bg-surface border border-border text-foreground/90 hover:border-neon hover:text-neon hover:shadow-[0_0_12px_rgba(57,255,120,0.3)] transition cursor-default"
+                  className="skill-pill px-3 py-1.5 rounded-full text-xs font-mono border border-border text-foreground/90 hover:border-neon hover:text-neon transition cursor-default"
                 >
                   {s}
                 </span>
@@ -918,25 +984,34 @@ function Contact() {
               href={`https://wa.me/${profile.whatsapp}`}
               target="_blank"
               rel="noopener"
-              className="inline-flex items-center gap-2 px-4 py-2 bg-neon text-primary-foreground font-mono text-xs rounded-md glow-neon"
+              className="liquid-button liquid-button-primary inline-flex items-center gap-2 px-4 py-2 font-mono text-xs rounded-full"
             >
               <MessageCircle className="size-4" /> WhatsApp
             </a>
             <a
               href={`mailto:${profile.email}`}
-              className="inline-flex items-center gap-2 px-4 py-2 glass border border-neon/40 text-neon font-mono text-xs rounded-md"
+              className="liquid-button inline-flex items-center gap-2 px-4 py-2 glass border border-neon/40 text-neon font-mono text-xs rounded-full"
             >
               <Mail className="size-4" /> Email
             </a>
           </div>
           <div className="mt-5 flex gap-3 text-muted-foreground">
-            <a href="#" className="hover:text-neon transition">
+            <a
+              href="#"
+              className="glass social-glass inline-flex size-10 items-center justify-center hover:text-neon transition"
+            >
               <Github className="size-5" />
             </a>
-            <a href="#" className="hover:text-neon transition">
+            <a
+              href="#"
+              className="glass social-glass inline-flex size-10 items-center justify-center hover:text-neon transition"
+            >
               <Linkedin className="size-5" />
             </a>
-            <a href="#" className="hover:text-neon transition">
+            <a
+              href="#"
+              className="glass social-glass inline-flex size-10 items-center justify-center hover:text-neon transition"
+            >
               <Instagram className="size-5" />
             </a>
           </div>
@@ -954,29 +1029,29 @@ function Contact() {
             <input
               required
               placeholder="name"
-              className="bg-surface/60 border border-border rounded-md px-3 py-2.5 text-sm font-mono outline-none focus:border-neon transition"
+              className="border border-border rounded-xl px-3 py-2.5 text-sm font-mono outline-none focus:border-neon transition"
             />
             <input
               required
               type="email"
               placeholder="email"
-              className="bg-surface/60 border border-border rounded-md px-3 py-2.5 text-sm font-mono outline-none focus:border-neon transition"
+              className="border border-border rounded-xl px-3 py-2.5 text-sm font-mono outline-none focus:border-neon transition"
             />
           </div>
           <input
             required
             placeholder="subject"
-            className="w-full bg-surface/60 border border-border rounded-md px-3 py-2.5 text-sm font-mono outline-none focus:border-neon transition"
+            className="w-full border border-border rounded-xl px-3 py-2.5 text-sm font-mono outline-none focus:border-neon transition"
           />
           <textarea
             required
             rows={5}
             placeholder="message..."
-            className="w-full bg-surface/60 border border-border rounded-md px-3 py-2.5 text-sm font-mono outline-none focus:border-neon transition resize-none"
+            className="w-full border border-border rounded-xl px-3 py-2.5 text-sm font-mono outline-none focus:border-neon transition resize-none"
           />
           <button
             type="submit"
-            className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 bg-neon text-primary-foreground font-mono text-sm font-semibold rounded-md glow-neon hover:scale-[1.02] transition"
+            className="liquid-button liquid-button-primary w-full inline-flex items-center justify-center gap-2 px-5 py-3 font-mono text-sm font-semibold rounded-full"
           >
             transmit <ArrowRight className="size-4" />
           </button>

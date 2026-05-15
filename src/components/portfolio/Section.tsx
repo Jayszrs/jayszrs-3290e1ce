@@ -24,15 +24,13 @@ export function Section({
           transition={{ duration: 0.6 }}
           className="mb-12"
         >
-          <div className="font-mono text-xs text-muted-foreground mb-2">
+          <div className="section-caption font-mono mb-2">
             <span className="text-neon">$</span> {command}
           </div>
-          <h2 className="font-display text-3xl md:text-5xl font-bold tracking-tight">
-            <span className="text-neon glow-text">#</span> {title}
+          <h2 className="section-heading font-display text-3xl md:text-5xl font-bold tracking-tight">
+            <span>#</span> {title}
           </h2>
-          {description && (
-            <p className="mt-3 text-muted-foreground max-w-2xl">{description}</p>
-          )}
+          {description && <p className="mt-3 text-muted-foreground max-w-2xl">{description}</p>}
         </motion.div>
         {children}
       </div>
