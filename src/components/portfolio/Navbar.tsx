@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, Terminal } from "lucide-react";
 import { navItems } from "@/data/portfolio";
 import { A11yToggle } from "./A11yToggle";
+import { NeonWordmark } from "./NeonWordmark";
 
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -38,8 +39,7 @@ export function Navbar() {
         <div className="flex items-center justify-between h-12">
           <button onClick={() => go("home")} className="flex items-center gap-2 font-mono text-sm group">
             <Terminal className="size-4 text-neon group-hover:rotate-12 transition" />
-            <span className="text-neon glow-text">jay</span>
-            <span className="text-muted-foreground">@szrs</span>
+            <NeonWordmark size="nav" />
             <span className="text-muted-foreground">:~$</span>
           </button>
 

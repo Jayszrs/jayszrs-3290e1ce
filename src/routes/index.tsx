@@ -23,7 +23,6 @@ import {
 } from "lucide-react";
 
 import jayPhoto from "@/assets/jay-profile.jpg";
-import jayWordmark from "@/assets/jay-szrs-wordmark.png";
 import cyberSecurityBg from "@/assets/cyber-security-bg.webp";
 import { Navbar } from "@/components/portfolio/Navbar";
 import { TerminalBox, Prompt } from "@/components/portfolio/TerminalBox";
@@ -31,6 +30,7 @@ import { Section } from "@/components/portfolio/Section";
 import { Typewriter } from "@/components/portfolio/Typewriter";
 import { MonoMatrixBg } from "@/components/portfolio/MonoMatrixBg";
 import { DetailDialog } from "@/components/portfolio/DetailDialog";
+import { NeonWordmark } from "@/components/portfolio/NeonWordmark";
 import { supabase } from "@/integrations/supabase/client";
 import {
   profile as fallbackProfile,
@@ -290,13 +290,7 @@ function Hero() {
           </div>
 
           <h1 className="max-w-[920px]" aria-label="JAY SZRS">
-            <img
-              src={jayWordmark}
-              alt="JAY SZRS"
-              width={2173}
-              height={443}
-              className="h-auto w-full max-w-[92vw] drop-shadow-[0_0_24px_rgba(255,255,255,0.45)]"
-            />
+            <NeonWordmark size="hero" />
           </h1>
 
           <p className="text-muted-foreground text-sm md:text-base font-mono">{profile.role}</p>

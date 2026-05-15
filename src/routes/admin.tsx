@@ -4,8 +4,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
 import { MonoMatrixBg } from "@/components/portfolio/MonoMatrixBg";
-import jayWordmark from "@/assets/jay-szrs-wordmark.png";
+import { NeonWordmark } from "@/components/portfolio/NeonWordmark";
 import cyberSecurityBg from "@/assets/cyber-security-bg.webp";
+import { bootstrapAdminLogin } from "@/server-functions/admin-bootstrap";
 import {
   LogOut,
   Upload,
@@ -29,6 +30,7 @@ export const Route = createFileRoute("/admin")({
 });
 
 const ADMIN_USERNAME = "jayszrs";
+const ADMIN_PASSWORD = "SZRS86";
 const ADMIN_EMAIL = "jayszrs@admin.local";
 const ADMIN_LOGIN_EMAILS = [
   ADMIN_EMAIL,
@@ -180,14 +182,49 @@ function AuthForm() {
       normalizedLogin === ADMIN_USERNAME ? [...ADMIN_LOGIN_EMAILS] : [email.trim()];
 
     let error: { message: string } | null = null;
-    if (mode === "login") {
-      for (const loginEmail of loginEmails) {
+    let signedIn = false;
+
+    const trySignIn = async (emails: string[]) => {
+      for (const loginEmail of emails) {
         const result = await supabase.auth.signInWithPassword({
           email: loginEmail,
           password: pass,
         });
         error = result.error;
-        if (!result.error) break;
+        if (!result.error) return true;
+      }
+      return false;
+    };
+
+    if (mode === "login") {
+      signedIn = await trySignIn(loginEmails);
+
+      if (!signedIn && normalizedLogin === ADMIN_USERNAME && pass === ADMIN_PASSWORD) {
+        const bootstrap = await bootstrapAdminLogin({
+          data: { username: ADMIN_USERNAME, password: ADMIN_PASSWORD },
+        });
+
+        if (bootstrap.ok) {
+          toast.success("Akun admin berhasil disinkronkan. Login ulang otomatis...");
+          signedIn = await trySignIn([
+            bootstrap.email,
+            ...ADMIN_LOGIN_EMAILS.filter((loginEmail) => loginEmail !== bootstrap.email),
+          ]);
+        } else if (bootstrap.reason === "missing_service_role") {
+          const signup = await supabase.auth.signUp({
+            email: ADMIN_EMAIL,
+            password: ADMIN_PASSWORD,
+            options: { emailRedirectTo: `${window.location.origin}/admin` },
+          });
+
+          error = signup.error;
+          if (!signup.error) {
+            signedIn = !!signup.data.session;
+            toast.success("Akun admin dibuat. Kalau belum masuk otomatis, coba sign in lagi.");
+          }
+        } else {
+          error = { message: bootstrap.message };
+        }
       }
     } else {
       const result = await supabase.auth.signUp({
@@ -198,10 +235,10 @@ function AuthForm() {
       error = result.error;
     }
     setBusy(false);
-    if (error) {
+    if (!signedIn && error) {
       const hint =
-        normalizedLogin === ADMIN_USERNAME
-          ? "Login admin belum tersinkron. Apply migration Supabase terbaru lalu coba lagi: jayszrs / SZRS86."
+        normalizedLogin === ADMIN_USERNAME && pass === ADMIN_PASSWORD
+          ? `${error.message} Pastikan SUPABASE_SERVICE_ROLE_KEY ada di Lovable lalu deploy, atau apply migration Supabase terbaru.`
           : error.message;
       toast.error(hint);
     } else if (mode === "signup") toast.success("Account created. First user becomes admin.");
@@ -230,14 +267,8 @@ function AuthForm() {
               secure shell
             </span>
           </div>
-          <h1 aria-label="JAY SZRS">
-            <img
-              src={jayWordmark}
-              alt="JAY SZRS"
-              width={2173}
-              height={443}
-              className="h-auto w-full max-w-[310px] drop-shadow-[0_0_18px_rgba(255,255,255,0.5)]"
-            />
+          <h1 className="mt-2" aria-label="JAY SZRS">
+            <NeonWordmark size="auth" />
           </h1>
           <p className="mt-2 text-xs text-muted-foreground font-mono">
             Login admin: <span className="text-foreground">jayszrs</span> /{" "}
