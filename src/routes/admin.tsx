@@ -424,7 +424,7 @@ function RoleManagement() {
               {
                 user_id: currentUser.id,
                 email: currentUser.email || null,
-                role: isKnownAdminEmail(currentUser.email) ? "admin" : "user",
+                role: "admin",
                 created_at: currentUser.created_at,
                 last_sign_in_at: currentUser.last_sign_in_at || null,
               },
