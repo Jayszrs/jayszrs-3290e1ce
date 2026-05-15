@@ -162,50 +162,71 @@ function PortfolioContentProvider({ children }: { children: ReactNode }) {
             { label: "Volunteer", value: volunteerRes.data?.length || fallbackVolunteers.length },
           ],
           experiences: experienceRes.data?.length
-            ? experienceRes.data.map((item) => ({
-                title: item.title,
-                company: item.company,
-                date: item.duration_months
-                  ? `${item.date_range} (${item.duration_months} bulan)`
-                  : item.date_range,
-                status: item.status,
-                description: item.description || "",
-                category: item.category || item.employment_type || "Work",
-              }))
+            ? experienceRes.data.map((row) => {
+                const item = row as typeof row & {
+                  duration_months?: number | null;
+                  employment_type?: string | null;
+                };
+                return {
+                  title: item.title,
+                  company: item.company,
+                  date: item.duration_months
+                    ? `${item.date_range} (${item.duration_months} bulan)`
+                    : item.date_range,
+                  status: item.status,
+                  description: item.description || "",
+                  category: item.category || item.employment_type || "Work",
+                };
+              })
             : fallbackExperiences,
           certifications: certificationRes.data?.length
-            ? certificationRes.data.map((item) => ({
-                title: item.title,
-                issuer: item.issuer,
-                year: item.year,
-                category: item.category || "Certificate",
-                credentialId: item.credential_id || "",
-                certificateUrl: item.certificate_url || "",
-                badgeUrl: item.badge_url || "",
-                verificationUrl: item.verification_url || "",
-                description: item.description || "",
-              }))
+            ? certificationRes.data.map((row) => {
+                const item = row as typeof row & { credential_id?: string | null };
+                return {
+                  title: item.title,
+                  issuer: item.issuer,
+                  year: item.year,
+                  category: item.category || "Certificate",
+                  credentialId: item.credential_id || "",
+                  certificateUrl: item.certificate_url || "",
+                  badgeUrl: item.badge_url || "",
+                  verificationUrl: item.verification_url || "",
+                  description: item.description || "",
+                };
+              })
             : fallbackCertifications,
           education: educationRes.data?.length
-            ? educationRes.data.map((item) => ({
-                institution: item.institution,
-                major: item.field_of_study ? `${item.major} - ${item.field_of_study}` : item.major,
-                period: item.period,
-                description: item.activities
-                  ? `${item.description || ""} ${item.activities}`.trim()
-                  : item.description || "",
-              }))
+            ? educationRes.data.map((row) => {
+                const item = row as typeof row & {
+                  field_of_study?: string | null;
+                  activities?: string | null;
+                };
+                return {
+                  institution: item.institution,
+                  major: item.field_of_study ? `${item.major} - ${item.field_of_study}` : item.major,
+                  period: item.period,
+                  description: item.activities
+                    ? `${item.description || ""} ${item.activities}`.trim()
+                    : item.description || "",
+                };
+              })
             : fallbackEducation,
           volunteers: volunteerRes.data?.length
-            ? volunteerRes.data.map((item) => ({
-                name: item.name,
-                role: item.role,
-                year: item.duration_months
-                  ? `${item.year} (${item.duration_months} bulan)`
-                  : item.year,
-                category: item.category || item.cause || "Organization",
-                description: item.description || "",
-              }))
+            ? volunteerRes.data.map((row) => {
+                const item = row as typeof row & {
+                  duration_months?: number | null;
+                  cause?: string | null;
+                };
+                return {
+                  name: item.name,
+                  role: item.role,
+                  year: item.duration_months
+                    ? `${item.year} (${item.duration_months} bulan)`
+                    : item.year,
+                  category: item.category || item.cause || "Organization",
+                  description: item.description || "",
+                };
+              })
             : fallbackVolunteers,
           projects: projectRes.data?.length
             ? projectRes.data.map((item) => ({
