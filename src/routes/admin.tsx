@@ -202,7 +202,7 @@ function AdminPage() {
 
 function AuthForm() {
   const [mode, setMode] = useState<"login" | "signup">("login");
-  const [email, setEmail] = useState(ADMIN_USERNAME);
+  const [email, setEmail] = useState("");
   const [pass, setPass] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -210,63 +210,21 @@ function AuthForm() {
     e.preventDefault();
     setBusy(true);
     const normalizedLogin = email.trim().toLowerCase();
-    const loginEmails =
-      normalizedLogin === ADMIN_USERNAME ? [...ADMIN_LOGIN_EMAILS] : [email.trim()];
+    const loginEmail = normalizedLogin === ADMIN_USERNAME_ALIAS ? ADMIN_EMAIL : email.trim();
 
     let error: { message: string } | null = null;
     let signedIn = false;
 
-    const trySignIn = async (emails: string[]) => {
-      for (const loginEmail of emails) {
-        const result = await supabase.auth.signInWithPassword({
-          email: loginEmail,
-          password: pass,
-        });
-        error = result.error;
-        if (!result.error) return true;
-      }
-      return false;
-    };
-
     if (mode === "login") {
-      signedIn = await trySignIn(loginEmails);
-
-      if (signedIn && normalizedLogin === ADMIN_USERNAME && pass === ADMIN_PASSWORD) {
-        await bootstrapAdminLogin({
-          data: { username: ADMIN_USERNAME, password: ADMIN_PASSWORD },
-        });
-      }
-
-      if (!signedIn && normalizedLogin === ADMIN_USERNAME && pass === ADMIN_PASSWORD) {
-        const bootstrap = await bootstrapAdminLogin({
-          data: { username: ADMIN_USERNAME, password: ADMIN_PASSWORD },
-        });
-
-        if (bootstrap.ok) {
-          toast.success("Akun admin berhasil disinkronkan. Login ulang otomatis...");
-          signedIn = await trySignIn([
-            bootstrap.email,
-            ...ADMIN_LOGIN_EMAILS.filter((loginEmail) => loginEmail !== bootstrap.email),
-          ]);
-        } else if (bootstrap.reason === "missing_service_role") {
-          const signup = await supabase.auth.signUp({
-            email: ADMIN_EMAIL,
-            password: ADMIN_PASSWORD,
-            options: { emailRedirectTo: `${window.location.origin}/admin` },
-          });
-
-          error = signup.error;
-          if (!signup.error) {
-            signedIn = !!signup.data.session;
-            toast.success("Akun admin dibuat. Kalau belum masuk otomatis, coba sign in lagi.");
-          }
-        } else {
-          error = { message: bootstrap.message };
-        }
-      }
+      const result = await supabase.auth.signInWithPassword({
+        email: loginEmail,
+        password: pass,
+      });
+      error = result.error;
+      signedIn = !result.error;
     } else {
       const result = await supabase.auth.signUp({
-        email: loginEmails[0],
+        email: loginEmail,
         password: pass,
         options: { emailRedirectTo: `${window.location.origin}/admin` },
       });
@@ -274,11 +232,7 @@ function AuthForm() {
     }
     setBusy(false);
     if (!signedIn && error) {
-      const hint =
-        normalizedLogin === ADMIN_USERNAME && pass === ADMIN_PASSWORD
-          ? `${error.message} Pastikan SUPABASE_SERVICE_ROLE_KEY ada di Lovable lalu deploy, atau apply migration Supabase terbaru.`
-          : error.message;
-      toast.error(hint);
+      toast.error(error.message);
     } else if (mode === "signup") toast.success("Account created. First user becomes admin.");
   };
 
