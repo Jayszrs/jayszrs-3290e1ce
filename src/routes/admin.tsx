@@ -6,7 +6,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { MonoMatrixBg } from "@/components/portfolio/MonoMatrixBg";
 import { NeonWordmark } from "@/components/portfolio/NeonWordmark";
 import cyberSecurityBg from "@/assets/cyber-security-bg.webp";
-import { bootstrapAdminLogin } from "@/server-functions/admin-bootstrap";
+
 import {
   listAdminUsersFallback,
   mutateAdminContent,
