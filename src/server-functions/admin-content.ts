@@ -23,6 +23,11 @@ type ContentMutationInput = {
   id?: string;
   payload?: Record<string, unknown>;
 };
+type RoleMutationInput = {
+  accessToken: string;
+  userId: string;
+  role: "admin" | "user";
+};
 
 function readContentMutationInput(input: unknown): ContentMutationInput {
   const fields = (input && typeof input === "object" ? input : {}) as Record<string, unknown>;
@@ -117,4 +122,47 @@ export const listAdminUsersFallback = createServerFn({ method: "POST" })
       created_at: user.created_at,
       last_sign_in_at: user.last_sign_in_at || null,
     }));
+  });
+
+export const setAdminUserRoleFallback = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown): RoleMutationInput => {
+    const fields = (input && typeof input === "object" ? input : {}) as Record<string, unknown>;
+    const role = fields.role === "admin" ? "admin" : "user";
+
+    return {
+      accessToken: String(fields.accessToken || ""),
+      userId: String(fields.userId || ""),
+      role,
+    };
+  })
+  .handler(async ({ data }) => {
+    if (!data.userId) throw new Error("User ID kosong.");
+    const admin = await assertSeedAdmin(data.accessToken);
+
+    const { error: deleteError } = await admin.from("user_roles").delete().eq("user_id", data.userId);
+    if (deleteError) throw new Error(deleteError.message);
+
+    const { error: insertError } = await admin
+      .from("user_roles")
+      .insert({ user_id: data.userId, role: data.role });
+
+    if (insertError) throw new Error(insertError.message);
+    return { ok: true };
+  });
+
+export const removeAdminUserRoleFallback = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) => {
+    const fields = (input && typeof input === "object" ? input : {}) as Record<string, unknown>;
+    return {
+      accessToken: String(fields.accessToken || ""),
+      userId: String(fields.userId || ""),
+    };
+  })
+  .handler(async ({ data }) => {
+    if (!data.userId) throw new Error("User ID kosong.");
+    const admin = await assertSeedAdmin(data.accessToken);
+    const { error } = await admin.from("user_roles").delete().eq("user_id", data.userId);
+
+    if (error) throw new Error(error.message);
+    return { ok: true };
   });

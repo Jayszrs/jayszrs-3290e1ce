@@ -7,7 +7,12 @@ import { MonoMatrixBg } from "@/components/portfolio/MonoMatrixBg";
 import { NeonWordmark } from "@/components/portfolio/NeonWordmark";
 import cyberSecurityBg from "@/assets/cyber-security-bg.webp";
 import { bootstrapAdminLogin } from "@/server-functions/admin-bootstrap";
-import { listAdminUsersFallback, mutateAdminContent } from "@/server-functions/admin-content";
+import {
+  listAdminUsersFallback,
+  mutateAdminContent,
+  removeAdminUserRoleFallback,
+  setAdminUserRoleFallback,
+} from "@/server-functions/admin-content";
 import {
   LogOut,
   Upload,
@@ -478,25 +483,38 @@ function RoleManagement() {
 
   const load = async () => {
     setBusy(true);
-    const { data, error } = await supabase.rpc("admin_list_users");
-    setBusy(false);
-    if (error) {
-      const token = (await supabase.auth.getSession()).data.session?.access_token || "";
-      try {
-        const fallbackUsers = await listAdminUsersFallback({ data: { accessToken: token } });
-        setRoleError("");
-        setUsers(fallbackUsers || []);
-      } catch {
-        setRoleError(
-          error.message.includes("schema cache")
-            ? "Role Management belum aktif di Supabase live. Apply migration terbaru lalu refresh halaman."
-            : error.message,
-        );
-      }
-      return;
+    const { data: sessionData } = await supabase.auth.getSession();
+    const session = sessionData.session;
+
+    try {
+      const fallbackUsers = await listAdminUsersFallback({
+        data: { accessToken: session?.access_token || "" },
+      });
+      setRoleError("");
+      setUsers(fallbackUsers || []);
+    } catch (error) {
+      const currentUser = session?.user;
+      setUsers(
+        currentUser
+          ? [
+              {
+                user_id: currentUser.id,
+                email: currentUser.email || null,
+                role: isKnownAdminEmail(currentUser.email) ? "admin" : "user",
+                created_at: currentUser.created_at,
+                last_sign_in_at: currentUser.last_sign_in_at || null,
+              },
+            ]
+          : [],
+      );
+      setRoleError(
+        error instanceof Error
+          ? `${error.message} Tambahkan SUPABASE_SERVICE_ROLE_KEY di environment Lovable supaya semua user terdaftar bisa tampil.`
+          : "Role Management belum bisa membaca semua user.",
+      );
+    } finally {
+      setBusy(false);
     }
-    setRoleError("");
-    setUsers(data || []);
   };
 
   useEffect(() => {
@@ -504,18 +522,28 @@ function RoleManagement() {
   }, []);
 
   const setRole = async (userId: string, role: AppRole) => {
-    const { error } = await supabase.rpc("admin_set_user_role", { _user_id: userId, _role: role });
-    if (error) return toast.error(error.message);
-    toast.success("Role updated");
-    load();
+    const token = (await supabase.auth.getSession()).data.session?.access_token || "";
+
+    try {
+      await setAdminUserRoleFallback({ data: { accessToken: token, userId, role } });
+      toast.success("Role updated");
+      load();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Role update failed");
+    }
   };
 
   const removeRole = async (userId: string) => {
     if (!confirm("Remove this user's role?")) return;
-    const { error } = await supabase.rpc("admin_remove_user_role", { _user_id: userId });
-    if (error) return toast.error(error.message);
-    toast.success("Role removed");
-    load();
+    const token = (await supabase.auth.getSession()).data.session?.access_token || "";
+
+    try {
+      await removeAdminUserRoleFallback({ data: { accessToken: token, userId } });
+      toast.success("Role removed");
+      load();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Role remove failed");
+    }
   };
 
   return (
