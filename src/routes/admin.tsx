@@ -263,8 +263,7 @@ function AuthForm() {
             <NeonWordmark size="auth" />
           </h1>
           <p className="mt-2 text-xs text-muted-foreground font-mono">
-            Login admin: <span className="text-foreground">jayszrs</span> /{" "}
-            <span className="text-foreground">SZRS86</span>
+            Sign in dengan email & password admin yang sudah terdaftar.
           </p>
           <div className="mt-6 space-y-4">
             <input
