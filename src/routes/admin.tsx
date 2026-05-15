@@ -366,7 +366,10 @@ function Dashboard() {
       <Toaster position="top-center" />
       <div className="relative z-10 flex min-h-screen">
         <aside className="w-64 glass border-r border-border min-h-screen p-4 hidden md:block">
-          <div className="font-mono text-xs text-neon mb-6">$ admin@jay-szrs</div>
+          <div className="mb-6 flex items-center gap-2 font-mono text-xs">
+            <span className="text-muted-foreground">$</span>
+            <NeonWordmark size="nav" text="admin@jay-szrs" />
+          </div>
           <nav className="space-y-1 text-sm">
             <NavBtn id="overview" tab={tab} setTab={setTab} icon={HomeIcon} label="Overview" />
             <NavBtn

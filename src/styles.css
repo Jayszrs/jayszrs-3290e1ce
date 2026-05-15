@@ -173,78 +173,62 @@
   }
   .neon-wordmark {
     position: relative;
-    display: inline-grid;
-    width: min-content;
+    display: inline-flex;
     max-width: 100%;
     color: #fff;
-    font-family: var(--font-display);
-    font-weight: 900;
+    font-family: var(--font-mono);
+    font-weight: 700;
     letter-spacing: 0;
-    line-height: 0.9;
+    line-height: 1;
     text-transform: uppercase;
     isolation: isolate;
-    filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.45));
+    filter: drop-shadow(0 0 7px rgba(255, 255, 255, 0.34));
   }
   .neon-wordmark--hero {
-    font-size: 4rem;
+    font-size: 2.9rem;
   }
   .neon-wordmark--auth {
-    font-size: 3.2rem;
+    font-size: 2.15rem;
   }
   .neon-wordmark--nav {
-    font-size: 0.95rem;
+    font-size: 0.82rem;
     line-height: 1;
-    filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.36));
+    filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.28));
   }
   .neon-wordmark__text {
     position: relative;
     display: inline-block;
+    max-width: 100%;
+    overflow: hidden;
     white-space: nowrap;
-    color: #f8fbff;
+    border-right: 0.08em solid rgba(255, 255, 255, 0.9);
+    color: #f7fbff;
     text-shadow:
       0 0 2px #fff,
-      0 0 10px rgba(255, 255, 255, 0.92),
-      0 0 26px rgba(185, 230, 255, 0.54),
-      0 0 48px rgba(118, 200, 255, 0.28);
-    animation: neon-wordmark-breathe 3.8s ease-in-out infinite;
-  }
-  .neon-wordmark__text::before,
-  .neon-wordmark__text::after {
-    content: attr(data-text);
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    pointer-events: none;
-  }
-  .neon-wordmark__text::before {
-    color: rgba(142, 220, 255, 0.42);
-    transform: translate(0.035em, 0.025em);
-    filter: blur(0.018em);
-    animation: neon-wordmark-glitch 4.6s steps(1) infinite;
-  }
-  .neon-wordmark__text::after {
-    color: rgba(255, 255, 255, 0.34);
-    transform: translate(-0.025em, -0.02em);
-    filter: blur(0.035em);
-    animation: neon-wordmark-flicker 5.2s linear infinite;
+      0 0 8px rgba(255, 255, 255, 0.76),
+      0 0 18px rgba(160, 224, 255, 0.34);
+    animation:
+      neon-wordmark-type 1.45s steps(var(--wordmark-characters), end) 0.15s both,
+      neon-wordmark-caret 0.82s step-end infinite,
+      neon-wordmark-idle 3.4s ease-in-out 1.7s infinite;
   }
   .neon-wordmark--nav .neon-wordmark__text {
     text-shadow:
       0 0 2px #fff,
-      0 0 8px rgba(255, 255, 255, 0.78),
-      0 0 18px rgba(185, 230, 255, 0.3);
+      0 0 6px rgba(255, 255, 255, 0.62),
+      0 0 12px rgba(160, 224, 255, 0.24);
   }
   @media (min-width: 640px) {
     .neon-wordmark--hero {
-      font-size: 6.4rem;
+      font-size: 4rem;
     }
     .neon-wordmark--auth {
-      font-size: 4.2rem;
+      font-size: 2.65rem;
     }
   }
   @media (min-width: 1024px) {
     .neon-wordmark--hero {
-      font-size: 8.8rem;
+      font-size: 5.3rem;
     }
   }
 }
@@ -268,55 +252,21 @@
   100% { transform: translateY(100vh); }
 }
 
-@keyframes neon-wordmark-breathe {
-  0%, 100% {
-    opacity: 0.92;
-    transform: translateY(0);
-  }
-  48% {
-    opacity: 1;
-    transform: translateY(-0.015em);
-  }
-  50% {
-    opacity: 0.78;
-  }
-  52% {
-    opacity: 1;
-  }
+@keyframes neon-wordmark-type {
+  from { width: 0; }
+  to { width: calc(var(--wordmark-characters) * 1ch); }
 }
 
-@keyframes neon-wordmark-flicker {
-  0%, 8%, 10%, 12%, 62%, 64%, 100% {
-    opacity: 0.92;
-  }
-  9%, 63% {
-    opacity: 0.28;
-  }
-  11% {
-    opacity: 0.55;
-  }
+@keyframes neon-wordmark-caret {
+  0%, 100% { border-color: rgba(255, 255, 255, 0.9); }
+  50% { border-color: transparent; }
 }
 
-@keyframes neon-wordmark-glitch {
-  0%, 76%, 100% {
-    clip-path: inset(0 0 0 0);
-    opacity: 0.45;
-    transform: translate(0.035em, 0.025em);
-  }
-  77% {
-    clip-path: inset(12% 0 62% 0);
-    opacity: 0.85;
-    transform: translate(0.07em, -0.01em);
-  }
-  78% {
-    clip-path: inset(58% 0 16% 0);
-    transform: translate(-0.04em, 0.02em);
-  }
-  79% {
-    clip-path: inset(0 0 0 0);
-    opacity: 0.35;
-    transform: translate(0.035em, 0.025em);
-  }
+@keyframes neon-wordmark-idle {
+  0%, 100% { opacity: 0.9; }
+  48% { opacity: 1; }
+  50% { opacity: 0.72; }
+  52% { opacity: 1; }
 }
 
 /* ---- Accessibility modes ---- */
