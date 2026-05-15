@@ -37,19 +37,8 @@ export const Route = createFileRoute("/admin")({
   component: AdminPage,
 });
 
-const ADMIN_USERNAME = "jayszrs";
-const ADMIN_PASSWORD = "SZRS86";
+const ADMIN_USERNAME_ALIAS = "jayszrs";
 const ADMIN_EMAIL = "jayszrs@admin.local";
-const ADMIN_LOGIN_EMAILS = [
-  ADMIN_EMAIL,
-  "jaelanisuryasaputra@gmail.com",
-  "jaelanisurya.akademicrypto@gmail.com",
-] as const;
-
-function isKnownAdminEmail(email?: string | null) {
-  const normalizedEmail = email?.trim().toLowerCase();
-  return !!normalizedEmail && ADMIN_LOGIN_EMAILS.includes(normalizedEmail as (typeof ADMIN_LOGIN_EMAILS)[number]);
-}
 
 type AppRole = "admin" | "user";
 type AdminUserRow = {
