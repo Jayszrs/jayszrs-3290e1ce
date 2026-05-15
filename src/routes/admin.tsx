@@ -51,6 +51,12 @@ type AdminUserRow = {
   created_at: string;
   last_sign_in_at: string | null;
 };
+type MediaField = {
+  name: string;
+  label: string;
+  bucket: "certificates" | "badges" | "gallery" | "documents";
+  accept: string;
+};
 
 const TABLES = [
   {
@@ -65,6 +71,10 @@ const TABLES = [
       { name: "credential_id", label: "Credential Certificate" },
       { name: "verification_url", label: "Credential URL" },
       { name: "description", label: "Deskripsi", type: "textarea" },
+    ],
+    media: [
+      { name: "certificate_url", label: "PDF / Image Certificate", bucket: "certificates", accept: ".pdf,.jpg,.jpeg,.png" },
+      { name: "badge_url", label: "Badge Certificate", bucket: "badges", accept: ".jpg,.jpeg,.png" },
     ],
   },
   {
@@ -83,6 +93,10 @@ const TABLES = [
       { name: "category", label: "Kategori" },
       { name: "description", label: "Deskripsi ngerjain apa aja", type: "textarea" },
     ],
+    media: [
+      { name: "image_url", label: "Foto / Screenshot Work", bucket: "gallery", accept: ".jpg,.jpeg,.png" },
+      { name: "document_url", label: "Dokumentasi Work PDF", bucket: "documents", accept: ".pdf,.jpg,.jpeg,.png" },
+    ],
   },
   {
     key: "education",
@@ -97,6 +111,10 @@ const TABLES = [
       { name: "activities", label: "Activities and societies", type: "textarea" },
       { name: "description", label: "Deskripsi", type: "textarea" },
     ],
+    media: [
+      { name: "logo_url", label: "Logo / Foto Sekolah", bucket: "gallery", accept: ".jpg,.jpeg,.png" },
+      { name: "document_url", label: "Dokumentasi Education PDF", bucket: "documents", accept: ".pdf,.jpg,.jpeg,.png" },
+    ],
   },
   {
     key: "volunteers",
@@ -110,6 +128,10 @@ const TABLES = [
       { name: "duration_months", label: "Durasi (bulan)", type: "number" },
       { name: "description", label: "Deskripsi kontribusi", type: "textarea" },
     ],
+    media: [
+      { name: "image_url", label: "Foto Volunteer", bucket: "gallery", accept: ".jpg,.jpeg,.png" },
+      { name: "document_url", label: "Dokumentasi Volunteer PDF", bucket: "documents", accept: ".pdf,.jpg,.jpeg,.png" },
+    ],
   },
   {
     key: "projects",
@@ -122,6 +144,10 @@ const TABLES = [
       { name: "description", label: "Description", type: "textarea" },
       { name: "demo_url", label: "Demo URL" },
       { name: "github_url", label: "GitHub URL" },
+    ],
+    media: [
+      { name: "thumbnail_url", label: "Thumbnail Project", bucket: "gallery", accept: ".jpg,.jpeg,.png" },
+      { name: "documentation_url", label: "Dokumentasi Project PDF", bucket: "documents", accept: ".pdf,.jpg,.jpeg,.png" },
     ],
   },
 ] as const;
@@ -810,8 +836,13 @@ function CrudTable({ config }: { config: (typeof TABLES)[number] }) {
                 </div>
               );
             })}
-            {config.key === "certifications" && (
-              <CertFiles editing={editing} setEditing={setEditing} />
+            {"media" in config && (
+              <MediaFiles
+                tableKey={config.key}
+                media={config.media as readonly MediaField[]}
+                editing={editing}
+                setEditing={setEditing}
+              />
             )}
             <div className="flex gap-2 pt-2">
               <button
@@ -834,43 +865,74 @@ function CrudTable({ config }: { config: (typeof TABLES)[number] }) {
   );
 }
 
-function CertFiles({ editing, setEditing }: any) {
-  const upload = async (
-    file: File,
-    bucket: "certificates" | "badges",
-    field: "certificate_url" | "badge_url",
-  ) => {
-    const path = `${Date.now()}-${file.name}`;
-    const { error } = await supabase.storage.from(bucket).upload(path, file);
+function MediaFiles({
+  tableKey,
+  media,
+  editing,
+  setEditing,
+}: {
+  tableKey: string;
+  media: readonly MediaField[];
+  editing: any;
+  setEditing: (value: any) => void;
+}) {
+  const upload = async (file: File, item: MediaField) => {
+    const cleanName = file.name.replace(/[^a-zA-Z0-9._-]/g, "-");
+    const path = `${tableKey}/${Date.now()}-${cleanName}`;
+    const { error } = await supabase.storage.from(item.bucket).upload(path, file, {
+      cacheControl: "3600",
+      upsert: true,
+    });
     if (error) return toast.error(error.message);
-    const { data } = supabase.storage.from(bucket).getPublicUrl(path);
-    setEditing({ ...editing, [field]: data.publicUrl });
-    toast.success(`${bucket} uploaded`);
+    const { data } = supabase.storage.from(item.bucket).getPublicUrl(path);
+    setEditing({ ...editing, [item.name]: data.publicUrl });
+    toast.success(`${item.label} uploaded`);
   };
+
   return (
-    <div className="grid sm:grid-cols-2 gap-2">
-      <label className="glass rounded p-3 text-xs font-mono cursor-pointer text-center hover:border-neon">
-        PDF Certificate
-        {editing.certificate_url && <span className="block mt-1 text-neon truncate">uploaded</span>}
-        <input
-          hidden
-          type="file"
-          accept=".pdf,image/*"
-          onChange={(e) =>
-            e.target.files?.[0] && upload(e.target.files[0], "certificates", "certificate_url")
-          }
-        />
-      </label>
-      <label className="glass rounded p-3 text-xs font-mono cursor-pointer text-center hover:border-neon">
-        Badge Certificate
-        {editing.badge_url && <span className="block mt-1 text-neon truncate">uploaded</span>}
-        <input
-          hidden
-          type="file"
-          accept="image/*"
-          onChange={(e) => e.target.files?.[0] && upload(e.target.files[0], "badges", "badge_url")}
-        />
-      </label>
+    <div className="space-y-2">
+      <div className="font-mono text-xs text-neon">// media upload</div>
+      <div className="grid sm:grid-cols-2 gap-2">
+        {media.map((item) => {
+          const value = editing[item.name] || "";
+          const isImage = /\.(png|jpe?g|webp|gif)$/i.test(value);
+
+          return (
+            <div key={item.name} className="glass rounded p-3 text-xs font-mono">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-muted-foreground">{item.label}</span>
+                {value && (
+                  <a
+                    href={value}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-neon underline"
+                  >
+                    open
+                  </a>
+                )}
+              </div>
+              {isImage && (
+                <img
+                  src={value}
+                  alt=""
+                  className="mt-2 h-24 w-full rounded border border-border object-cover"
+                />
+              )}
+              {value && !isImage && <div className="mt-2 truncate text-neon">file uploaded</div>}
+              <label className="mt-3 inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded border border-border px-3 py-2 text-center hover:border-neon hover:text-neon">
+                <Upload className="size-3" /> upload PDF/JPG/PNG
+                <input
+                  hidden
+                  type="file"
+                  accept={item.accept}
+                  onChange={(e) => e.target.files?.[0] && upload(e.target.files[0], item)}
+                />
+              </label>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
