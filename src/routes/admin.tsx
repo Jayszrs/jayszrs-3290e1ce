@@ -37,6 +37,12 @@ const ADMIN_LOGIN_EMAILS = [
   "jaelanisuryasaputra@gmail.com",
   "jaelanisurya.akademicrypto@gmail.com",
 ] as const;
+
+function isKnownAdminEmail(email?: string | null) {
+  const normalizedEmail = email?.trim().toLowerCase();
+  return !!normalizedEmail && ADMIN_LOGIN_EMAILS.includes(normalizedEmail as (typeof ADMIN_LOGIN_EMAILS)[number]);
+}
+
 type AppRole = "admin" | "user";
 type AdminUserRow = {
   user_id: string;
@@ -128,24 +134,47 @@ function AdminPage() {
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => {
       setSession(s);
-      if (s) checkRole(s.user.id);
+      if (s) checkRole(s);
     });
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session);
-      if (data.session) checkRole(data.session.user.id);
+      if (data.session) checkRole(data.session);
       else setLoading(false);
     });
     return () => sub.subscription.unsubscribe();
   }, []);
 
-  const checkRole = async (uid: string) => {
+  const checkRole = async (currentSession: NonNullable<typeof session>) => {
+    const uid = currentSession.user.id;
+    const knownAdminEmail = isKnownAdminEmail(currentSession.user.email);
+
     const { data } = await supabase
       .from("user_roles")
       .select("role")
       .eq("user_id", uid)
       .eq("role", "admin")
       .maybeSingle();
-    setIsAdmin(!!data);
+
+    if (data || knownAdminEmail) {
+      setIsAdmin(true);
+      setLoading(false);
+
+      if (!data && knownAdminEmail) {
+        await supabase
+          .from("user_roles")
+          .insert({ user_id: uid, role: "admin" })
+          .select("role")
+          .maybeSingle();
+
+        await bootstrapAdminLogin({
+          data: { username: ADMIN_USERNAME, password: ADMIN_PASSWORD },
+        });
+      }
+
+      return;
+    }
+
+    setIsAdmin(false);
     setLoading(false);
   };
 
@@ -198,6 +227,12 @@ function AuthForm() {
 
     if (mode === "login") {
       signedIn = await trySignIn(loginEmails);
+
+      if (signedIn && normalizedLogin === ADMIN_USERNAME && pass === ADMIN_PASSWORD) {
+        await bootstrapAdminLogin({
+          data: { username: ADMIN_USERNAME, password: ADMIN_PASSWORD },
+        });
+      }
 
       if (!signedIn && normalizedLogin === ADMIN_USERNAME && pass === ADMIN_PASSWORD) {
         const bootstrap = await bootstrapAdminLogin({
