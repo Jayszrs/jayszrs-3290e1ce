@@ -169,7 +169,6 @@ function AdminPage() {
 
   const checkRole = async (currentSession: NonNullable<typeof session>) => {
     const uid = currentSession.user.id;
-    const knownAdminEmail = isKnownAdminEmail(currentSession.user.email);
 
     const { data } = await supabase
       .from("user_roles")
@@ -178,26 +177,7 @@ function AdminPage() {
       .eq("role", "admin")
       .maybeSingle();
 
-    if (data || knownAdminEmail) {
-      setIsAdmin(true);
-      setLoading(false);
-
-      if (!data && knownAdminEmail) {
-        await supabase
-          .from("user_roles")
-          .insert({ user_id: uid, role: "admin" })
-          .select("role")
-          .maybeSingle();
-
-        await bootstrapAdminLogin({
-          data: { username: ADMIN_USERNAME, password: ADMIN_PASSWORD },
-        });
-      }
-
-      return;
-    }
-
-    setIsAdmin(false);
+    setIsAdmin(!!data);
     setLoading(false);
   };
 
