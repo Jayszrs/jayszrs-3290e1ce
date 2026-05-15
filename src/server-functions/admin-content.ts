@@ -28,6 +28,11 @@ type RoleMutationInput = {
   userId: string;
   role: "admin" | "user";
 };
+type ProfileMutationInput = {
+  accessToken: string;
+  id: string;
+  payload: Record<string, unknown>;
+};
 
 function readContentMutationInput(input: unknown): ContentMutationInput {
   const fields = (input && typeof input === "object" ? input : {}) as Record<string, unknown>;
@@ -97,6 +102,32 @@ export const mutateAdminContent = createServerFn({ method: "POST" })
     }
 
     const { error } = await admin.from(data.table).insert(data.payload);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+export const mutateAdminProfile = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown): ProfileMutationInput => {
+    const fields = (input && typeof input === "object" ? input : {}) as Record<string, unknown>;
+
+    return {
+      accessToken: String(fields.accessToken || ""),
+      id: String(fields.id || ""),
+      payload:
+        fields.payload && typeof fields.payload === "object"
+          ? (fields.payload as Record<string, unknown>)
+          : {},
+    };
+  })
+  .handler(async ({ data }) => {
+    if (!data.id) throw new Error("ID profile tidak ditemukan.");
+    const admin = await assertSeedAdmin(data.accessToken);
+    const payload = { ...data.payload };
+
+    delete payload.id;
+    delete payload.updated_at;
+
+    const { error } = await admin.from("profile_settings").update(payload).eq("id", data.id);
     if (error) throw new Error(error.message);
     return { ok: true };
   });

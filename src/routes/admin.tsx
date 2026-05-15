@@ -10,6 +10,7 @@ import { bootstrapAdminLogin } from "@/server-functions/admin-bootstrap";
 import {
   listAdminUsersFallback,
   mutateAdminContent,
+  mutateAdminProfile,
   removeAdminUserRoleFallback,
   setAdminUserRoleFallback,
 } from "@/server-functions/admin-content";
@@ -668,8 +669,22 @@ function ProfileEditor() {
     setBusy(true);
     const { error } = await supabase.from("profile_settings").update(profile).eq("id", profile.id);
     setBusy(false);
-    if (error) toast.error(error.message);
-    else toast.success("Profile updated");
+
+    if (error) {
+      const token = (await supabase.auth.getSession()).data.session?.access_token || "";
+
+      try {
+        await mutateAdminProfile({
+          data: { accessToken: token, id: profile.id, payload: profile },
+        });
+      } catch (fallbackError) {
+        return toast.error(
+          fallbackError instanceof Error ? fallbackError.message : error.message,
+        );
+      }
+    }
+
+    toast.success("Profile updated");
   };
 
   const uploadCV = async (file: File) => {
@@ -677,8 +692,25 @@ function ProfileEditor() {
     const { error } = await supabase.storage.from("cv").upload(path, file, { upsert: true });
     if (error) return toast.error(error.message);
     const { data } = supabase.storage.from("cv").getPublicUrl(path);
-    setProfile({ ...profile, cv_url: data.publicUrl });
-    await supabase.from("profile_settings").update({ cv_url: data.publicUrl }).eq("id", profile.id);
+    const nextProfile = { ...profile, cv_url: data.publicUrl };
+    setProfile(nextProfile);
+    const { error: updateError } = await supabase
+      .from("profile_settings")
+      .update({ cv_url: data.publicUrl })
+      .eq("id", profile.id);
+
+    if (updateError) {
+      const token = (await supabase.auth.getSession()).data.session?.access_token || "";
+      try {
+        await mutateAdminProfile({
+          data: { accessToken: token, id: profile.id, payload: { cv_url: data.publicUrl } },
+        });
+      } catch (fallbackError) {
+        return toast.error(
+          fallbackError instanceof Error ? fallbackError.message : updateError.message,
+        );
+      }
+    }
     toast.success("CV uploaded — Download CV button now serves this file");
   };
 
