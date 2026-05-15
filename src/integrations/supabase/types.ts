@@ -225,7 +225,7 @@ export type Database = {
           availability?: string
           branding_name?: string
           cv_url?: string | null
-          email?: string
+          email: string
           full_name?: string
           github_url?: string | null
           id?: string
@@ -237,7 +237,7 @@ export type Database = {
           tiktok_url?: string | null
           typing_texts?: string[]
           updated_at?: string
-          whatsapp?: string
+          whatsapp: string
         }
         Update: {
           about?: string
