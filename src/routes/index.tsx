@@ -137,13 +137,13 @@ function PortfolioContentProvider({ children }: { children: ReactNode }) {
           profile: profileRow
             ? {
                 ...fallbackProfile,
-                name: profileRow.branding_name,
-                fullName: profileRow.full_name,
-                role: profileRow.subtitle,
+                name: profileRow.branding_name ?? fallbackProfile.name,
+                fullName: profileRow.full_name ?? fallbackProfile.fullName,
+                role: profileRow.subtitle ?? fallbackProfile.role,
                 email: fallbackProfile.email,
                 whatsapp: fallbackProfile.whatsapp,
-                location: profileRow.location,
-                status: profileRow.availability,
+                location: profileRow.location ?? fallbackProfile.location,
+                status: profileRow.availability ?? fallbackProfile.status,
                 typing: profileRow.typing_texts?.length
                   ? profileRow.typing_texts
                   : fallbackProfile.typing,
