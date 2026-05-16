@@ -49,9 +49,8 @@ export function Navbar() {
       animate={{ y: 0, opacity: 1 }}
       className={`liquid-navbar-shell ${collapsed ? "is-collapsed" : ""}`}
     >
-      {/* Menambahkan utility 'mx-auto w-fit' agar kontainer menciut pas sesuai konten */}
-      <div className="liquid-navbar glass rounded-full transition-all mx-auto w-fit">
-        {/* Mengubah 'justify-between' menjadi 'justify-center' dengan gap yang presisi */}
+      <div className="liquid-navbar glass rounded-full transition-all">
+        {/* Menggunakan justify-center dan gap konstan agar semuanya mengumpul rapi di tengah */}
         <div className="flex items-center justify-center gap-4 sm:gap-6 lg:gap-8 h-12">
           <button
             onClick={() => go("home")}

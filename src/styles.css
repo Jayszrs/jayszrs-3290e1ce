@@ -507,6 +507,7 @@
       inset 0 1px 0 rgba(255, 200, 120, 0.4);
   }
 
+  /* FIX TOTAL: Menambahkan Flexbox Alignment agar pembungkus navbar mendorong isinya ke tengah */
   .liquid-navbar-shell {
     position: fixed;
     top: 16px;
@@ -515,6 +516,8 @@
     width: min(1120px, calc(100vw - 32px));
     max-width: calc(100vw - 32px);
     transform: translateX(-50%);
+    display: flex;
+    justify-content: center;
     transition:
       transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
       top 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -524,7 +527,6 @@
     transform: translateX(-50%) scale(0.97);
   }
 
-  /* PERUBAHAN UTAMA: Mengubah width ke max-content agar navbar pas & berada di tengah halaman */
   .liquid-navbar {
     width: max-content;
     max-width: 100%;
@@ -536,11 +538,12 @@
   }
 
   .liquid-navbar > div {
+    display: flex;
+    align-items: center;
     justify-content: center;
     gap: 20px;
   }
 
-  /* Menghapus flex:1 agar item navigasi tidak memisahkan diri ke samping luar */
   .liquid-navbar nav {
     display: flex;
     align-items: center;
@@ -2049,10 +2052,14 @@ input.is-success {
     inset: -20%;
   }
 
+  /* FIX ACCURACY: Responsif di perangkat mobile juga ikut dipaksa ke tengah */
   .liquid-navbar-shell {
     width: min(680px, calc(100vw - 24px));
+    max-width: calc(100vw - 24px);
     top: auto;
     bottom: 16px;
+    display: flex;
+    justify-content: center;
   }
 
   .liquid-navbar-shell.is-collapsed {
@@ -2060,7 +2067,8 @@ input.is-success {
   }
 
   .liquid-navbar {
-    max-width: calc(100vw - 24px);
+    width: max-content;
+    max-width: 100%;
     padding: 8px 14px;
     -webkit-backdrop-filter: blur(30px) saturate(170%);
     backdrop-filter: blur(30px) saturate(170%);
@@ -2069,7 +2077,8 @@ input.is-success {
   .liquid-mobile-menu {
     top: auto;
     bottom: calc(100% + 0.75rem);
-    right: 0;
+    right: 50%;
+    transform: translateX(50%);
   }
 
   .flip-card-shell {
