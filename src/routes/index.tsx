@@ -325,7 +325,7 @@ function Index() {
         <div className="fixed inset-0 z-0 pointer-events-none bg-[linear-gradient(to_bottom,rgba(5,5,8,0.1),rgba(5,5,8,0.72))]" />
         <div className="fixed inset-0 z-0 scanlines pointer-events-none opacity-10" />
         <Navbar />
-        <main className="relative z-10">
+        <div className="relative z-10">
           <Hero />
           <Lanyard />
           <About />
@@ -337,7 +337,7 @@ function Index() {
           <Skills />
           <Contact />
           <Footer />
-        </main>
+        </div>
         <BackToTop />
       </div>
     </PortfolioContentProvider>
@@ -537,19 +537,19 @@ function Hero() {
         style={{ opacity }}
         className="relative mx-auto max-w-6xl px-4 grid lg:grid-cols-[1.2fr_1fr] gap-12 items-center w-full"
       >
-        {/* Konten Kiri - Bergaya Agensi Premium & Bersih Rata Kiri */}
+        {/* Konten Kiri - Bersih & Rapi */}
         <motion.div style={{ y: yText }} className="liquid-hero-copy glass space-y-6 text-left w-full">
           <div className="text-xs font-semibold tracking-widest text-neon uppercase flex items-center gap-2">
-            <Sparkles className="size-3.5" /> Creative Showcase Portfolio
+            <Sparkles className="size-3.5" /> Welcome to my creative space
           </div>
 
           <h1 className="max-w-[920px]" aria-label="JAY SZRS">
             <NeonWordmark size="hero" />
           </h1>
 
-          <p className="text-muted-foreground text-sm md:text-base font-display font-medium tracking-wide">{profile.role}</p>
+          <p className="text-muted-foreground text-sm md:text-base font-mono">{profile.role}</p>
 
-          <div className="font-display text-base md:text-lg min-h-[1.5em] text-foreground/90 font-medium">
+          <div className="text-base md:text-lg font-display font-medium min-h-[1.5em] text-foreground/90">
             <Typewriter words={profile.typing} />
           </div>
 
@@ -575,19 +575,19 @@ function Hero() {
             </button>
           </div>
 
-          {/* Pengganti Terminal Box: Elemen Garis Pembatas Neon Vertikal yang Elegan */}
-          <div className="border-l-2 border-neon/40 pl-4 py-1.5 space-y-3 mt-4">
+          {/* Elegant Block Baru Pengganti Terminal Box */}
+          <div className="border-l-2 border-neon/40 pl-4 py-1 space-y-3 mt-4">
             <p className="text-foreground/80 text-sm md:text-base font-display leading-relaxed">
-              Informatics student, designer, content creator, and IT enthusiast dedicated to creating impactful digital experiences by combining robust coding with minimal visual harmony.
+              Informatics student, designer, content creator, and IT enthusiast dedicated to crafting innovative digital experiences at the intersection of clean code and beautiful design.
             </p>
-            <div className="flex items-center gap-2 text-xs font-display text-muted-foreground tracking-wide font-medium">
-              <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              Open for full-time collaboration, internships, and creative tech projects.
+            <div className="flex items-center gap-2 text-xs font-mono text-muted-foreground">
+              <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
+              Available for collaboration, internship, and creative tech projects.
             </div>
           </div>
         </motion.div>
 
-        {/* Konten Kanan - Center / Tengah Sempurna di Kolom Kanan */}
+        {/* Konten Kanan - Center Simetris */}
         <motion.div style={{ y: yPhoto }} className="relative mx-auto w-full max-w-sm flex justify-center items-center">
           <div className="absolute -inset-4 rounded-3xl bg-gradient-to-br from-neon/30 via-transparent to-lime/20 blur-2xl" />
           <div className="relative glass rounded-2xl p-3 border border-neon/40 w-full">
@@ -1555,6 +1555,7 @@ function SkillIcon({ name }: { name: string }) {
   return <Sparkles className="size-[18px]" aria-hidden="true" />;
 }
 
+/* ---------- SKILLS ---------- */
 function Skills() {
   const { skills } = usePortfolioContent();
   return (
