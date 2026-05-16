@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, Terminal } from "lucide-react";
+import { Menu, X, Sparkles } from "lucide-react";
 import { navItems } from "@/data/portfolio";
 import { A11yToggle } from "./A11yToggle";
 import { NeonWordmark } from "./NeonWordmark";
@@ -51,15 +51,16 @@ export function Navbar() {
     >
       <div className="liquid-navbar glass rounded-full transition-all">
         <div className="flex items-center justify-center gap-4 sm:gap-6 lg:gap-8 h-12">
+          {/* Brand Logo - Diubah menjadi Elegan & Minimalis tanpa unsur Terminal */}
           <button
             onClick={() => go("home")}
-            className="flex items-center gap-1.5 font-mono text-sm group shrink-0"
+            className="flex items-center gap-2 font-display text-sm font-bold tracking-tight group shrink-0"
           >
-            <Terminal className="size-4 text-neon group-hover:rotate-12 transition" />
+            <Sparkles className="size-4 text-neon group-hover:scale-110 transition" />
             <NeonWordmark size="nav" />
-            <span className="text-muted-foreground text-xs">:~$</span>
           </button>
 
+          {/* Desktop Navigation Links - Menghapus prefix './' untuk kesan clean */}
           <nav className="hidden lg:flex items-center gap-1 font-mono text-xs shrink-0">
             {navItems.map((n) => (
               <button
@@ -77,7 +78,7 @@ export function Navbar() {
                     className="absolute inset-0 rounded-full bg-white/12 border border-white/20"
                   />
                 )}
-                <span className="relative">./{n.label}</span>
+                <span className="relative">{n.label}</span>
               </button>
             ))}
           </nav>
@@ -101,6 +102,7 @@ export function Navbar() {
         </div>
       </div>
 
+      {/* Mobile Dropdown Navigation Menu */}
       <AnimatePresence>
         {open && (
           <motion.div
@@ -118,7 +120,7 @@ export function Navbar() {
                   active === n.id ? "text-foreground bg-white/12" : "text-muted-foreground"
                 }`}
               >
-                ./{n.label}
+                {n.label}
               </button>
             ))}
           </motion.div>
