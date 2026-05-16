@@ -168,6 +168,8 @@ function PortfolioContentProvider({ children }: { children: ReactNode }) {
                 const item = row as typeof row & {
                   duration_months?: number | null;
                   employment_type?: string | null;
+                  image_url?: string | null;
+                  document_url?: string | null;
                 };
                 return {
                   title: item.title,
@@ -178,6 +180,8 @@ function PortfolioContentProvider({ children }: { children: ReactNode }) {
                   status: item.status,
                   description: item.description || "",
                   category: item.category || item.employment_type || "Work",
+                  imageUrl: item.image_url || "",
+                  documentUrl: item.document_url || "",
                 };
               })
             : fallbackExperiences,
@@ -224,6 +228,8 @@ function PortfolioContentProvider({ children }: { children: ReactNode }) {
                 const item = row as typeof row & {
                   duration_months?: number | null;
                   cause?: string | null;
+                  image_url?: string | null;
+                  document_url?: string | null;
                 };
                 return {
                   name: item.name,
@@ -233,17 +239,31 @@ function PortfolioContentProvider({ children }: { children: ReactNode }) {
                     : item.year,
                   category: item.category || item.cause || "Organization",
                   description: item.description || "",
+                  imageUrl: item.image_url || "",
+                  documentUrl: item.document_url || "",
                 };
               })
             : fallbackVolunteers,
           projects: projectRes.data?.length
-            ? projectRes.data.map((item) => ({
-                name: item.title,
-                category: item.category,
-                year: item.year,
-                stack: item.tech_stack?.length ? item.tech_stack : ["Portfolio"],
-                description: item.description || "",
-              }))
+            ? projectRes.data.map((row) => {
+                const item = row as typeof row & {
+                  thumbnail_url?: string | null;
+                  demo_url?: string | null;
+                  github_url?: string | null;
+                  documentation_url?: string | null;
+                };
+                return {
+                  name: item.title,
+                  category: item.category,
+                  year: item.year,
+                  stack: item.tech_stack?.length ? item.tech_stack : ["Portfolio"],
+                  description: item.description || "",
+                  thumbnailUrl: item.thumbnail_url || "",
+                  demoUrl: item.demo_url || "",
+                  githubUrl: item.github_url || "",
+                  documentationUrl: item.documentation_url || "",
+                };
+              })
             : fallbackProjects,
           skills: Object.keys(dynamicSkills).length ? dynamicSkills : fallbackSkills,
         });
@@ -560,6 +580,9 @@ function About() {
 /* ---------- EXPERIENCE ---------- */
 function Experience() {
   const { experiences } = usePortfolioContent();
+  const [open, setOpen] = useState<number | null>(null);
+  const active = open !== null ? experiences[open] : null;
+
   return (
     <Section
       id="experience"
@@ -571,34 +594,76 @@ function Experience() {
         <div className="absolute left-4 md:left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-transparent via-neon/60 to-transparent" />
         <div className="space-y-10">
           {experiences.map((e, i) => (
-            <motion.div
+            <motion.button
+              type="button"
+              onClick={() => setOpen(i)}
               key={i}
               initial={{ opacity: 0, x: i % 2 ? 40 : -40 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true, margin: "-50px" }}
               transition={{ duration: 0.5 }}
-              className={`relative md:grid md:grid-cols-2 md:gap-12 ${i % 2 ? "md:[&>*:first-child]:col-start-2" : ""}`}
+              className={`relative md:grid md:grid-cols-2 md:gap-12 w-full text-left cursor-pointer ${i % 2 ? "md:[&>*:first-child]:col-start-2" : ""}`}
             >
-              <div className={`pl-12 md:pl-0 ${i % 2 ? "md:text-left" : "md:text-right"}`}>
+              <div className={`pl-12 md:pl-0 w-full ${i % 2 ? "md:text-left" : "md:text-right"}`}>
                 <div className="absolute left-2 md:left-1/2 top-3 -translate-x-1/2 size-4 rounded-full bg-neon glow-neon" />
-                <div className="glass rounded-xl p-5 hover:border-neon/60 transition group">
-                  <div className="flex items-center gap-2 font-mono text-xs text-neon">
+                <div className="glass rounded-xl p-5 hover:border-neon/60 transition group w-full">
+                  <div className={`flex items-center gap-2 font-mono text-xs text-neon ${i % 2 ? "justify-start" : "md:justify-end"}`}>
                     <Calendar className="size-3" /> {e.date}
                     <span
-                      className={`glass-badge ml-auto px-2 py-0.5 rounded-full text-[10px] ${e.status === "Active" ? "text-neon border border-neon/40" : "text-muted-foreground"}`}
+                      className={`glass-badge px-2 py-0.5 rounded-full text-[10px] ${e.status === "Active" ? "text-neon border border-neon/40" : "text-muted-foreground"} ${i % 2 ? "ml-auto md:ml-0" : "ml-auto md:ml-2"}`}
                     >
                       {e.status}
                     </span>
                   </div>
                   <h3 className="mt-2 text-lg font-semibold text-foreground">{e.title}</h3>
                   <div className="text-sm text-neon/90 font-mono">@ {e.company}</div>
-                  <p className="mt-3 text-sm text-muted-foreground">{e.description}</p>
+                  <p className="mt-3 text-sm text-muted-foreground line-clamp-2">{e.description}</p>
                 </div>
               </div>
-            </motion.div>
+            </motion.button>
           ))}
         </div>
       </div>
+
+      <DetailDialog
+        open={active !== null}
+        onOpenChange={(v) => !v && setOpen(null)}
+        title={active?.title ?? ""}
+        subtitle={active ? `@ ${active.company} · ${active.date}` : ""}
+      >
+        {active && (
+          <div className="space-y-4">
+            {active.imageUrl && (
+              <div className="w-full rounded-xl overflow-hidden glass p-2 max-h-[300px] flex items-center justify-center">
+                 <img src={active.imageUrl} alt={active.title} className="max-w-full max-h-full object-contain" />
+              </div>
+            )}
+            <p>{active.description}</p>
+            <div className="grid grid-cols-2 gap-3 font-mono text-xs">
+              <div className="glass rounded-md p-3">
+                <div className="text-muted-foreground">company</div>
+                <div>{active.company}</div>
+              </div>
+              <div className="glass rounded-md p-3">
+                <div className="text-muted-foreground">status</div>
+                <div>{active.status}</div>
+              </div>
+            </div>
+            {active.documentUrl && (
+              <div className="flex justify-center mt-4">
+                <a
+                  href={active.documentUrl}
+                  target="_blank"
+                  rel="noopener"
+                  className="liquid-button inline-flex items-center gap-2 px-4 py-2 glass border border-neon/40 text-neon font-mono text-xs rounded-full hover:opacity-90 transition"
+                >
+                  <Download className="size-4" /> View / Download Document
+                </a>
+              </div>
+            )}
+          </div>
+        )}
+      </DetailDialog>
     </Section>
   );
 }
@@ -628,8 +693,12 @@ function Certification() {
             className="group relative glass rounded-xl p-5 text-left hover:border-neon/60 hover:-translate-y-1 transition-all"
           >
             <div className="flex items-start justify-between">
-              <div className="size-12 rounded-lg bg-foreground/10 border border-foreground/40 flex items-center justify-center">
-                <Award className="size-6 text-neon" />
+              <div className="size-12 rounded-lg bg-foreground/10 border border-foreground/40 flex items-center justify-center overflow-hidden">
+                {c.badgeUrl ? (
+                  <img src={c.badgeUrl} alt={c.title} className="w-full h-full object-cover" />
+                ) : (
+                  <Award className="size-6 text-neon" />
+                )}
               </div>
               <span className="font-mono text-[10px] px-2 py-0.5 rounded border border-border text-muted-foreground">
                 {c.category}
@@ -653,11 +722,17 @@ function Certification() {
         subtitle={active ? `${active.issuer} · ${active.year} · ${active.category}` : ""}
       >
         {active && (
-          <>
+          <div className="space-y-4">
+            {active.badgeUrl && (
+              <div className="w-full max-w-[200px] aspect-square rounded-xl overflow-hidden glass p-2 mx-auto">
+                 <img src={active.badgeUrl} alt={active.title} className="w-full h-full object-contain" />
+              </div>
+            )}
             <p>
               Sertifikasi <span className="text-neon">{active.title}</span> diterbitkan oleh{" "}
               <span className="text-foreground">{active.issuer}</span> pada tahun {active.year}.
             </p>
+            {active.description && <p>{active.description}</p>}
             <div className="grid grid-cols-2 gap-3 font-mono text-xs">
               <div className="glass rounded-md p-3">
                 <div className="text-muted-foreground">issuer</div>
@@ -678,13 +753,13 @@ function Certification() {
                 <div>{active.category}</div>
               </div>
             </div>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2 pt-2">
               {active.verificationUrl && (
                 <a
                   href={active.verificationUrl}
                   target="_blank"
                   rel="noopener"
-                  className="liquid-button liquid-button-primary mt-2 inline-flex items-center gap-2 px-4 py-2 font-mono text-xs rounded-full hover:opacity-90"
+                  className="liquid-button liquid-button-primary inline-flex items-center gap-2 px-4 py-2 font-mono text-xs rounded-full hover:opacity-90"
                 >
                   <ExternalLink className="size-3" /> Verify Certificate
                 </a>
@@ -694,13 +769,13 @@ function Certification() {
                   href={active.certificateUrl}
                   target="_blank"
                   rel="noopener"
-                  className="liquid-button mt-2 inline-flex items-center gap-2 px-4 py-2 glass border border-neon/40 text-neon font-mono text-xs rounded-full"
+                  className="liquid-button inline-flex items-center gap-2 px-4 py-2 glass border border-neon/40 text-neon font-mono text-xs rounded-full hover:bg-neon hover:text-black transition"
                 >
-                  <Download className="size-3" /> PDF Certificate
+                  <Download className="size-3" /> View / Download Document
                 </a>
               )}
             </div>
-          </>
+          </div>
         )}
       </DetailDialog>
     </Section>
@@ -812,14 +887,21 @@ function Volunteer() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: i * 0.07 }}
-            className="text-left glass rounded-xl p-5 hover:border-neon/60 transition group"
+            className="text-left glass rounded-xl overflow-hidden hover:border-neon/60 transition group flex flex-col h-full"
           >
-            <Heart className="size-5 text-neon mb-3 group-hover:scale-110 transition" />
-            <div className="font-mono text-[10px] text-muted-foreground">
-              {v.category} · {v.year}
+            {v.imageUrl && (
+              <div className="w-full h-32 overflow-hidden border-b border-border/50 shrink-0 bg-black/20">
+                <img src={v.imageUrl} alt={v.name} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition duration-500" />
+              </div>
+            )}
+            <div className="p-5 flex-1 flex flex-col">
+              <Heart className={`size-5 text-neon mb-3 group-hover:scale-110 transition ${v.imageUrl ? 'hidden' : ''}`} />
+              <div className="font-mono text-[10px] text-muted-foreground">
+                {v.category} · {v.year}
+              </div>
+              <h3 className="mt-1 font-semibold text-foreground">{v.name}</h3>
+              <div className="text-sm text-neon/90 font-mono mt-auto pt-2">{v.role}</div>
             </div>
-            <h3 className="mt-1 font-semibold text-foreground">{v.name}</h3>
-            <div className="text-sm text-neon/90 font-mono">{v.role}</div>
           </motion.button>
         ))}
       </div>
@@ -831,12 +913,18 @@ function Volunteer() {
         subtitle={active ? `${active.role} · ${active.year}` : ""}
       >
         {active && (
-          <>
+          <div className="space-y-4">
+            {active.imageUrl && (
+              <div className="w-full rounded-xl overflow-hidden glass p-2 max-h-[300px] flex items-center justify-center">
+                 <img src={active.imageUrl} alt={active.name} className="max-w-full max-h-full object-contain" />
+              </div>
+            )}
             <p>
               Berkontribusi sebagai <span className="text-neon">{active.role}</span> dalam kegiatan{" "}
               <span className="text-foreground">{active.name}</span> ({active.category},{" "}
               {active.year}).
             </p>
+            {active.description && <p>{active.description}</p>}
             <div className="grid grid-cols-2 gap-3 font-mono text-xs">
               <div className="glass rounded-md p-3">
                 <div className="text-muted-foreground">role</div>
@@ -847,7 +935,19 @@ function Volunteer() {
                 <div>{active.category}</div>
               </div>
             </div>
-          </>
+            {active.documentUrl && (
+              <div className="flex justify-center mt-4">
+                <a
+                  href={active.documentUrl}
+                  target="_blank"
+                  rel="noopener"
+                  className="liquid-button inline-flex items-center gap-2 px-4 py-2 glass border border-neon/40 text-neon font-mono text-xs rounded-full hover:opacity-90 transition"
+                >
+                  <Download className="size-4" /> View / Download Document
+                </a>
+              </div>
+            )}
+          </div>
         )}
       </DetailDialog>
     </Section>
@@ -884,10 +984,16 @@ function Projects() {
             >
               <div className="flex items-center gap-3 font-mono text-sm">
                 <span className="text-muted-foreground">{String(i + 1).padStart(2, "0")}</span>
-                <FileCode className="size-4 text-neon" />
+                {p.thumbnailUrl ? (
+                  <div className="size-8 rounded overflow-hidden shrink-0">
+                     <img src={p.thumbnailUrl} alt={p.name} className="w-full h-full object-cover" />
+                  </div>
+                ) : (
+                  <FileCode className="size-4 text-neon mx-2" />
+                )}
                 <span className="text-foreground group-hover:text-neon transition">{p.name}</span>
               </div>
-              <div className="text-sm text-muted-foreground md:pl-8">{p.description}</div>
+              <div className="text-sm text-muted-foreground md:pl-8 line-clamp-1">{p.description}</div>
               <div className="flex items-center gap-2">
                 {p.stack.slice(0, 2).map((s) => (
                   <span
@@ -912,7 +1018,12 @@ function Projects() {
         subtitle={active ? `${active.category} · ${active.year}` : ""}
       >
         {active && (
-          <>
+          <div className="space-y-4">
+            {active.thumbnailUrl && (
+              <div className="w-full rounded-xl overflow-hidden glass p-2 max-h-[300px] flex items-center justify-center">
+                 <img src={active.thumbnailUrl} alt={active.name} className="max-w-full max-h-full object-contain" />
+              </div>
+            )}
             <p>{active.description}</p>
             <div className="space-y-2">
               <div className="font-mono text-xs text-muted-foreground">// stack</div>
@@ -937,7 +1048,24 @@ function Projects() {
                 <div>{active.year}</div>
               </div>
             </div>
-          </>
+            <div className="flex flex-wrap gap-2 pt-2">
+              {active.demoUrl && (
+                <a href={active.demoUrl} target="_blank" rel="noopener" className="liquid-button inline-flex items-center gap-2 px-4 py-2 glass border border-neon text-neon font-mono text-xs rounded-full hover:bg-neon hover:text-black transition">
+                  <ExternalLink className="size-4" /> Live Demo
+                </a>
+              )}
+              {active.githubUrl && (
+                <a href={active.githubUrl} target="_blank" rel="noopener" className="liquid-button inline-flex items-center gap-2 px-4 py-2 glass border border-foreground/40 text-foreground font-mono text-xs rounded-full hover:bg-foreground hover:text-black transition">
+                  <Github className="size-4" /> Repository
+                </a>
+              )}
+              {active.documentationUrl && (
+                <a href={active.documentationUrl} target="_blank" rel="noopener" className="liquid-button inline-flex items-center gap-2 px-4 py-2 glass border border-orange-500/40 text-orange-400 font-mono text-xs rounded-full hover:bg-orange-500 hover:text-black transition">
+                  <Download className="size-4" /> View Docs
+                </a>
+              )}
+            </div>
+          </div>
         )}
       </DetailDialog>
     </Section>

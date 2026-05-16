@@ -21,7 +21,7 @@ export const stats = [
   { label: "Volunteer", value: 7 },
 ];
 
-export const experiences = [
+export const experiences: { title: string; company: string; date: string; status: string; description: string; category: string; imageUrl?: string; documentUrl?: string }[] = [
   {
     title: "Graphic Designer",
     company: "National Poster Competition",
@@ -80,13 +80,13 @@ export const education: { institution: string; major: string; period: string; de
   },
 ];
 
-export const volunteers = [
+export const volunteers: { name: string; role: string; year: string; category: string; description?: string; imageUrl?: string; documentUrl?: string }[] = [
   { name: "Campus Open House", role: "Documentation Team", year: "2024", category: "Committee" },
   { name: "Tech Workshop", role: "Co-Facilitator", year: "2024", category: "Event" },
   { name: "Creative Community", role: "Designer", year: "2023", category: "Community" },
 ];
 
-export const projects = [
+export const projects: { name: string; category: string; year: string; stack: string[]; description: string; thumbnailUrl?: string; demoUrl?: string; githubUrl?: string; documentationUrl?: string }[] = [
   { name: "UI_UX_Design.case", category: "UI/UX", year: "2024", stack: ["Figma", "React"], description: "Student dashboard concept with neon dark theme." },
   { name: "Web_Development.project", category: "Web", year: "2024", stack: ["React", "Tailwind"], description: "Personal landing page with parallax & smooth animations." },
   { name: "Graphic_Design.gallery", category: "Design", year: "2023", stack: ["Photoshop", "Illustrator"], description: "Curated poster & branding works." },
