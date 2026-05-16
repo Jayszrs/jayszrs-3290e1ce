@@ -534,10 +534,10 @@ function Hero() {
       <div className="hero-particle hero-particle--5" />
       <motion.div
         style={{ opacity }}
-        className="relative mx-auto max-w-4xl px-4 flex flex-col gap-12 items-center text-center w-full"
+        className="relative mx-auto max-w-6xl px-4 grid lg:grid-cols-[1.2fr_1fr] gap-12 items-center"
       >
-        <motion.div style={{ y: yText }} className="liquid-hero-copy glass space-y-6 w-full max-w-2xl mx-auto">
-          <div className="font-mono text-xs text-muted-foreground flex items-center gap-2 justify-center">
+        <motion.div style={{ y: yText }} className="liquid-hero-copy glass space-y-6">
+          <div className="font-mono text-xs text-muted-foreground flex items-center gap-2">
             <span
               className="size-2 rounded-full bg-foreground animate-pulse"
               style={{ boxShadow: "0 0 10px var(--foreground)" }}
@@ -545,7 +545,7 @@ function Hero() {
             system.online — portfolio.v1.0.0
           </div>
 
-          <h1 className="max-w-[920px] mx-auto flex justify-center" aria-label="JAY SZRS">
+          <h1 className="max-w-[920px]" aria-label="JAY SZRS">
             <NeonWordmark size="hero" />
           </h1>
 
@@ -556,7 +556,7 @@ function Hero() {
             <Typewriter words={profile.typing} />
           </div>
 
-          <div className="flex flex-wrap gap-3 pt-2 justify-center">
+          <div className="flex flex-wrap gap-3 pt-2">
             <a
               href="#projects"
               className="liquid-button liquid-button-primary group inline-flex items-center gap-2 px-5 py-3 font-mono text-sm font-semibold rounded-full"
@@ -578,7 +578,7 @@ function Hero() {
             </button>
           </div>
 
-          <TerminalBox title="jay@szrs:~" className="text-left mx-auto w-full">
+          <TerminalBox title="jay@szrs:~">
             <Prompt>
               <span className="text-neon">whoami</span>
             </Prompt>
@@ -1498,7 +1498,6 @@ function Projects() {
     </Section>
   );
 }
-
 function SkillIcon({ name }: { name: string }) {
   const deviconBase = "https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/";
   const normalized = name.toLowerCase();
