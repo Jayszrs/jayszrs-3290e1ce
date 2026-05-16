@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { motion, useScroll, useTransform } from "framer-motion";
+import { toast } from "sonner";
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import type { ReactNode } from "react";
@@ -1609,7 +1610,7 @@ function Contact() {
 
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length) {
-      showPageToast("Failed to send. Try again.", "error");
+      toast.error("Failed to send. Try again.");
       return;
     }
 
@@ -1617,7 +1618,7 @@ function Contact() {
     window.setTimeout(() => {
       setSending(false);
       form.reset();
-      showPageToast("Message sent!", "success");
+      toast.success("Message sent!");
     }, 900);
   };
 
