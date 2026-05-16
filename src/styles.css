@@ -350,7 +350,7 @@
   }
 
   .glass:hover {
-    border-color: rgba(255, 255, 255, 0.35);
+    border-color: rgba(255, 120, 50, 0.4);
     box-shadow: var(--glass-shadow-hover);
   }
 
@@ -368,9 +368,7 @@
   }
 
   .liquid-app {
-    background:
-      linear-gradient(145deg, rgba(10, 0, 21, 0.96), rgba(8, 8, 32, 0.94) 48%, rgba(5, 5, 8, 0.98)),
-      #050508;
+    background: #080808;
   }
 
   .liquid-light-field {
@@ -380,14 +378,13 @@
     pointer-events: none;
     mix-blend-mode: screen;
     filter: blur(2px);
-    transform: translate3d(0, calc(var(--liquid-scroll) * -0.12), 0);
-    animation: liquid-hue 10s ease-in-out infinite;
+    transform: translate3d(0, calc(var(--liquid-scroll) * 0.12), 0);
   }
 
   .liquid-light-field--one {
     background: radial-gradient(
       ellipse 48% 34% at 18% 12%,
-      rgba(120, 80, 255, 0.15),
+      rgba(255, 106, 0, 0.16),
       transparent 68%
     );
   }
@@ -395,19 +392,19 @@
   .liquid-light-field--two {
     background: radial-gradient(
       ellipse 46% 34% at 82% 88%,
-      rgba(0, 180, 255, 0.12),
+      rgba(204, 34, 0, 0.18),
       transparent 70%
     );
-    transform: translate3d(0, calc(var(--liquid-scroll) * -0.2), 0);
+    transform: translate3d(0, calc(var(--liquid-scroll) * 0.2), 0);
   }
 
   .liquid-light-field--three {
     background: radial-gradient(
       ellipse 44% 30% at 50% 48%,
-      rgba(200, 100, 255, 0.08),
+      rgba(255, 69, 0, 0.1),
       transparent 72%
     );
-    transform: translate3d(0, calc(var(--liquid-scroll) * -0.1), 0);
+    transform: translate3d(0, calc(var(--liquid-scroll) * 0.1), 0);
   }
 
   .liquid-caustics {
@@ -419,17 +416,17 @@
       linear-gradient(
         115deg,
         transparent 0 28%,
-        rgba(255, 255, 255, 0.06) 31%,
+        rgba(255, 150, 80, 0.05) 31%,
         transparent 34% 100%
       ),
-      linear-gradient(72deg, transparent 0 52%, rgba(103, 232, 249, 0.04) 55%, transparent 60% 100%);
+      linear-gradient(72deg, transparent 0 52%, rgba(255, 69, 0, 0.04) 55%, transparent 60% 100%);
     opacity: 0.34;
     transform: translate3d(0, calc(var(--liquid-scroll) * -0.08), 0);
     animation: caustic-drift 18s ease-in-out infinite alternate;
   }
 
   .liquid-background-image {
-    filter: saturate(0.95) contrast(1.12) brightness(0.55) hue-rotate(18deg);
+    filter: saturate(1.05) contrast(1.12) brightness(0.55) hue-rotate(-10deg);
     mix-blend-mode: screen;
   }
 
@@ -437,8 +434,8 @@
     padding: clamp(1.25rem, 3vw, 2rem);
     border-radius: 28px;
     background:
-      radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.1), transparent 44%),
-      rgba(255, 255, 255, 0.04);
+      radial-gradient(circle at 50% 0%, rgba(255, 150, 80, 0.1), transparent 44%),
+      rgba(255, 80, 20, 0.04);
   }
 
   .liquid-hero-copy::after {
@@ -448,35 +445,45 @@
 
   .liquid-button {
     border-radius: 9999px !important;
-    background: rgba(255, 255, 255, 0.06) !important;
+    background: rgba(255, 80, 20, 0.08) !important;
     color: var(--text-primary) !important;
-    border: 1px solid rgba(255, 255, 255, 0.18) !important;
-    border-top-color: rgba(255, 255, 255, 0.34) !important;
-    -webkit-backdrop-filter: blur(24px) saturate(180%) brightness(1.1);
-    backdrop-filter: blur(24px) saturate(180%) brightness(1.1);
+    border: 1px solid rgba(255, 100, 30, 0.25) !important;
+    border-top-color: rgba(255, 150, 80, 0.4) !important;
+    -webkit-backdrop-filter: blur(24px) saturate(170%) brightness(1.05);
+    backdrop-filter: blur(24px) saturate(170%) brightness(1.05);
     box-shadow:
-      0 8px 28px rgba(0, 0, 0, 0.35),
-      inset 0 1px 0 rgba(255, 255, 255, 0.24),
-      inset 0 -1px 0 rgba(0, 0, 0, 0.14);
+      0 8px 28px rgba(0, 0, 0, 0.45),
+      inset 0 1px 0 rgba(255, 150, 80, 0.28),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.18);
   }
 
   .liquid-button-primary {
-    background:
-      linear-gradient(rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.05)) padding-box,
-      var(--accent-gradient) border-box !important;
-    border: 1px solid transparent !important;
-    animation: shimmer-border 4s ease infinite;
+    background: linear-gradient(135deg, #ff4500 0%, #cc2200 100%) !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(255, 120, 50, 0.3) !important;
+    box-shadow:
+      0 4px 24px rgba(255, 69, 0, 0.45),
+      inset 0 1px 0 rgba(255, 180, 100, 0.35) !important;
+    animation: fire-pulse 3s ease infinite;
   }
 
   .liquid-button:hover {
-    background: rgba(255, 255, 255, 0.14) !important;
-    border-color: rgba(255, 255, 255, 0.35) !important;
+    background: rgba(255, 80, 20, 0.16) !important;
+    border-color: rgba(255, 140, 50, 0.5) !important;
     box-shadow:
-      0 12px 34px rgba(0, 0, 0, 0.42),
-      0 0 22px rgba(167, 139, 250, 0.2),
-      0 0 28px rgba(103, 232, 249, 0.12),
-      inset 0 1px 0 rgba(255, 255, 255, 0.33);
+      0 12px 34px rgba(0, 0, 0, 0.5),
+      0 0 24px rgba(255, 69, 0, 0.28),
+      inset 0 1px 0 rgba(255, 160, 90, 0.35);
     transform: translateY(-2px) scale(1.015);
+    color: #ff8c00 !important;
+  }
+
+  .liquid-button-primary:hover {
+    filter: brightness(1.15);
+    color: #fff !important;
+    box-shadow:
+      0 8px 32px rgba(255, 69, 0, 0.6),
+      inset 0 1px 0 rgba(255, 200, 120, 0.4) !important;
   }
 
   .liquid-button:active {
@@ -485,11 +492,11 @@
   }
 
   .liquid-toggle-active {
-    background: rgba(255, 255, 255, 0.9) !important;
-    color: #050508 !important;
+    background: linear-gradient(135deg, #ff4500, #cc2200) !important;
+    color: #fff !important;
     box-shadow:
-      0 0 18px rgba(103, 232, 249, 0.18),
-      inset 0 1px 0 rgba(255, 255, 255, 0.55);
+      0 0 18px rgba(255, 69, 0, 0.5),
+      inset 0 1px 0 rgba(255, 200, 120, 0.4);
   }
 
   .liquid-navbar-shell {
