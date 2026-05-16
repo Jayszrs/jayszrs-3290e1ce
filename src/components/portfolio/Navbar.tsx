@@ -48,9 +48,8 @@ export function Navbar() {
       initial={{ y: -40, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       className={`liquid-navbar-shell ${collapsed ? "is-collapsed" : ""}`}
-      style={{ display: "flex", justifyContent: "center", width: "100%" }}
     >
-      <div className="liquid-navbar glass rounded-full transition-all mx-auto w-fit px-4 sm:px-6">
+      <div className="liquid-navbar glass rounded-full transition-all">
         <div className="flex items-center justify-center gap-4 sm:gap-6 lg:gap-8 h-12">
           <button
             onClick={() => go("home")}
@@ -105,11 +104,11 @@ export function Navbar() {
       <AnimatePresence>
         {open && (
           <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
+            initial={{ opacity: 0, y: -10, x: "-50%" }}
+            animate={{ opacity: 1, y: 0, x: "-50%" }}
+            exit={{ opacity: 0, y: -10, x: "-50%" }}
             className="liquid-mobile-menu lg:hidden glass rounded-2xl p-4 font-mono text-sm"
-            style={{ left: "50%", transform: "translateX(-50%)", right: "auto" }}
+            style={{ position: "absolute", left: "50%", right: "auto" }}
           >
             {navItems.map((n) => (
               <button
