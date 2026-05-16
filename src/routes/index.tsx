@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { motion, useScroll, useTransform } from "framer-motion";
 import { toast } from "sonner";
+import { motion, useScroll, useTransform } from "framer-motion";
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import type { ReactNode } from "react";
@@ -537,24 +537,19 @@ function Hero() {
         style={{ opacity }}
         className="relative mx-auto max-w-6xl px-4 grid lg:grid-cols-[1.2fr_1fr] gap-12 items-center w-full"
       >
-        {/* Konten Kiri (Merah) - Rapi, menepi ke kiri luar */}
+        {/* Konten Kiri - Bergaya Agensi Premium & Bersih Rata Kiri */}
         <motion.div style={{ y: yText }} className="liquid-hero-copy glass space-y-6 text-left w-full">
-          <div className="font-mono text-xs text-muted-foreground flex items-center gap-2">
-            <span
-              className="size-2 rounded-full bg-foreground animate-pulse"
-              style={{ boxShadow: "0 0 10px var(--foreground)" }}
-            />
-            system.online — portfolio.v1.0.0
+          <div className="text-xs font-semibold tracking-widest text-neon uppercase flex items-center gap-2">
+            <Sparkles className="size-3.5" /> Creative Showcase Portfolio
           </div>
 
           <h1 className="max-w-[920px]" aria-label="JAY SZRS">
             <NeonWordmark size="hero" />
           </h1>
 
-          <p className="text-muted-foreground text-sm md:text-base font-mono">{profile.role}</p>
+          <p className="text-muted-foreground text-sm md:text-base font-display font-medium tracking-wide">{profile.role}</p>
 
-          <div className="font-mono text-base md:text-lg min-h-[1.5em]">
-            <span className="text-neon">&gt; </span>
+          <div className="font-display text-base md:text-lg min-h-[1.5em] text-foreground/90 font-medium">
             <Typewriter words={profile.typing} />
           </div>
 
@@ -580,27 +575,19 @@ function Hero() {
             </button>
           </div>
 
-          <TerminalBox title="jay@szrs:~">
-            <Prompt>
-              <span className="text-neon">whoami</span>
-            </Prompt>
-            <p className="pl-4 text-foreground/80 mt-1">
-              Jay SZRS — Informatics student, designer, content creator, and IT enthusiast.
+          {/* Pengganti Terminal Box: Elemen Garis Pembatas Neon Vertikal yang Elegan */}
+          <div className="border-l-2 border-neon/40 pl-4 py-1.5 space-y-3 mt-4">
+            <p className="text-foreground/80 text-sm md:text-base font-display leading-relaxed">
+              Informatics student, designer, content creator, and IT enthusiast dedicated to creating impactful digital experiences by combining robust coding with minimal visual harmony.
             </p>
-            <Prompt>
-              <span className="text-neon">status</span>
-            </Prompt>
-            <p className="pl-4 text-foreground/80 mt-1">
-              Available for collaboration, internship, freelance, and creative tech projects.
-            </p>
-            <div className="flex gap-2 pt-2">
-              <span className="text-neon">$</span>
-              <span className="terminal-cursor"></span>
+            <div className="flex items-center gap-2 text-xs font-display text-muted-foreground tracking-wide font-medium">
+              <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              Open for full-time collaboration, internships, and creative tech projects.
             </div>
-          </TerminalBox>
+          </div>
         </motion.div>
 
-        {/* Konten Kanan (Hijau) - Di-center / Tengah Sempurna di kolom kanan */}
+        {/* Konten Kanan - Center / Tengah Sempurna di Kolom Kanan */}
         <motion.div style={{ y: yPhoto }} className="relative mx-auto w-full max-w-sm flex justify-center items-center">
           <div className="absolute -inset-4 rounded-3xl bg-gradient-to-br from-neon/30 via-transparent to-lime/20 blur-2xl" />
           <div className="relative glass rounded-2xl p-3 border border-neon/40 w-full">
@@ -792,6 +779,25 @@ function SocialIcon({ type }: { type: "github" | "instagram" | "linkedin" }) {
   );
 }
 
+function showPageToast(message: string, variant: "success" | "error" | "info" = "info") {
+  const container =
+    document.querySelector(".global-toast-container") ||
+    (() => {
+      const node = document.createElement("div");
+      node.className = "global-toast-container toast-container";
+      document.body.appendChild(node);
+      return node;
+    })();
+  const toast = document.createElement("div");
+  toast.className = `toast toast--${variant}`;
+  toast.textContent = message;
+  container.appendChild(toast);
+  window.setTimeout(() => {
+    toast.classList.add("toast--exit");
+    toast.addEventListener("animationend", () => toast.remove(), { once: true });
+  }, 3500);
+}
+
 /* ---------- LANYARD ---------- */
 function Lanyard() {
   return (
@@ -821,7 +827,7 @@ function About() {
           <div className="font-mono text-xs text-neon mb-4">// bio</div>
           <p className="text-lg leading-relaxed text-foreground/90">
             Hi, I'm <span className="text-neon glow-text font-semibold">Jay SZRS</span>. I'm an
-            Informatics Engineering student with strong interest in technology, UI/UX design,
+            Informatics Engineering student with strong interest in technology, ui/ux design,
             graphic design, video editing, content creation, networking, programming, and cyber
             security basics.
           </p>
@@ -1009,6 +1015,7 @@ function CertificationLogo({ issuer, title }: { issuer: string; title: string })
   return <img src={logo} alt={`${issuer} logo`} className="cert-logo" loading="lazy" />;
 }
 
+/* ---------- CERTIFICATION ---------- */
 function Certification() {
   const { certifications } = usePortfolioContent();
   const [open, setOpen] = useState<number | null>(null);
@@ -1548,7 +1555,6 @@ function SkillIcon({ name }: { name: string }) {
   return <Sparkles className="size-[18px]" aria-hidden="true" />;
 }
 
-/* ---------- SKILLS ---------- */
 function Skills() {
   const { skills } = usePortfolioContent();
   return (
@@ -1763,7 +1769,6 @@ function Contact() {
   );
 }
 
-/* ---------- FOOTER ---------- */
 /* ---------- FOOTER ---------- */
 function Footer() {
   return (
