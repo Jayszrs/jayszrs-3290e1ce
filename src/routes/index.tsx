@@ -534,7 +534,8 @@ function Hero() {
       <div className="hero-particle hero-particle--5" />
       <motion.div
         style={{ opacity }}
-        className="relative mx-auto max-w-6xl px-4 grid lg:grid-cols-[1.2fr_1fr] gap-12 items-center"
+        {/* PERUBAHAN DI SINI: Mengubah 'mx-auto max-w-6xl' menjadi 'ml-0 mr-auto max-w-7xl pl-4 sm:pl-16 lg:pl-24' */}
+        className="relative ml-0 mr-auto max-w-7xl px-4 pl-4 sm:pl-16 lg:pl-24 w-full grid lg:grid-cols-[1.2fr_1fr] gap-12 items-center"
       >
         <motion.div style={{ y: yText }} className="liquid-hero-copy glass space-y-6">
           <div className="font-mono text-xs text-muted-foreground flex items-center gap-2">
@@ -643,9 +644,6 @@ function CvPreviewModal({
 }) {
   const [loading, setLoading] = useState(true);
   const [closing, setClosing] = useState(false);
-  // TODO: Replace CV_PDF_URL with your hosted PDF link.
-  // Options: Google Drive (share -> "Anyone with link" -> copy direct link), Dropbox, or any public HTTPS URL.
-  // Google Drive format: https://drive.google.com/uc?export=download&id=FILE_ID
   const CV_PDF_URL = "https://drive.google.com/uc?export=download&id=FILE_ID";
   const hasHostedCv = CV_PDF_URL.startsWith("https://") && !CV_PDF_URL.includes("FILE_ID");
   const viewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(CV_PDF_URL)}&embedded=true`;
@@ -811,6 +809,7 @@ function showPageToast(message: string, variant: "success" | "error" | "info" = 
   }, 3500);
 }
 
+/* ---------- LANYARD ---------- */
 /* ---------- LANYARD ---------- */
 function Lanyard() {
   return (
@@ -1498,6 +1497,7 @@ function Projects() {
     </Section>
   );
 }
+
 function SkillIcon({ name }: { name: string }) {
   const deviconBase = "https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/";
   const normalized = name.toLowerCase();
@@ -1575,6 +1575,7 @@ function SkillIcon({ name }: { name: string }) {
   return <Sparkles className="size-[18px]" aria-hidden="true" />;
 }
 
+/* ---------- SKILLS ---------- */
 function Skills() {
   const { skills } = usePortfolioContent();
   return (
