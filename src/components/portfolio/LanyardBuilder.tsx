@@ -209,9 +209,28 @@ export function LanyardBuilder() {
               transition={{ type: "spring", stiffness: 300, damping: 10 }}
             >
               {/* Lanyard Strap */}
-              <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 z-20 flex flex-col items-center">
-                <div className="w-10 h-7 bg-gradient-to-b from-gray-700 via-gray-900 to-black rounded-full shadow-xl border-2 border-gray-600" />
-                <div className="w-1 h-3 bg-gradient-to-b from-gray-700 to-black" />
+              <div className="absolute -top-16 left-1/2 transform -translate-x-1/2 z-20 flex flex-col items-center">
+                {/* Fabric Strap */}
+                <div
+                  className="w-6 shadow-md"
+                  style={{
+                    height: "60px",
+                    background: "repeating-linear-gradient(45deg, #18181b, #18181b 2px, #27272a 2px, #27272a 4px)",
+                    borderLeft: "1px solid rgba(255,255,255,0.05)",
+                    borderRight: "1px solid rgba(0,0,0,0.5)",
+                  }}
+                />
+                
+                {/* Metal Crimp */}
+                <div className="w-8 h-3 bg-gradient-to-b from-gray-300 via-gray-400 to-gray-500 rounded-sm shadow-sm border border-gray-600/50 flex flex-col items-center justify-around py-0.5 z-10">
+                   <div className="w-6 h-px bg-gray-600/50" />
+                   <div className="w-6 h-px bg-gray-600/50" />
+                </div>
+
+                {/* Metal Lobster Clasp / Clip */}
+                <div className="w-4 h-6 bg-gradient-to-b from-gray-300 to-gray-500 rounded-b-lg border border-gray-500/50 shadow-sm flex justify-center relative -top-0.5 z-0">
+                   <div className="w-1.5 h-3 bg-gray-800/40 rounded-full mt-1 inset-shadow-sm" />
+                </div>
               </div>
 
               {/* Badge Card */}

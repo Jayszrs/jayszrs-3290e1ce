@@ -65,7 +65,7 @@ export const certifications = [
   { title: "National Poster Award", issuer: "National Comp.", year: "2024", category: "Competition" },
 ];
 
-export const education = [
+export const education: { institution: string; major: string; period: string; description: string; logoUrl?: string; documentUrl?: string }[] = [
   {
     institution: "Universitas Bani Saleh",
     major: "Informatics Engineering",

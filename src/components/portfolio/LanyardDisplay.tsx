@@ -44,43 +44,30 @@ export function LanyardDisplay({
           onDragStart={() => setIsDragging(true)}
           onDragEnd={() => setIsDragging(false)}
           onDrag={(event, info) => setDragY(info.offset.y)}
-          className="absolute -top-12 left-1/2 transform -translate-x-1/2 z-30 flex flex-col items-center cursor-grab active:cursor-grabbing"
+          className="absolute -top-24 left-1/2 transform -translate-x-1/2 z-30 flex flex-col items-center cursor-grab active:cursor-grabbing"
           initial={{ y: 0 }}
         >
-          {/* Strap Top Loop */}
-          <div className="flex justify-center mb-1">
-            <div className="glass w-12 h-8 rounded-full shadow-neon border border-border/50 hover:border-neon/50 transition-colors" 
-              style={{
-                background: "linear-gradient(135deg, rgba(167, 139, 250, 0.1) 0%, rgba(200, 132, 252, 0.08) 100%)",
-                backdropFilter: "blur(24px) saturate(180%)",
-                boxShadow: "0 8px 32px rgba(0, 0, 0, 0.4), 0 2px 8px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.25)"
-              }}
-            />
+          {/* Fabric Strap */}
+          <motion.div
+            className="w-6 shadow-md"
+            style={{
+              height: Math.max(70 + Math.abs(dragY) * 0.5, 70),
+              background: "repeating-linear-gradient(45deg, #18181b, #18181b 2px, #27272a 2px, #27272a 4px)",
+              borderLeft: "1px solid rgba(255,255,255,0.05)",
+              borderRight: "1px solid rgba(0,0,0,0.5)",
+            }}
+          />
+          
+          {/* Metal Crimp */}
+          <div className="w-8 h-3 bg-gradient-to-b from-gray-300 via-gray-400 to-gray-500 rounded-sm shadow-sm border border-gray-600/50 flex flex-col items-center justify-around py-0.5 z-10">
+             <div className="w-6 h-px bg-gray-600/50" />
+             <div className="w-6 h-px bg-gray-600/50" />
           </div>
 
-          {/* Strap Cable */}
-          <motion.div
-            className="glass rounded-full shadow-neon/50 border border-border/30"
-            style={{
-              width: 6,
-              height: Math.max(30 + Math.abs(dragY) * 0.5, 30),
-              background: "linear-gradient(180deg, rgba(167, 139, 250, 0.15) 0%, rgba(200, 132, 252, 0.1) 100%)",
-              backdropFilter: "blur(12px) saturate(150%)",
-              boxShadow: "0 4px 16px rgba(167, 139, 250, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.15)",
-            }}
-            animate={{
-              opacity: isDragging ? 0.95 : 0.75,
-            }}
-          />
-
-          {/* Strap Bottom Connector */}
-          <div className="glass w-3 h-3 rounded-full border border-border/40 mt-1"
-            style={{
-              background: "linear-gradient(135deg, rgba(167, 139, 250, 0.2) 0%, rgba(200, 132, 252, 0.12) 100%)",
-              backdropFilter: "blur(16px) saturate(170%)",
-              boxShadow: "0 4px 12px rgba(167, 139, 250, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.2)"
-            }}
-          />
+          {/* Metal Lobster Clasp / Clip */}
+          <div className="w-4 h-6 bg-gradient-to-b from-gray-300 to-gray-500 rounded-b-lg border border-gray-500/50 shadow-sm flex justify-center relative -top-0.5 z-0">
+             <div className="w-1.5 h-3 bg-gray-800/40 rounded-full mt-1 inset-shadow-sm" />
+          </div>
         </motion.div>
 
         {/* Badge Card */}

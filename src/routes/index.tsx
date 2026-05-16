@@ -202,6 +202,8 @@ function PortfolioContentProvider({ children }: { children: ReactNode }) {
                 const item = row as typeof row & {
                   field_of_study?: string | null;
                   activities?: string | null;
+                  logo_url?: string | null;
+                  document_url?: string | null;
                 };
                 return {
                   institution: item.institution,
@@ -212,6 +214,8 @@ function PortfolioContentProvider({ children }: { children: ReactNode }) {
                   description: item.activities
                     ? `${item.description || ""} ${item.activities}`.trim()
                     : item.description || "",
+                  logoUrl: item.logo_url || "",
+                  documentUrl: item.document_url || "",
                 };
               })
             : fallbackEducation,
@@ -724,16 +728,20 @@ function Education() {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="w-full text-left glass rounded-2xl p-6 md:p-8 flex flex-col md:flex-row gap-6 hover:border-neon/60 transition"
+            className="w-full text-left glass rounded-2xl p-6 md:p-8 flex flex-col md:flex-row gap-6 hover:border-neon/60 transition overflow-hidden"
           >
-            <div className="size-16 rounded-xl bg-foreground/10 border border-foreground/40 flex items-center justify-center shrink-0">
-              <GraduationCap className="size-8 text-neon" />
+            <div className="size-16 rounded-xl bg-foreground/10 border border-foreground/40 flex items-center justify-center shrink-0 overflow-hidden">
+              {ed.logoUrl ? (
+                <img src={ed.logoUrl} alt={ed.institution} className="w-full h-full object-cover" />
+              ) : (
+                <GraduationCap className="size-8 text-neon" />
+              )}
             </div>
             <div className="flex-1">
               <div className="font-mono text-xs text-neon">{ed.period}</div>
               <h3 className="mt-1 text-xl font-semibold">{ed.institution}</h3>
               <div className="text-sm text-muted-foreground font-mono">{ed.major}</div>
-              <p className="mt-3 text-foreground/80">{ed.description}</p>
+              <p className="mt-3 text-foreground/80 line-clamp-2">{ed.description}</p>
             </div>
           </motion.button>
         ))}
@@ -746,7 +754,12 @@ function Education() {
         subtitle={active ? `${active.major} · ${active.period}` : ""}
       >
         {active && (
-          <>
+          <div className="space-y-4">
+            {active.logoUrl && (
+              <div className="w-full max-w-[200px] aspect-square rounded-xl overflow-hidden glass p-2 mx-auto">
+                 <img src={active.logoUrl} alt={active.institution} className="w-full h-full object-contain" />
+              </div>
+            )}
             <p>{active.description}</p>
             <div className="grid grid-cols-2 gap-3 font-mono text-xs">
               <div className="glass rounded-md p-3">
@@ -758,7 +771,19 @@ function Education() {
                 <div>{active.major}</div>
               </div>
             </div>
-          </>
+            {active.documentUrl && (
+              <div className="flex justify-center mt-4">
+                <a
+                  href={active.documentUrl}
+                  target="_blank"
+                  rel="noopener"
+                  className="liquid-button inline-flex items-center gap-2 px-4 py-2 glass border border-neon/40 text-neon font-mono text-xs rounded-full hover:opacity-90 transition"
+                >
+                  <Download className="size-4" /> View / Download Document
+                </a>
+              </div>
+            )}
+          </div>
         )}
       </DetailDialog>
     </Section>
