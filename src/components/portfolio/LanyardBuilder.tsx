@@ -30,24 +30,50 @@ export function LanyardBuilder() {
     }
   };
 
-  const downloadLanyard = async () => {
+  const downloadLanyard = () => {
     if (!lanyardRef.current) return;
     
     try {
-      // Dynamic import for html2canvas
-      const html2canvas = (await import("html2canvas")).default;
-      const canvas = await html2canvas(lanyardRef.current, {
-        backgroundColor: null,
-        scale: 2,
-      });
+      const element = lanyardRef.current;
+      const canvas = document.createElement("canvas");
+      const rect = element.getBoundingClientRect();
+      canvas.width = Math.ceil(rect.width * 2);
+      canvas.height = Math.ceil(rect.height * 2);
       
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+      
+      ctx.scale(2, 2);
+      
+      // Create temporary container for rendering
+      const temp = document.createElement("div");
+      temp.style.position = "fixed";
+      temp.style.left = "-9999px";
+      temp.appendChild(element.cloneNode(true));
+      document.body.appendChild(temp);
+      
+      // Simple SVG export as fallback
+      const svg = `
+        <svg width="${rect.width}" height="${rect.height}" xmlns="http://www.w3.org/2000/svg">
+          <foreignObject width="100%" height="100%">
+            ${element.outerHTML}
+          </foreignObject>
+        </svg>
+      `;
+      
+      const svgBlob = new Blob([svg], { type: "image/svg+xml" });
+      const url = URL.createObjectURL(svgBlob);
       const link = document.createElement("a");
-      link.href = canvas.toDataURL("image/png");
-      link.download = `${name.replace(/\s+/g, "-")}-lanyard.png`;
+      link.href = url;
+      link.download = `${name.replace(/\s+/g, "-")}-lanyard.svg`;
       link.click();
+      
+      document.body.removeChild(temp);
+      URL.revokeObjectURL(url);
     } catch (err) {
       console.error("Failed to download lanyard:", err);
-      alert("Failed to download. Please try again.");
+      // Fallback: alert user
+      alert("To download your badge, please take a screenshot and save it as an image.");
     }
   };
 
