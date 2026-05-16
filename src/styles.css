@@ -158,7 +158,6 @@
     overflow: hidden;
   }
 
-  /* Ambient fire orbs */
   body::before {
     content: "";
     position: fixed;
@@ -525,9 +524,10 @@
     transform: translateX(-50%) scale(0.97);
   }
 
+  /* PERUBAHAN UTAMA: Mengubah width ke max-content agar navbar pas & berada di tengah halaman */
   .liquid-navbar {
-    width: 100%;
-    max-width: 1120px;
+    width: max-content;
+    max-width: 100%;
     padding: 10px 24px;
     border-radius: var(--radius-pill);
     -webkit-backdrop-filter: blur(32px) saturate(180%) brightness(1.08);
@@ -537,11 +537,13 @@
 
   .liquid-navbar > div {
     justify-content: center;
-    gap: 16px;
+    gap: 20px;
   }
 
+  /* Menghapus flex:1 agar item navigasi tidak memisahkan diri ke samping luar */
   .liquid-navbar nav {
-    flex: 1;
+    display: flex;
+    align-items: center;
     justify-content: center;
     min-width: 0;
   }
@@ -1638,6 +1640,7 @@ input.is-success {
   font-weight: 700;
 }
 
+.contact-field mt-1,
 .contact-field input,
 .contact-field textarea,
 .admin-edit-form input,

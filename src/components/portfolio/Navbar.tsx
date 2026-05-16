@@ -49,18 +49,20 @@ export function Navbar() {
       animate={{ y: 0, opacity: 1 }}
       className={`liquid-navbar-shell ${collapsed ? "is-collapsed" : ""}`}
     >
-      <div className="liquid-navbar glass rounded-full transition-all">
-        <div className="flex items-center justify-between h-12">
+      {/* Menambahkan utility 'mx-auto w-fit' agar kontainer menciut pas sesuai konten */}
+      <div className="liquid-navbar glass rounded-full transition-all mx-auto w-fit">
+        {/* Mengubah 'justify-between' menjadi 'justify-center' dengan gap yang presisi */}
+        <div className="flex items-center justify-center gap-4 sm:gap-6 lg:gap-8 h-12">
           <button
             onClick={() => go("home")}
-            className="flex items-center gap-2 font-mono text-sm group"
+            className="flex items-center gap-1.5 font-mono text-sm group shrink-0"
           >
             <Terminal className="size-4 text-neon group-hover:rotate-12 transition" />
             <NeonWordmark size="nav" />
-            <span className="text-muted-foreground">:~$</span>
+            <span className="text-muted-foreground text-xs">:~$</span>
           </button>
 
-          <nav className="hidden lg:flex items-center gap-1 font-mono text-xs">
+          <nav className="hidden lg:flex items-center gap-1 font-mono text-xs shrink-0">
             {navItems.map((n) => (
               <button
                 key={n.id}
@@ -82,7 +84,7 @@ export function Navbar() {
             ))}
           </nav>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0">
             <A11yToggle />
             <button
               onClick={() => go("contact")}
