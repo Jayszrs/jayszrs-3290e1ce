@@ -945,15 +945,6 @@ function Experience() {
               </div>
             )}
             <p>{active.description}</p>
-            {active.institution === "SMAN 71 Jakarta" && (
-              <div className="flex flex-wrap gap-2">
-                {["Science", "Jakarta", "2020-2023"].map((tag) => (
-                  <span key={tag} className="glass-badge px-2.5 py-1 text-[10px] font-mono">
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            )}
             <div className="grid grid-cols-2 gap-3 font-mono text-xs">
               <div className="glass rounded-md p-3">
                 <div className="text-muted-foreground">company</div>
