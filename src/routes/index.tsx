@@ -534,8 +534,7 @@ function Hero() {
       <div className="hero-particle hero-particle--5" />
       <motion.div
         style={{ opacity }}
-        {/* PERUBAHAN DI SINI: Mengubah 'mx-auto max-w-6xl' menjadi 'ml-0 mr-auto max-w-7xl pl-4 sm:pl-16 lg:pl-24' */}
-        className="relative ml-0 mr-auto max-w-7xl px-4 pl-4 sm:pl-16 lg:pl-24 w-full grid lg:grid-cols-[1.2fr_1fr] gap-12 items-center"
+        className="relative mx-auto max-w-6xl px-4 grid lg:grid-cols-[1.2fr_1fr] gap-12 items-center"
       >
         <motion.div style={{ y: yText }} className="liquid-hero-copy glass space-y-6">
           <div className="font-mono text-xs text-muted-foreground flex items-center gap-2">
@@ -644,6 +643,9 @@ function CvPreviewModal({
 }) {
   const [loading, setLoading] = useState(true);
   const [closing, setClosing] = useState(false);
+  // TODO: Replace CV_PDF_URL with your hosted PDF link.
+  // Options: Google Drive (share -> "Anyone with link" -> copy direct link), Dropbox, or any public HTTPS URL.
+  // Google Drive format: https://drive.google.com/uc?export=download&id=FILE_ID
   const CV_PDF_URL = "https://drive.google.com/uc?export=download&id=FILE_ID";
   const hasHostedCv = CV_PDF_URL.startsWith("https://") && !CV_PDF_URL.includes("FILE_ID");
   const viewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(CV_PDF_URL)}&embedded=true`;
@@ -810,7 +812,6 @@ function showPageToast(message: string, variant: "success" | "error" | "info" = 
 }
 
 /* ---------- LANYARD ---------- */
-/* ---------- LANYARD ---------- */
 function Lanyard() {
   return (
     <Section
@@ -964,15 +965,6 @@ function Experience() {
               </div>
             )}
             <p>{active.description}</p>
-            {active.institution === "SMAN 71 Jakarta" && (
-              <div className="flex flex-wrap gap-2">
-                {["Science", "Jakarta", "2020-2023"].map((tag) => (
-                  <span key={tag} className="glass-badge px-2.5 py-1 text-[10px] font-mono">
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            )}
             <div className="grid grid-cols-2 gap-3 font-mono text-xs">
               <div className="glass rounded-md p-3">
                 <div className="text-muted-foreground">company</div>
@@ -1497,7 +1489,6 @@ function Projects() {
     </Section>
   );
 }
-
 function SkillIcon({ name }: { name: string }) {
   const deviconBase = "https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/";
   const normalized = name.toLowerCase();
@@ -1575,7 +1566,6 @@ function SkillIcon({ name }: { name: string }) {
   return <Sparkles className="size-[18px]" aria-hidden="true" />;
 }
 
-/* ---------- SKILLS ---------- */
 function Skills() {
   const { skills } = usePortfolioContent();
   return (
