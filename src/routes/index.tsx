@@ -31,6 +31,7 @@ import { Typewriter } from "@/components/portfolio/Typewriter";
 import { MonoMatrixBg } from "@/components/portfolio/MonoMatrixBg";
 import { DetailDialog } from "@/components/portfolio/DetailDialog";
 import { NeonWordmark } from "@/components/portfolio/NeonWordmark";
+import { LanyardBuilder } from "@/components/portfolio/LanyardBuilder";
 import { supabase } from "@/integrations/supabase/client";
 import {
   profile as fallbackProfile,
@@ -297,6 +298,7 @@ function Index() {
         <Navbar />
         <main className="relative z-10">
           <Hero />
+          <Lanyard />
           <About />
           <Experience />
           <Certification />
@@ -461,6 +463,20 @@ function Hero() {
         </motion.span>
       </div>
     </section>
+  );
+}
+
+/* ---------- LANYARD ---------- */
+function Lanyard() {
+  return (
+    <Section
+      id="lanyard"
+      command="build.lanyard()"
+      title="ID Badge Creator"
+      description="Create your personalized digital lanyard / ID badge"
+    >
+      <LanyardBuilder />
+    </Section>
   );
 }
 
