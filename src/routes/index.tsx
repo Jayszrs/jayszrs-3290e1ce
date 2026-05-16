@@ -526,7 +526,7 @@ function Hero() {
   const opacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
 
   return (
-    <section id="home" ref={ref} className="relative min-h-screen flex items-center pt-28 pb-16">
+    <section id="home" ref={ref} className="relative min-h-screen flex items-center pt-24 pb-16">
       <div className="hero-particle hero-particle--1" />
       <div className="hero-particle hero-particle--2" />
       <div className="hero-particle hero-particle--3" />
@@ -534,9 +534,9 @@ function Hero() {
       <div className="hero-particle hero-particle--5" />
       <motion.div
         style={{ opacity }}
-        className="relative ml-0 mr-auto max-w-7xl px-4 pl-4 sm:pl-8 lg:pl-12 w-full grid lg:grid-cols-[1.2fr_1fr] gap-12 items-center"
+        className="relative w-full max-w-full px-6 md:pl-16 lg:pl-20 xl:pl-32 grid lg:grid-cols-[1.3fr_1fr] gap-12 items-center"
       >
-        <motion.div style={{ y: yText }} className="liquid-hero-copy glass space-y-6">
+        <motion.div style={{ y: yText }} className="liquid-hero-copy glass space-y-6 w-full">
           <div className="font-mono text-xs text-muted-foreground flex items-center gap-2">
             <span
               className="size-2 rounded-full bg-foreground animate-pulse"
