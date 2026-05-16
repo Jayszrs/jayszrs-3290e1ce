@@ -295,12 +295,12 @@ function AuthForm() {
         <div className="glass relative overflow-hidden rounded-xl p-7 shadow-[0_0_60px_rgba(255,255,255,0.08)]">
           <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-foreground/70 to-transparent" />
           <div className="mb-6 flex items-center justify-between gap-3">
-            <div className="font-mono text-xs text-neon">$ admin.{mode}</div>
+            <div className="font-mono text-xs text-neon">admin.{mode}</div>
             <span className="rounded border border-border bg-surface/60 px-2 py-1 font-mono text-[10px] text-muted-foreground">
               secure shell
             </span>
           </div>
-          <h1 className="mt-2" aria-label="JAY SZRS">
+          <h1 className="make-w-md" aria-label="JAY SZRS">
             <NeonWordmark size="auth" />
           </h1>
           <p className="mt-2 text-xs text-muted-foreground font-mono">
@@ -351,7 +351,8 @@ function Dashboard() {
   const [tab, setTab] = useState<string>("overview");
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-background">
+    /* PERUBAHAN UTAMA: Membatasi tinggi screen dashboard terluar agar tidak bablas */
+    <div className="relative h-screen max-h-screen overflow-hidden bg-background">
       <img
         src={cyberSecurityBg}
         alt=""
@@ -361,50 +362,57 @@ function Dashboard() {
       <MonoMatrixBg className="opacity-[0.12]" />
       <div className="fixed inset-0 z-0 pointer-events-none bg-[linear-gradient(to_bottom,rgba(0,0,0,0.15),rgba(0,0,0,0.88))]" />
       <Toaster position="top-center" />
-      <div className="relative z-10 flex min-h-screen">
-        <aside className="w-64 glass border-r border-border min-h-screen p-4 hidden md:block">
-          <div className="mb-6 flex items-center gap-2 font-mono text-xs">
-            <span className="text-muted-foreground">$</span>
-            <NeonWordmark size="nav" text="admin@jay-szrs" />
-          </div>
-          <nav className="space-y-1 text-sm">
-            <NavBtn id="overview" tab={tab} setTab={setTab} icon={HomeIcon} label="Overview" />
-            <NavBtn
-              id="roles"
-              tab={tab}
-              setTab={setTab}
-              icon={ShieldCheck}
-              label="Role Management"
-            />
-            <NavBtn id="profile" tab={tab} setTab={setTab} icon={FileText} label="Profile & CV" />
-            {TABLES.map((t) => (
+      
+      {/* PERUBAHAN UTAMA: Memaksa tinggi flex pembungkus sidebar & content mengikuti screen */}
+      <div className="relative z-10 flex h-screen w-full overflow-hidden">
+        <aside className="w-64 glass border-r border-border h-full p-4 hidden md:flex flex-col justify-between overflow-y-auto shrink-0">
+          <div>
+            <div className="mb-6 flex items-center gap-2 font-mono text-xs">
+              <span className="text-muted-foreground">$</span>
+              <NeonWordmark size="nav" text="admin@jay-szrs" />
+            </div>
+            <nav className="space-y-1 text-sm">
+              <NavBtn id="overview" tab={tab} setTab={setTab} icon={HomeIcon} label="Overview" />
               <NavBtn
-                key={t.key}
-                id={t.key}
+                id="roles"
                 tab={tab}
                 setTab={setTab}
-                icon={t.icon}
-                label={t.label}
+                icon={ShieldCheck}
+                label="Role Management"
               />
-            ))}
-            <NavBtn id="messages" tab={tab} setTab={setTab} icon={Mail} label="Messages" />
-          </nav>
-          <button
-            onClick={() => supabase.auth.signOut()}
-            className="mt-8 inline-flex items-center gap-2 text-xs text-muted-foreground hover:text-destructive font-mono"
-          >
-            <LogOut className="size-3" /> sign out
-          </button>
-          <Link
-            to="/"
-            className="block mt-3 text-xs text-muted-foreground hover:text-neon font-mono"
-          >
-            ← view site
-          </Link>
+              <NavBtn id="profile" tab={tab} setTab={setTab} icon={FileText} label="Profile & CV" />
+              {TABLES.map((t) => (
+                <NavBtn
+                  key={t.key}
+                  id={t.key}
+                  tab={tab}
+                  setTab={setTab}
+                  icon={t.icon}
+                  label={t.label}
+                />
+              ))}
+              <NavBtn id="messages" tab={tab} setTab={setTab} icon={Mail} label="Messages" />
+            </nav>
+          </div>
+          <div className="pt-4 border-t border-border/30 mt-auto">
+            <button
+              onClick={() => supabase.auth.signOut()}
+              className="inline-flex items-center gap-2 text-xs text-muted-foreground hover:text-destructive font-mono w-full text-left"
+            >
+              <LogOut className="size-3" /> sign out
+            </button>
+            <Link
+              to="/"
+              className="block mt-3 text-xs text-muted-foreground hover:text-neon font-mono"
+            >
+              ← view site
+            </Link>
+          </div>
         </aside>
 
-        <main className="flex-1 p-4 md:p-8 overflow-x-auto">
-          <div className="md:hidden mb-4 flex flex-wrap gap-2">
+        {/* PERUBAHAN UTAMA: Mengaktifkan scroll vertikal penuh khusus pada isi konten tab admin */}
+        <main className="flex-1 h-full p-4 md:p-8 overflow-y-auto overflow-x-auto pb-24 md:pb-12">
+          <div className="md:hidden mb-4 flex flex-wrap gap-2 sticky top-0 bg-background/80 backdrop-blur-md z-30 p-2 rounded-lg border border-border/40">
             {["overview", "roles", "profile", ...TABLES.map((t) => t.key), "messages"].map((k) => (
               <button
                 key={k}
@@ -426,712 +434,712 @@ function Dashboard() {
       </div>
     </div>
   );
-}
 
-function NavBtn({ id, tab, setTab, icon: Icon, label }: any) {
-  return (
-    <button
-      onClick={() => setTab(id)}
-      className={`w-full flex items-center gap-2 px-3 py-2 rounded font-mono text-xs ${tab === id ? "bg-neon/10 text-neon border border-neon/30" : "text-muted-foreground hover:text-foreground"}`}
-    >
-      <Icon className="size-4" /> {label}
-    </button>
-  );
-}
+  function NavBtn({ id, tab, setTab, icon: Icon, label }: any) {
+    return (
+      <button
+        onClick={() => setTab(id)}
+        className={`w-full flex items-center gap-2 px-3 py-2 rounded font-mono text-xs ${tab === id ? "bg-neon/10 text-neon border border-neon/30" : "text-muted-foreground hover:text-foreground"}`}
+      >
+        <Icon className="size-4" /> {label}
+      </button>
+    );
+  }
 
-function RoleManagement() {
-  const [users, setUsers] = useState<AdminUserRow[]>([]);
-  const [newUserId, setNewUserId] = useState("");
-  const [newRole, setNewRole] = useState<AppRole>("user");
-  const [busy, setBusy] = useState(false);
-  const [roleError, setRoleError] = useState("");
+  function RoleManagement() {
+    const [users, setUsers] = useState<AdminUserRow[]>([]);
+    const [newUserId, setNewUserId] = useState("");
+    const [newRole, setNewRole] = useState<AppRole>("user");
+    const [busy, setBusy] = useState(false);
+    const [roleError, setRoleError] = useState("");
 
-  const load = async () => {
-    setBusy(true);
-    const { data: sessionData } = await supabase.auth.getSession();
-    const session = sessionData.session;
-
-    try {
-      const fallbackUsers = await listAdminUsersFallback({
-        data: { accessToken: session?.access_token || "" },
-      });
-      setRoleError("");
-      setUsers(fallbackUsers || []);
-    } catch (error) {
-      const currentUser = session?.user;
-      setUsers(
-        currentUser
-          ? [
-              {
-                user_id: currentUser.id,
-                email: currentUser.email || null,
-                role: "admin",
-                created_at: currentUser.created_at,
-                last_sign_in_at: currentUser.last_sign_in_at || null,
-              },
-            ]
-          : [],
-      );
-      setRoleError(
-        error instanceof Error
-          ? `${error.message} Tambahkan SUPABASE_SERVICE_ROLE_KEY di environment Lovable supaya semua user terdaftar bisa tampil.`
-          : "Role Management belum bisa membaca semua user.",
-      );
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  useEffect(() => {
-    load();
-  }, []);
-
-  const setRole = async (userId: string, role: AppRole) => {
-    const token = (await supabase.auth.getSession()).data.session?.access_token || "";
-
-    try {
-      await setAdminUserRoleFallback({ data: { accessToken: token, userId, role } });
-      toast.success("Role updated");
-      load();
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Role update failed");
-    }
-  };
-
-  const removeRole = async (userId: string) => {
-    if (!confirm("Remove this user's role?")) return;
-    const token = (await supabase.auth.getSession()).data.session?.access_token || "";
-
-    try {
-      await removeAdminUserRoleFallback({ data: { accessToken: token, userId } });
-      toast.success("Role removed");
-      load();
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Role remove failed");
-    }
-  };
-
-  return (
-    <div className="max-w-4xl space-y-5">
-      <div className="flex items-center justify-between gap-3">
-        <h1 className="text-2xl font-bold font-mono">
-          <span className="text-neon">#</span> role management
-        </h1>
-        <button
-          onClick={load}
-          disabled={busy}
-          className="inline-flex items-center gap-2 px-3 py-2 glass border border-border rounded font-mono text-xs hover:border-neon"
-        >
-          <RefreshCw className="size-3" /> refresh
-        </button>
-      </div>
-
-      {roleError && (
-        <div className="glass rounded-lg border-destructive/50 p-4 font-mono text-xs text-destructive">
-          {roleError}
-        </div>
-      )}
-
-      <div className="glass rounded-lg p-4 grid md:grid-cols-[1fr_auto_auto] gap-3">
-        <input
-          value={newUserId}
-          onChange={(e) => setNewUserId(e.target.value)}
-          placeholder="user_id UUID"
-          className="bg-surface/60 border border-border rounded px-3 py-2 text-sm font-mono focus:border-neon outline-none"
-        />
-        <select
-          value={newRole}
-          onChange={(e) => setNewRole(e.target.value as AppRole)}
-          className="bg-surface/60 border border-border rounded px-3 py-2 text-sm font-mono focus:border-neon outline-none"
-        >
-          <option value="user">user</option>
-          <option value="admin">admin</option>
-        </select>
-        <button
-          onClick={() => newUserId && setRole(newUserId, newRole)}
-          className="px-4 py-2 bg-neon text-primary-foreground rounded font-mono text-xs"
-        >
-          set role
-        </button>
-      </div>
-
-      <div className="space-y-2">
-        {users.map((user) => (
-          <div
-            key={user.user_id}
-            className="glass rounded-lg p-4 grid md:grid-cols-[1fr_auto_auto] gap-3 items-center"
-          >
-            <div className="min-w-0">
-              <div className="font-semibold truncate">{user.email || user.user_id}</div>
-              <div className="text-xs text-muted-foreground font-mono truncate">{user.user_id}</div>
-            </div>
-            <select
-              value={user.role}
-              onChange={(e) => setRole(user.user_id, e.target.value as AppRole)}
-              className="bg-surface/60 border border-border rounded px-3 py-2 text-sm font-mono focus:border-neon outline-none"
-            >
-              <option value="user">user</option>
-              <option value="admin">admin</option>
-            </select>
-            <button
-              onClick={() => removeRole(user.user_id)}
-              className="text-xs font-mono p-2 text-destructive"
-            >
-              <Trash2 className="size-4" />
-            </button>
-          </div>
-        ))}
-        {users.length === 0 && (
-          <div className="font-mono text-muted-foreground text-sm">$ no users found</div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function Overview() {
-  const [counts, setCounts] = useState<Record<string, number>>({});
-  useEffect(() => {
-    Promise.all(
-      [...TABLES.map((t) => t.key), "contact_messages", "skills", "gallery"].map(async (k) => {
-        const { count } = await supabase.from(k as any).select("*", { count: "exact", head: true });
-        return [k, count || 0] as const;
-      }),
-    ).then((arr) => setCounts(Object.fromEntries(arr)));
-  }, []);
-  return (
-    <div>
-      <h1 className="text-2xl font-bold mb-6 font-mono">
-        <span className="text-neon">#</span> dashboard
-      </h1>
-      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {Object.entries(counts).map(([k, v]) => (
-          <div key={k} className="glass rounded-xl p-5">
-            <div className="font-mono text-xs text-muted-foreground">{k}</div>
-            <div className="text-3xl font-bold text-neon glow-text">{v}</div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function ProfileEditor() {
-  const [profile, setProfile] = useState<any>(null);
-  const [busy, setBusy] = useState(false);
-
-  useEffect(() => {
-    supabase
-      .from("profile_settings")
-      .select("*")
-      .limit(1)
-      .maybeSingle()
-      .then(({ data }) => setProfile(data));
-  }, []);
-
-  const save = async () => {
-    setBusy(true);
-    const { error } = await supabase.from("profile_settings").update(profile).eq("id", profile.id);
-    setBusy(false);
-
-    if (error) {
-      const token = (await supabase.auth.getSession()).data.session?.access_token || "";
+    const load = async () => {
+      setBusy(true);
+      const { data: sessionData } = await supabase.auth.getSession();
+      const session = sessionData.session;
 
       try {
-        await mutateAdminProfile({
-          data: { accessToken: token, id: profile.id, payload: profile },
+        const fallbackUsers = await listAdminUsersFallback({
+          data: { accessToken: session?.access_token || "" },
         });
-      } catch (fallbackError) {
-        return toast.error(fallbackError instanceof Error ? fallbackError.message : error.message);
-      }
-    }
-
-    toast.success("Profile updated");
-  };
-
-  const uploadCV = async (file: File) => {
-    const cleanName = file.name.replace(/[^a-zA-Z0-9._-]/g, "-");
-    const path = `cv-${Date.now()}-${cleanName}`;
-    let publicUrl = "";
-
-    try {
-      publicUrl = await uploadFileWithAdminFallback(file, "cv", path);
-    } catch (uploadError) {
-      return toast.error(uploadError instanceof Error ? uploadError.message : "CV upload failed");
-    }
-
-    const nextProfile = { ...profile, cv_url: publicUrl };
-    setProfile(nextProfile);
-    const { error: updateError } = await supabase
-      .from("profile_settings")
-      .update({ cv_url: publicUrl })
-      .eq("id", profile.id);
-
-    if (updateError) {
-      const token = (await supabase.auth.getSession()).data.session?.access_token || "";
-      try {
-        await mutateAdminProfile({
-          data: { accessToken: token, id: profile.id, payload: { cv_url: publicUrl } },
-        });
-      } catch (fallbackError) {
-        return toast.error(
-          fallbackError instanceof Error ? fallbackError.message : updateError.message,
+        setRoleError("");
+        setUsers(fallbackUsers || []);
+      } catch (error) {
+        const currentUser = session?.user;
+        setUsers(
+          currentUser
+            ? [
+                {
+                  user_id: currentUser.id,
+                  email: currentUser.email || null,
+                  role: "admin",
+                  created_at: currentUser.created_at,
+                  last_sign_in_at: currentUser.last_sign_in_at || null,
+                },
+              ]
+            : [],
         );
+        setRoleError(
+          error instanceof Error
+            ? `${error.message} Tambahkan SUPABASE_SERVICE_ROLE_KEY di environment Lovable supaya semua user terdaftar bisa tampil.`
+            : "Role Management belum bisa membaca semua user.",
+        );
+      } finally {
+        setBusy(false);
       }
-    }
-    toast.success("CV uploaded — Download CV button now serves this file");
-  };
+    };
 
-  if (!profile) return <div className="font-mono text-muted-foreground">loading...</div>;
+    useEffect(() => {
+      load();
+    }, []);
 
-  return (
-    <div className="max-w-2xl space-y-4">
-      <h1 className="text-2xl font-bold font-mono">
-        <span className="text-neon">#</span> profile & cv
-      </h1>
-      {[
-        "branding_name",
-        "subtitle",
-        "email",
-        "whatsapp",
-        "location",
-        "availability",
-        "github_url",
-        "linkedin_url",
-        "instagram_url",
-      ].map((f) => (
-        <Field
-          key={f}
-          label={f}
-          value={profile[f] || ""}
-          onChange={(v) => setProfile({ ...profile, [f]: v })}
-        />
-      ))}
+    const setRole = async (userId: string, role: AppRole) => {
+      const token = (await supabase.auth.getSession()).data.session?.access_token || "";
+
+      try {
+        await setAdminUserRoleFallback({ data: { accessToken: token, userId, role } });
+        toast.success("Role updated");
+        load();
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : "Role update failed");
+      }
+    };
+
+    const removeRole = async (userId: string) => {
+      if (!confirm("Remove this user's role?")) return;
+      const token = (await supabase.auth.getSession()).data.session?.access_token || "";
+
+      try {
+        await removeAdminUserRoleFallback({ data: { accessToken: token, userId } });
+        toast.success("Role removed");
+        load();
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : "Role remove failed");
+      }
+    };
+
+    return (
+      <div className="max-w-4xl space-y-5">
+        <div className="flex items-center justify-between gap-3">
+          <h1 className="text-2xl font-bold font-mono">
+            <span className="text-neon">#</span> role management
+          </h1>
+          <button
+            onClick={load}
+            disabled={busy}
+            className="inline-flex items-center gap-2 px-3 py-2 glass border border-border rounded font-mono text-xs hover:border-neon"
+          >
+            <RefreshCw className="size-3" /> refresh
+          </button>
+        </div>
+
+        {roleError && (
+          <div className="glass rounded-lg border-destructive/50 p-4 font-mono text-xs text-destructive">
+            {roleError}
+          </div>
+        )}
+
+        <div className="glass rounded-lg p-4 grid md:grid-cols-[1fr_auto_auto] gap-3">
+          <input
+            value={newUserId}
+            onChange={(e) => setNewUserId(e.target.value)}
+            placeholder="user_id UUID"
+            className="bg-surface/60 border border-border rounded px-3 py-2 text-sm font-mono focus:border-neon outline-none"
+          />
+          <select
+            value={newRole}
+            onChange={(e) => setNewRole(e.target.value as AppRole)}
+            className="bg-surface/60 border border-border rounded px-3 py-2 text-sm font-mono focus:border-neon outline-none"
+          >
+            <option value="user">user</option>
+            <option value="admin">admin</option>
+          </select>
+          <button
+            onClick={() => newUserId && setRole(newUserId, newRole)}
+            className="px-4 py-2 bg-neon text-primary-foreground rounded font-mono text-xs"
+          >
+            set role
+          </button>
+        </div>
+
+        <div className="space-y-2">
+          {users.map((user) => (
+            <div
+              key={user.user_id}
+              className="glass rounded-lg p-4 grid md:grid-cols-[1fr_auto_auto] gap-3 items-center"
+            >
+              <div className="min-w-0">
+                <div className="font-semibold truncate">{user.email || user.user_id}</div>
+                <div className="text-xs text-muted-foreground font-mono truncate">{user.user_id}</div>
+              </div>
+              <select
+                value={user.role}
+                onChange={(e) => setRole(user.user_id, e.target.value as AppRole)}
+                className="bg-surface/60 border border-border rounded px-3 py-2 text-sm font-mono focus:border-neon outline-none"
+              >
+                <option value="user">user</option>
+                <option value="admin">admin</option>
+              </select>
+              <button
+                onClick={() => removeRole(user.user_id)}
+                className="text-xs font-mono p-2 text-destructive"
+              >
+                <Trash2 className="size-4" />
+              </button>
+            </div>
+          ))}
+          {users.length === 0 && (
+            <div className="font-mono text-muted-foreground text-sm">$ no users found</div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  function Overview() {
+    const [counts, setCounts] = useState<Record<string, number>>({});
+    useEffect(() => {
+      Promise.all(
+        [...TABLES.map((t) => t.key), "contact_messages", "skills", "gallery"].map(async (k) => {
+          const { count } = await supabase.from(k as any).select("*", { count: "exact", head: true });
+          return [k, count || 0] as const;
+        }),
+      ).then((arr) => setCounts(Object.fromEntries(arr)));
+    }, []);
+    return (
       <div>
-        <label className="text-xs font-mono text-muted-foreground">about</label>
-        <textarea
-          rows={4}
-          value={profile.about || ""}
-          onChange={(e) => setProfile({ ...profile, about: e.target.value })}
+        <h1 className="text-2xl font-bold mb-6 font-mono">
+          <span className="text-neon">#</span> dashboard
+        </h1>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {Object.entries(counts).map(([k, v]) => (
+            <div key={k} className="glass rounded-xl p-5">
+              <div className="font-mono text-xs text-muted-foreground">{k}</div>
+              <div className="text-3xl font-bold text-neon glow-text">{v}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  function ProfileEditor() {
+    const [profile, setProfile] = useState<any>(null);
+    const [busy, setBusy] = useState(false);
+
+    useEffect(() => {
+      supabase
+        .from("profile_settings")
+        .select("*")
+        .limit(1)
+        .maybeSingle()
+        .then(({ data }) => setProfile(data));
+    }, []);
+
+    const save = async () => {
+      setBusy(true);
+      const { error } = await supabase.from("profile_settings").update(profile).eq("id", profile.id);
+      setBusy(false);
+
+      if (error) {
+        const token = (await supabase.auth.getSession()).data.session?.access_token || "";
+
+        try {
+          await mutateAdminProfile({
+            data: { accessToken: token, id: profile.id, payload: profile },
+          });
+        } catch (fallbackError) {
+          return toast.error(fallbackError instanceof Error ? fallbackError.message : error.message);
+        }
+      }
+
+      toast.success("Profile updated");
+    };
+
+    const uploadCV = async (file: File) => {
+      const cleanName = file.name.replace(/[^a-zA-Z0-9._-]/g, "-");
+      const path = `cv-${Date.now()}-${cleanName}`;
+      let publicUrl = "";
+
+      try {
+        publicUrl = await uploadFileWithAdminFallback(file, "cv", path);
+      } catch (uploadError) {
+        return toast.error(uploadError instanceof Error ? uploadError.message : "CV upload failed");
+      }
+
+      const nextProfile = { ...profile, cv_url: publicUrl };
+      setProfile(nextProfile);
+      const { error: updateError } = await supabase
+        .from("profile_settings")
+        .update({ cv_url: publicUrl })
+        .eq("id", profile.id);
+
+      if (updateError) {
+        const token = (await supabase.auth.getSession()).data.session?.access_token || "";
+        try {
+          await mutateAdminProfile({
+            data: { accessToken: token, id: profile.id, payload: { cv_url: publicUrl } },
+          });
+        } catch (fallbackError) {
+          return toast.error(
+            fallbackError instanceof Error ? fallbackError.message : updateError.message,
+          );
+        }
+      }
+      toast.success("CV uploaded — Download CV button now serves this file");
+    };
+
+    if (!profile) return <div className="font-mono text-muted-foreground">loading...</div>;
+
+    return (
+      <div className="max-w-2xl space-y-4">
+        <h1 className="text-2xl font-bold font-mono">
+          <span className="text-neon">#</span> profile & cv
+        </h1>
+        {[
+          "branding_name",
+          "subtitle",
+          "email",
+          "whatsapp",
+          "location",
+          "availability",
+          "github_url",
+          "linkedin_url",
+          "instagram_url",
+        ].map((f) => (
+          <Field
+            key={f}
+            label={f}
+            value={profile[f] || ""}
+            onChange={(v) => setProfile({ ...profile, [f]: v })}
+          />
+        ))}
+        <div>
+          <label className="text-xs font-mono text-muted-foreground">about</label>
+          <textarea
+            rows={4}
+            value={profile.about || ""}
+            onChange={(e) => setProfile({ ...profile, about: e.target.value })}
+            className="w-full bg-surface/60 border border-border rounded px-3 py-2 text-sm font-mono mt-1 focus:border-neon outline-none"
+          />
+        </div>
+        <div className="glass rounded-lg p-4">
+          <div className="font-mono text-xs text-neon mb-2">// CV file</div>
+          {profile.cv_url && (
+            <a
+              href={profile.cv_url}
+              target="_blank"
+              rel="noopener"
+              className="text-xs text-neon underline break-all"
+            >
+              {profile.cv_url}
+            </a>
+          )}
+          <label className="mt-2 inline-flex items-center gap-2 px-3 py-2 bg-neon text-primary-foreground font-mono text-xs rounded cursor-pointer">
+            <Upload className="size-3" /> upload new CV
+            <input
+              type="file"
+              accept=".pdf,.doc,.docx"
+              hidden
+              onChange={(e) => e.target.files?.[0] && uploadCV(e.target.files[0])}
+            />
+          </label>
+        </div>
+        <button
+          disabled={busy}
+          onClick={save}
+          className="px-5 py-2.5 bg-neon text-primary-foreground font-mono text-sm rounded glow-neon"
+        >
+          save profile
+        </button>
+      </div>
+    );
+  }
+
+  function Field({
+    label,
+    value,
+    onChange,
+  }: {
+    label: string;
+    value: string;
+    onChange: (v: string) => void;
+  }) {
+    return (
+      <div>
+        <label className="text-xs font-mono text-muted-foreground">{label}</label>
+        <input
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
           className="w-full bg-surface/60 border border-border rounded px-3 py-2 text-sm font-mono mt-1 focus:border-neon outline-none"
         />
       </div>
-      <div className="glass rounded-lg p-4">
-        <div className="font-mono text-xs text-neon mb-2">// CV file</div>
-        {profile.cv_url && (
-          <a
-            href={profile.cv_url}
-            target="_blank"
-            rel="noopener"
-            className="text-xs text-neon underline break-all"
+    );
+  }
+
+  async function fileToBase64(file: File) {
+    const buffer = await file.arrayBuffer();
+    const bytes = new Uint8Array(buffer);
+    let binary = "";
+
+    for (let index = 0; index < bytes.length; index += 0x8000) {
+      binary += String.fromCharCode(...bytes.subarray(index, index + 0x8000));
+    }
+
+    return btoa(binary);
+  }
+
+  async function uploadFileWithAdminFallback(
+    file: File,
+    bucket: MediaField["bucket"] | "cv",
+    path: string,
+  ) {
+    const direct = await supabase.storage.from(bucket).upload(path, file, {
+      cacheControl: "3600",
+      upsert: true,
+    });
+
+    if (!direct.error) {
+      const { data } = supabase.storage.from(bucket).getPublicUrl(path);
+      return data.publicUrl;
+    }
+
+    const token = (await supabase.auth.getSession()).data.session?.access_token || "";
+    const fallback = await uploadAdminFile({
+      data: {
+        accessToken: token,
+        bucket,
+        path,
+        contentType: file.type || "application/octet-stream",
+        base64: await fileToBase64(file),
+      },
+    });
+
+    return fallback.publicUrl;
+  }
+
+  function CrudTable({ config }: { config: (typeof TABLES)[number] }) {
+    const [rows, setRows] = useState<any[]>([]);
+    const [editing, setEditing] = useState<any>(null);
+
+    const load = async () => {
+      const { data } = await supabase
+        .from(config.key)
+        .select("*")
+        .order("order_index", { ascending: true });
+      setRows(data || []);
+    };
+    useEffect(() => {
+      load();
+    }, [config.key]);
+
+    const save = async () => {
+      const payload = { ...editing };
+      delete payload.created_at;
+      delete payload.updated_at;
+      const { error } = editing.id
+        ? await supabase.from(config.key).update(payload).eq("id", editing.id)
+        : await supabase.from(config.key).insert(payload);
+
+      if (error) {
+        const token = (await supabase.auth.getSession()).data.session?.access_token || "";
+
+        try {
+          await mutateAdminContent({
+            data: {
+              accessToken: token,
+              table: config.key,
+              action: editing.id ? "update" : "insert",
+              id: editing.id,
+              payload,
+            },
+          });
+        } catch (fallbackError) {
+          return toast.error(fallbackError instanceof Error ? fallbackError.message : error.message);
+        }
+      }
+
+      toast.success("Saved");
+      setEditing(null);
+      load();
+    };
+
+    const del = async (id: string) => {
+      if (!confirm("Delete this entry?")) return;
+      const { error } = await supabase.from(config.key).delete().eq("id", id);
+
+      if (error) {
+        const token = (await supabase.auth.getSession()).data.session?.access_token || "";
+
+        try {
+          await mutateAdminContent({
+            data: { accessToken: token, table: config.key, action: "delete", id },
+          });
+        } catch (fallbackError) {
+          return toast.error(fallbackError instanceof Error ? fallbackError.message : error.message);
+        }
+      }
+
+      toast.success("Deleted");
+      load();
+    };
+
+    return (
+      <div>
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-2xl font-bold font-mono">
+            <span className="text-neon">#</span> {config.label.toLowerCase()}
+          </h1>
+          <button
+            onClick={() => setEditing({ order_index: rows.length })}
+            className="inline-flex items-center gap-2 px-3 py-2 bg-neon text-primary-foreground font-mono text-xs rounded"
           >
-            {profile.cv_url}
-          </a>
-        )}
-        <label className="mt-2 inline-flex items-center gap-2 px-3 py-2 bg-neon text-primary-foreground font-mono text-xs rounded cursor-pointer">
-          <Upload className="size-3" /> upload new CV
-          <input
-            type="file"
-            accept=".pdf,.doc,.docx"
-            hidden
-            onChange={(e) => e.target.files?.[0] && uploadCV(e.target.files[0])}
-          />
-        </label>
-      </div>
-      <button
-        disabled={busy}
-        onClick={save}
-        className="px-5 py-2.5 bg-neon text-primary-foreground font-mono text-sm rounded glow-neon"
-      >
-        save profile
-      </button>
-    </div>
-  );
-}
+            <Plus className="size-3" /> add
+          </button>
+        </div>
 
-function Field({
-  label,
-  value,
-  onChange,
-}: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-}) {
-  return (
-    <div>
-      <label className="text-xs font-mono text-muted-foreground">{label}</label>
-      <input
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="w-full bg-surface/60 border border-border rounded px-3 py-2 text-sm font-mono mt-1 focus:border-neon outline-none"
-      />
-    </div>
-  );
-}
-
-async function fileToBase64(file: File) {
-  const buffer = await file.arrayBuffer();
-  const bytes = new Uint8Array(buffer);
-  let binary = "";
-
-  for (let index = 0; index < bytes.length; index += 0x8000) {
-    binary += String.fromCharCode(...bytes.subarray(index, index + 0x8000));
-  }
-
-  return btoa(binary);
-}
-
-async function uploadFileWithAdminFallback(
-  file: File,
-  bucket: MediaField["bucket"] | "cv",
-  path: string,
-) {
-  const direct = await supabase.storage.from(bucket).upload(path, file, {
-    cacheControl: "3600",
-    upsert: true,
-  });
-
-  if (!direct.error) {
-    const { data } = supabase.storage.from(bucket).getPublicUrl(path);
-    return data.publicUrl;
-  }
-
-  const token = (await supabase.auth.getSession()).data.session?.access_token || "";
-  const fallback = await uploadAdminFile({
-    data: {
-      accessToken: token,
-      bucket,
-      path,
-      contentType: file.type || "application/octet-stream",
-      base64: await fileToBase64(file),
-    },
-  });
-
-  return fallback.publicUrl;
-}
-
-function CrudTable({ config }: { config: (typeof TABLES)[number] }) {
-  const [rows, setRows] = useState<any[]>([]);
-  const [editing, setEditing] = useState<any>(null);
-
-  const load = async () => {
-    const { data } = await supabase
-      .from(config.key)
-      .select("*")
-      .order("order_index", { ascending: true });
-    setRows(data || []);
-  };
-  useEffect(() => {
-    load();
-  }, [config.key]);
-
-  const save = async () => {
-    const payload = { ...editing };
-    delete payload.created_at;
-    delete payload.updated_at;
-    const { error } = editing.id
-      ? await supabase.from(config.key).update(payload).eq("id", editing.id)
-      : await supabase.from(config.key).insert(payload);
-
-    if (error) {
-      const token = (await supabase.auth.getSession()).data.session?.access_token || "";
-
-      try {
-        await mutateAdminContent({
-          data: {
-            accessToken: token,
-            table: config.key,
-            action: editing.id ? "update" : "insert",
-            id: editing.id,
-            payload,
-          },
-        });
-      } catch (fallbackError) {
-        return toast.error(fallbackError instanceof Error ? fallbackError.message : error.message);
-      }
-    }
-
-    toast.success("Saved");
-    setEditing(null);
-    load();
-  };
-
-  const del = async (id: string) => {
-    if (!confirm("Delete this entry?")) return;
-    const { error } = await supabase.from(config.key).delete().eq("id", id);
-
-    if (error) {
-      const token = (await supabase.auth.getSession()).data.session?.access_token || "";
-
-      try {
-        await mutateAdminContent({
-          data: { accessToken: token, table: config.key, action: "delete", id },
-        });
-      } catch (fallbackError) {
-        return toast.error(fallbackError instanceof Error ? fallbackError.message : error.message);
-      }
-    }
-
-    toast.success("Deleted");
-    load();
-  };
-
-  return (
-    <div>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold font-mono">
-          <span className="text-neon">#</span> {config.label.toLowerCase()}
-        </h1>
-        <button
-          onClick={() => setEditing({ order_index: rows.length })}
-          className="inline-flex items-center gap-2 px-3 py-2 bg-neon text-primary-foreground font-mono text-xs rounded"
-        >
-          <Plus className="size-3" /> add
-        </button>
-      </div>
-
-      <div className="space-y-2">
-        {rows.map((r) => (
-          <div key={r.id} className="glass rounded-lg p-4 flex items-center justify-between gap-4">
-            <div className="flex-1 min-w-0">
-              <div className="font-semibold truncate">{r.title || r.name || r.institution}</div>
-              <div className="text-xs text-muted-foreground font-mono truncate">
-                {r.company || r.issuer || r.major || r.role || r.category}
+        <div className="space-y-2">
+          {rows.map((r) => (
+            <div key={r.id} className="glass rounded-lg p-4 flex items-center justify-between gap-4">
+              <div className="flex-1 min-w-0">
+                <div className="font-semibold truncate">{r.title || r.name || r.institution}</div>
+                <div className="text-xs text-muted-foreground font-mono truncate">
+                  {r.company || r.issuer || r.major || r.role || r.category}
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setEditing(r)}
+                  className="text-xs font-mono px-2 py-1 border border-border rounded hover:border-neon"
+                >
+                  edit
+                </button>
+                <button onClick={() => del(r.id)} className="text-xs font-mono p-1 text-destructive">
+                  <Trash2 className="size-3" />
+                </button>
               </div>
             </div>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setEditing(r)}
-                className="text-xs font-mono px-2 py-1 border border-border rounded hover:border-neon"
-              >
-                edit
-              </button>
-              <button onClick={() => del(r.id)} className="text-xs font-mono p-1 text-destructive">
-                <Trash2 className="size-3" />
-              </button>
+          ))}
+        </div>
+
+        {editing && (
+          <div
+            className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4"
+            onClick={() => setEditing(null)}
+          >
+            <div
+              className="glass max-w-lg w-full rounded-2xl p-6 space-y-3 max-h-[90vh] overflow-y-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="font-mono text-xs text-neon">
+                $ {editing.id ? "edit" : "new"} {config.label}
+              </div>
+              {config.fields.map((field) => {
+                const fieldType = "type" in field ? field.type : "text";
+                return (
+                  <div key={field.name}>
+                    <label className="text-xs font-mono text-muted-foreground">{field.label}</label>
+                    {fieldType === "textarea" ? (
+                      <textarea
+                        rows={3}
+                        value={editing[field.name] || ""}
+                        onChange={(e) => setEditing({ ...editing, [field.name]: e.target.value })}
+                        className="w-full bg-surface/60 border border-border rounded px-3 py-2 text-sm font-mono mt-1 focus:border-neon outline-none"
+                      />
+                    ) : (
+                      <input
+                        type={fieldType === "number" ? "number" : "text"}
+                        value={editing[field.name] || ""}
+                        onChange={(e) =>
+                          setEditing({
+                            ...editing,
+                            [field.name]:
+                              fieldType === "number" && e.target.value !== ""
+                                ? Number(e.target.value)
+                                : e.target.value,
+                          })
+                        }
+                        className="w-full bg-surface/60 border border-border rounded px-3 py-2 text-sm font-mono mt-1 focus:border-neon outline-none"
+                      />
+                  )}
+                  </div>
+                );
+              })}
+              {"media" in config && (
+                <MediaFiles
+                  tableKey={config.key}
+                  media={config.media as readonly MediaField[]}
+                  editing={editing}
+                  setEditing={setEditing}
+                />
+              )}
+              <div className="flex gap-2 pt-2">
+                <button
+                  onClick={save}
+                  className="px-4 py-2 bg-neon text-primary-foreground font-mono text-xs rounded glow-neon"
+                >
+                  save
+                </button>
+                <button
+                  onClick={() => setEditing(null)}
+                  className="px-4 py-2 glass border border-border font-mono text-xs rounded"
+                >
+                  cancel
+                </button>
+              </div>
             </div>
           </div>
-        ))}
+        )}
       </div>
+    );
+  }
 
-      {editing && (
-        <div
-          className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4"
-          onClick={() => setEditing(null)}
-        >
-          <div
-            className="glass max-w-lg w-full rounded-2xl p-6 space-y-3 max-h-[90vh] overflow-y-auto"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="font-mono text-xs text-neon">
-              $ {editing.id ? "edit" : "new"} {config.label}
-            </div>
-            {config.fields.map((field) => {
-              const fieldType = "type" in field ? field.type : "text";
-              return (
-                <div key={field.name}>
-                  <label className="text-xs font-mono text-muted-foreground">{field.label}</label>
-                  {fieldType === "textarea" ? (
-                    <textarea
-                      rows={3}
-                      value={editing[field.name] || ""}
-                      onChange={(e) => setEditing({ ...editing, [field.name]: e.target.value })}
-                      className="w-full bg-surface/60 border border-border rounded px-3 py-2 text-sm font-mono mt-1 focus:border-neon outline-none"
-                    />
-                  ) : (
-                    <input
-                      type={fieldType === "number" ? "number" : "text"}
-                      value={editing[field.name] || ""}
-                      onChange={(e) =>
-                        setEditing({
-                          ...editing,
-                          [field.name]:
-                            fieldType === "number" && e.target.value !== ""
-                              ? Number(e.target.value)
-                              : e.target.value,
-                        })
-                      }
-                      className="w-full bg-surface/60 border border-border rounded px-3 py-2 text-sm font-mono mt-1 focus:border-neon outline-none"
-                    />
+  function MediaFiles({
+    tableKey,
+    media,
+    editing,
+    setEditing,
+  }: {
+    tableKey: string;
+    media: readonly MediaField[];
+    editing: any;
+    setEditing: (value: any) => void;
+  }) {
+    const upload = async (file: File, item: MediaField) => {
+      const cleanName = file.name.replace(/[^a-zA-Z0-9._-]/g, "-");
+      const path = `${tableKey}/${Date.now()}-${cleanName}`;
+
+      let publicUrl = "";
+
+      try {
+        publicUrl = await uploadFileWithAdminFallback(file, item.bucket, path);
+      } catch (uploadError) {
+        return toast.error(
+          uploadError instanceof Error ? uploadError.message : `${item.label} upload failed`,
+        );
+      }
+
+      setEditing({ ...editing, [item.name]: publicUrl });
+      toast.success(`${item.label} uploaded`);
+    };
+
+    return (
+      <div className="space-y-2">
+        <div className="font-mono text-xs text-neon">// media upload</div>
+        <div className="grid sm:grid-cols-2 gap-2">
+          {media.map((item) => {
+            const value = editing[item.name] || "";
+            const isImage = /\.(png|jpe?g|webp|gif)$/i.test(value);
+
+            return (
+              <div key={item.name} className="glass rounded p-3 text-xs font-mono">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-muted-foreground">{item.label}</span>
+                  {value && (
+                    <a
+                      href={value}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-neon underline"
+                    >
+                      open
+                    </a>
                   )}
                 </div>
-              );
-            })}
-            {"media" in config && (
-              <MediaFiles
-                tableKey={config.key}
-                media={config.media as readonly MediaField[]}
-                editing={editing}
-                setEditing={setEditing}
-              />
-            )}
-            <div className="flex gap-2 pt-2">
-              <button
-                onClick={save}
-                className="px-4 py-2 bg-neon text-primary-foreground font-mono text-xs rounded glow-neon"
-              >
-                save
-              </button>
-              <button
-                onClick={() => setEditing(null)}
-                className="px-4 py-2 glass border border-border font-mono text-xs rounded"
-              >
-                cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function MediaFiles({
-  tableKey,
-  media,
-  editing,
-  setEditing,
-}: {
-  tableKey: string;
-  media: readonly MediaField[];
-  editing: any;
-  setEditing: (value: any) => void;
-}) {
-  const upload = async (file: File, item: MediaField) => {
-    const cleanName = file.name.replace(/[^a-zA-Z0-9._-]/g, "-");
-    const path = `${tableKey}/${Date.now()}-${cleanName}`;
-
-    let publicUrl = "";
-
-    try {
-      publicUrl = await uploadFileWithAdminFallback(file, item.bucket, path);
-    } catch (uploadError) {
-      return toast.error(
-        uploadError instanceof Error ? uploadError.message : `${item.label} upload failed`,
-      );
-    }
-
-    setEditing({ ...editing, [item.name]: publicUrl });
-    toast.success(`${item.label} uploaded`);
-  };
-
-  return (
-    <div className="space-y-2">
-      <div className="font-mono text-xs text-neon">// media upload</div>
-      <div className="grid sm:grid-cols-2 gap-2">
-        {media.map((item) => {
-          const value = editing[item.name] || "";
-          const isImage = /\.(png|jpe?g|webp|gif)$/i.test(value);
-
-          return (
-            <div key={item.name} className="glass rounded p-3 text-xs font-mono">
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-muted-foreground">{item.label}</span>
-                {value && (
-                  <a
-                    href={value}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-neon underline"
-                  >
-                    open
-                  </a>
+                {isImage && (
+                  <img
+                    src={value}
+                    alt=""
+                    className="mt-2 h-24 w-full rounded border border-border object-cover"
+                  />
                 )}
+                {value && !isImage && <div className="mt-2 truncate text-neon">file uploaded</div>}
+                <label className="mt-3 inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded border border-border px-3 py-2 text-center hover:border-neon hover:text-neon">
+                  <Upload className="size-3" /> upload PDF/JPG/PNG
+                  <input
+                    hidden
+                    type="file"
+                    accept={item.accept}
+                    onChange={(e) => e.target.files?.[0] && upload(e.target.files[0], item)}
+                  />
+                </label>
               </div>
-              {isImage && (
-                <img
-                  src={value}
-                  alt=""
-                  className="mt-2 h-24 w-full rounded border border-border object-cover"
-                />
-              )}
-              {value && !isImage && <div className="mt-2 truncate text-neon">file uploaded</div>}
-              <label className="mt-3 inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded border border-border px-3 py-2 text-center hover:border-neon hover:text-neon">
-                <Upload className="size-3" /> upload PDF/JPG/PNG
-                <input
-                  hidden
-                  type="file"
-                  accept={item.accept}
-                  onChange={(e) => e.target.files?.[0] && upload(e.target.files[0], item)}
-                />
-              </label>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
-    </div>
-  );
-}
+    );
+  }
 
-function MessagesView() {
-  const [msgs, setMsgs] = useState<any[]>([]);
-  const load = () =>
-    supabase
-      .from("contact_messages")
-      .select("*")
-      .order("created_at", { ascending: false })
-      .then(({ data }) => setMsgs(data || []));
-  useEffect(() => {
-    load();
-  }, []);
-  const markRead = async (id: string) => {
-    await supabase.from("contact_messages").update({ read: true }).eq("id", id);
-    load();
-  };
-  const del = async (id: string) => {
-    await supabase.from("contact_messages").delete().eq("id", id);
-    load();
-  };
+  function MessagesView() {
+    const [msgs, setMsgs] = useState<any[]>([]);
+    const load = () =>
+      supabase
+        .from("contact_messages")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .then(({ data }) => setMsgs(data || []));
+    useEffect(() => {
+      load();
+    }, []);
+    const markRead = async (id: string) => {
+      await supabase.from("contact_messages").update({ read: true }).eq("id", id);
+      load();
+    };
+    const del = async (id: string) => {
+      await supabase.from("contact_messages").delete().eq("id", id);
+      load();
+    };
 
-  return (
-    <div>
-      <h1 className="text-2xl font-bold font-mono mb-6">
-        <span className="text-neon">#</span> messages ({msgs.filter((m) => !m.read).length} new)
-      </h1>
-      <div className="space-y-3">
-        {msgs.map((m) => (
-          <div key={m.id} className={`glass rounded-lg p-4 ${!m.read ? "border-neon/50" : ""}`}>
-            <div className="flex items-center justify-between gap-2">
-              <div>
-                <div className="font-semibold">
-                  {m.name} <span className="text-muted-foreground text-sm">&lt;{m.email}&gt;</span>
+    return (
+      <div>
+        <h1 className="text-2xl font-bold font-mono mb-6">
+          <span className="text-neon">#</span> messages ({msgs.filter((m) => !m.read).length} new)
+        </h1>
+        <div className="space-y-3">
+          {msgs.map((m) => (
+            <div key={m.id} className={`glass rounded-lg p-4 ${!m.read ? "border-neon/50" : ""}`}>
+              <div className="flex items-center justify-between gap-2">
+                <div>
+                  <div className="font-semibold">
+                    {m.name} <span className="text-muted-foreground text-sm">&lt;{m.email}&gt;</span>
+                  </div>
+                  <div className="text-xs font-mono text-neon">{m.subject}</div>
                 </div>
-                <div className="text-xs font-mono text-neon">{m.subject}</div>
+                <div className="text-xs font-mono text-neon">
+                  {new Date(m.created_at).toLocaleString()}
+                </div>
               </div>
-              <div className="text-xs text-muted-foreground font-mono">
-                {new Date(m.created_at).toLocaleString()}
-              </div>
-            </div>
-            <p className="mt-3 text-sm whitespace-pre-wrap">{m.message}</p>
-            <div className="flex gap-2 mt-3">
-              <a
-                href={`mailto:${m.email}?subject=Re: ${encodeURIComponent(m.subject)}`}
-                className="text-xs font-mono text-neon underline"
-              >
-                reply via email
-              </a>
-              {!m.read && (
-                <button
-                  onClick={() => markRead(m.id)}
-                  className="text-xs font-mono text-muted-foreground hover:text-neon"
+              <p className="mt-3 text-sm whitespace-pre-wrap">{m.message}</p>
+              <div className="flex gap-2 mt-3">
+                <a
+                  href={`mailto:${m.email}?subject=Re: ${encodeURIComponent(m.subject)}`}
+                  className="text-xs font-mono text-neon underline"
                 >
-                  mark read
+                  reply via email
+                </a>
+                {!m.read && (
+                  <button
+                    onClick={() => markRead(m.id)}
+                    className="text-xs font-mono text-muted-foreground hover:text-neon"
+                  >
+                    mark read
+                  </button>
+                )}
+                <button
+                  onClick={() => del(m.id)}
+                  className="text-xs font-mono text-destructive ml-auto"
+                >
+                  delete
                 </button>
-              )}
-              <button
-                onClick={() => del(m.id)}
-                className="text-xs font-mono text-destructive ml-auto"
-              >
-                delete
-              </button>
+              </div>
             </div>
-          </div>
-        ))}
-        {msgs.length === 0 && (
-          <div className="font-mono text-muted-foreground text-sm">$ no messages yet</div>
-        )}
+          ))}
+          {msgs.length === 0 && (
+            <div className="font-mono text-muted-foreground text-sm">$ no messages yet</div>
+          )}
+        </div>
       </div>
-    </div>
-  );
+    );
+  }
 }
