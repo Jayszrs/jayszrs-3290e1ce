@@ -5,7 +5,7 @@ CREATE POLICY "admins read profile"
 ON public.profile_settings
 FOR SELECT
 TO authenticated
-USING (public.has_role(auth.uid(), 'admin'));
+USING (private.has_role(auth.uid(), 'admin'));
 
 -- Public-safe view: omits email + whatsapp
 CREATE OR REPLACE VIEW public.profile_public

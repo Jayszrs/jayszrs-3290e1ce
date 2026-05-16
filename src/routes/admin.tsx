@@ -37,9 +37,6 @@ export const Route = createFileRoute("/admin")({
   component: AdminPage,
 });
 
-const ADMIN_USERNAME_ALIAS = "jayszrs";
-const ADMIN_EMAIL = "jayszrs@admin.local";
-
 type AppRole = "admin" | "user";
 type AdminUserRow = {
   user_id: string;
@@ -70,8 +67,18 @@ const TABLES = [
       { name: "description", label: "Deskripsi", type: "textarea" },
     ],
     media: [
-      { name: "certificate_url", label: "PDF / Image Certificate", bucket: "certificates", accept: ".pdf,.jpg,.jpeg,.png" },
-      { name: "badge_url", label: "Badge Certificate", bucket: "badges", accept: ".jpg,.jpeg,.png" },
+      {
+        name: "certificate_url",
+        label: "PDF / Image Certificate",
+        bucket: "certificates",
+        accept: ".pdf,.jpg,.jpeg,.png",
+      },
+      {
+        name: "badge_url",
+        label: "Badge Certificate",
+        bucket: "badges",
+        accept: ".jpg,.jpeg,.png",
+      },
     ],
   },
   {
@@ -91,8 +98,18 @@ const TABLES = [
       { name: "description", label: "Deskripsi ngerjain apa aja", type: "textarea" },
     ],
     media: [
-      { name: "image_url", label: "Foto / Screenshot Work", bucket: "gallery", accept: ".jpg,.jpeg,.png" },
-      { name: "document_url", label: "Dokumentasi Work PDF", bucket: "documents", accept: ".pdf,.jpg,.jpeg,.png" },
+      {
+        name: "image_url",
+        label: "Foto / Screenshot Work",
+        bucket: "gallery",
+        accept: ".jpg,.jpeg,.png",
+      },
+      {
+        name: "document_url",
+        label: "Dokumentasi Work PDF",
+        bucket: "documents",
+        accept: ".pdf,.jpg,.jpeg,.png",
+      },
     ],
   },
   {
@@ -109,8 +126,18 @@ const TABLES = [
       { name: "description", label: "Deskripsi", type: "textarea" },
     ],
     media: [
-      { name: "logo_url", label: "Logo / Foto Sekolah", bucket: "gallery", accept: ".jpg,.jpeg,.png" },
-      { name: "document_url", label: "Dokumentasi Education PDF", bucket: "documents", accept: ".pdf,.jpg,.jpeg,.png" },
+      {
+        name: "logo_url",
+        label: "Logo / Foto Sekolah",
+        bucket: "gallery",
+        accept: ".jpg,.jpeg,.png",
+      },
+      {
+        name: "document_url",
+        label: "Dokumentasi Education PDF",
+        bucket: "documents",
+        accept: ".pdf,.jpg,.jpeg,.png",
+      },
     ],
   },
   {
@@ -127,7 +154,12 @@ const TABLES = [
     ],
     media: [
       { name: "image_url", label: "Foto Volunteer", bucket: "gallery", accept: ".jpg,.jpeg,.png" },
-      { name: "document_url", label: "Dokumentasi Volunteer PDF", bucket: "documents", accept: ".pdf,.jpg,.jpeg,.png" },
+      {
+        name: "document_url",
+        label: "Dokumentasi Volunteer PDF",
+        bucket: "documents",
+        accept: ".pdf,.jpg,.jpeg,.png",
+      },
     ],
   },
   {
@@ -143,8 +175,18 @@ const TABLES = [
       { name: "github_url", label: "GitHub URL" },
     ],
     media: [
-      { name: "thumbnail_url", label: "Thumbnail Project", bucket: "gallery", accept: ".jpg,.jpeg,.png" },
-      { name: "documentation_url", label: "Dokumentasi Project PDF", bucket: "documents", accept: ".pdf,.jpg,.jpeg,.png" },
+      {
+        name: "thumbnail_url",
+        label: "Thumbnail Project",
+        bucket: "gallery",
+        accept: ".jpg,.jpeg,.png",
+      },
+      {
+        name: "documentation_url",
+        label: "Dokumentasi Project PDF",
+        bucket: "documents",
+        accept: ".pdf,.jpg,.jpeg,.png",
+      },
     ],
   },
 ] as const;
@@ -209,8 +251,7 @@ function AuthForm() {
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     setBusy(true);
-    const normalizedLogin = email.trim().toLowerCase();
-    const loginEmail = normalizedLogin === ADMIN_USERNAME_ALIAS ? ADMIN_EMAIL : email.trim();
+    const loginEmail = email.trim();
 
     let error: { message: string } | null = null;
     let signedIn = false;
@@ -601,9 +642,7 @@ function ProfileEditor() {
           data: { accessToken: token, id: profile.id, payload: profile },
         });
       } catch (fallbackError) {
-        return toast.error(
-          fallbackError instanceof Error ? fallbackError.message : error.message,
-        );
+        return toast.error(fallbackError instanceof Error ? fallbackError.message : error.message);
       }
     }
 
@@ -618,9 +657,7 @@ function ProfileEditor() {
     try {
       publicUrl = await uploadFileWithAdminFallback(file, "cv", path);
     } catch (uploadError) {
-      return toast.error(
-        uploadError instanceof Error ? uploadError.message : "CV upload failed",
-      );
+      return toast.error(uploadError instanceof Error ? uploadError.message : "CV upload failed");
     }
 
     const nextProfile = { ...profile, cv_url: publicUrl };
@@ -811,9 +848,7 @@ function CrudTable({ config }: { config: (typeof TABLES)[number] }) {
           },
         });
       } catch (fallbackError) {
-        return toast.error(
-          fallbackError instanceof Error ? fallbackError.message : error.message,
-        );
+        return toast.error(fallbackError instanceof Error ? fallbackError.message : error.message);
       }
     }
 
@@ -834,9 +869,7 @@ function CrudTable({ config }: { config: (typeof TABLES)[number] }) {
           data: { accessToken: token, table: config.key, action: "delete", id },
         });
       } catch (fallbackError) {
-        return toast.error(
-          fallbackError instanceof Error ? fallbackError.message : error.message,
-        );
+        return toast.error(fallbackError instanceof Error ? fallbackError.message : error.message);
       }
     }
 

@@ -647,6 +647,7 @@ function CvPreviewModal({
   // Options: Google Drive (share -> "Anyone with link" -> copy direct link), Dropbox, or any public HTTPS URL.
   // Google Drive format: https://drive.google.com/uc?export=download&id=FILE_ID
   const CV_PDF_URL = "https://drive.google.com/uc?export=download&id=FILE_ID";
+  const hasHostedCv = CV_PDF_URL.startsWith("https://") && !CV_PDF_URL.includes("FILE_ID");
   const viewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(CV_PDF_URL)}&embedded=true`;
 
   const close = useCallback(() => {
@@ -657,7 +658,7 @@ function CvPreviewModal({
   useEffect(() => {
     if (!open) return;
     setClosing(false);
-    setLoading(true);
+    setLoading(hasHostedCv);
     document.body.style.overflow = "hidden";
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") close();
@@ -667,7 +668,7 @@ function CvPreviewModal({
       window.removeEventListener("keydown", onKeyDown);
       document.body.style.overflow = "";
     };
-  }, [close, open]);
+  }, [close, hasHostedCv, open]);
 
   if (!open) return null;
 
@@ -681,20 +682,85 @@ function CvPreviewModal({
           </button>
         </div>
         <div className="cv-frame-wrap">
-          {loading && <div className="cv-skeleton" />}
-          <iframe
-            src={viewerUrl}
-            width="100%"
-            height="68vh"
-            style={{ border: "none", borderRadius: 14, background: "rgba(0,0,0,0.30)" }}
-            title="Jay SZRS - Curriculum Vitae"
-            onLoad={() => setLoading(false)}
-          />
+          {hasHostedCv ? (
+            <>
+              {loading && <div className="cv-skeleton" />}
+              <iframe
+                src={viewerUrl}
+                width="100%"
+                height="68vh"
+                style={{ border: "none", borderRadius: 14, background: "rgba(0,0,0,0.30)" }}
+                title="Jay SZRS - Curriculum Vitae"
+                onLoad={() => setLoading(false)}
+              />
+            </>
+          ) : (
+            <article className="cv-live-preview" aria-label="Jay SZRS CV preview">
+              <header>
+                <div>
+                  <p>Curriculum Vitae</p>
+                  <h4>Jay SZRS</h4>
+                  <span>Creative Technologist / Informatics Student</span>
+                </div>
+                <div className="cv-live-preview__mark">JS</div>
+              </header>
+              <section>
+                <h5>Profile</h5>
+                <p>
+                  Informatics Engineering student focused on UI/UX, web development, graphic design,
+                  video editing, content creation, networking, programming, and cyber security
+                  basics.
+                </p>
+              </section>
+              <div className="cv-live-preview__grid">
+                <section>
+                  <h5>Education</h5>
+                  <strong>Universitas Bani Saleh</strong>
+                  <p>Informatics Engineering / 2023 - Present</p>
+                  <strong>SMAN 71 Jakarta</strong>
+                  <p>IPA - Ilmu Pengetahuan Alam / 2020 - 2023</p>
+                </section>
+                <section>
+                  <h5>Contact</h5>
+                  <p>Indonesia</p>
+                  <p>github.com/Jayszrs</p>
+                  <p>linkedin.com/in/jayszrs</p>
+                  <p>jaelanisuryasaputra@gmail.com</p>
+                </section>
+              </div>
+              <section>
+                <h5>Skills</h5>
+                <div className="cv-live-preview__skills">
+                  {[
+                    "HTML",
+                    "CSS",
+                    "JavaScript",
+                    "React.js",
+                    "PHP",
+                    "MySQL",
+                    "Java",
+                    "Figma",
+                    "Photoshop",
+                    "Networking",
+                  ].map((skill) => (
+                    <span key={skill}>{skill}</span>
+                  ))}
+                </div>
+              </section>
+            </article>
+          )}
         </div>
         <div className="cv-modal__footer">
-          <a href={CV_PDF_URL} download className="liquid-button liquid-button-primary">
-            Download CV
-          </a>
+          {hasHostedCv && (
+            <a
+              href={CV_PDF_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="liquid-button liquid-button-primary"
+            >
+              Open PDF
+            </a>
+          )}
           <button type="button" onClick={close} className="liquid-button">
             Close
           </button>
@@ -899,6 +965,15 @@ function Experience() {
               </div>
             )}
             <p>{active.description}</p>
+            {active.institution === "SMAN 71 Jakarta" && (
+              <div className="flex flex-wrap gap-2">
+                {["Science", "Jakarta", "2020-2023"].map((tag) => (
+                  <span key={tag} className="glass-badge px-2.5 py-1 text-[10px] font-mono">
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            )}
             <div className="grid grid-cols-2 gap-3 font-mono text-xs">
               <div className="glass rounded-md p-3">
                 <div className="text-muted-foreground">company</div>

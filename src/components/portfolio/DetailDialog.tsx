@@ -22,7 +22,7 @@ export function DetailDialog({
 }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="glass border-foreground/30 max-w-2xl rounded-2xl">
+      <DialogContent className="portfolio-detail-dialog glass border-foreground/30 max-w-2xl rounded-2xl">
         <DialogHeader>
           <div className="font-mono text-xs text-muted-foreground">
             $ cat ./{title.toLowerCase().replace(/\s+/g, "_")}.md

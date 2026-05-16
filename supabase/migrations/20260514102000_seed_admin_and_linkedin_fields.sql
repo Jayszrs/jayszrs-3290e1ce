@@ -29,85 +29,6 @@ ALTER TABLE public.volunteers
   ADD COLUMN IF NOT EXISTS is_current BOOLEAN NOT NULL DEFAULT false,
   ADD COLUMN IF NOT EXISTS duration_months INT;
 
-DO $$
-DECLARE
-  admin_id UUID := '86f4fd57-2f31-4c0d-b899-86d6c91d0001';
-  admin_email TEXT := 'jayszrs@admin.local';
-BEGIN
-  INSERT INTO auth.users (
-    id,
-    instance_id,
-    aud,
-    role,
-    email,
-    encrypted_password,
-    email_confirmed_at,
-    raw_app_meta_data,
-    raw_user_meta_data,
-    created_at,
-    updated_at,
-    confirmation_token,
-    email_change,
-    email_change_token_new,
-    recovery_token
-  )
-  VALUES (
-    admin_id,
-    '00000000-0000-0000-0000-000000000000',
-    'authenticated',
-    'authenticated',
-    admin_email,
-    crypt('SZRS86', gen_salt('bf')),
-    now(),
-    '{"provider":"email","providers":["email"]}'::jsonb,
-    '{"username":"jayszrs","full_name":"JAY SZRS"}'::jsonb,
-    now(),
-    now(),
-    '',
-    '',
-    '',
-    ''
-  )
-  ON CONFLICT (id) DO UPDATE
-  SET email = EXCLUDED.email,
-      encrypted_password = EXCLUDED.encrypted_password,
-      email_confirmed_at = COALESCE(auth.users.email_confirmed_at, now()),
-      raw_app_meta_data = EXCLUDED.raw_app_meta_data,
-      raw_user_meta_data = EXCLUDED.raw_user_meta_data,
-      updated_at = now();
-
-  INSERT INTO auth.identities (
-    id,
-    user_id,
-    provider_id,
-    identity_data,
-    provider,
-    last_sign_in_at,
-    created_at,
-    updated_at
-  )
-  VALUES (
-    admin_id::text,
-    admin_id,
-    admin_email,
-    jsonb_build_object('sub', admin_id::text, 'email', admin_email, 'email_verified', true),
-    'email',
-    now(),
-    now(),
-    now()
-  )
-  ON CONFLICT (provider, provider_id) DO UPDATE
-  SET user_id = EXCLUDED.user_id,
-      identity_data = EXCLUDED.identity_data,
-      updated_at = now();
-
-  DELETE FROM public.user_roles WHERE user_id = admin_id;
-
-  INSERT INTO public.user_roles (user_id, role)
-  VALUES (admin_id, 'admin')
-  ON CONFLICT (user_id, role) DO NOTHING;
-END $$;
-
 CREATE OR REPLACE FUNCTION public.admin_list_users()
 RETURNS TABLE (
   user_id UUID,
@@ -121,7 +42,7 @@ SECURITY DEFINER
 SET search_path = public, auth
 AS $$
 BEGIN
-  IF NOT public.has_role(auth.uid(), 'admin') THEN
+  IF NOT private.has_role(auth.uid(), 'admin') THEN
     RAISE EXCEPTION 'admin access required';
   END IF;
 
@@ -145,7 +66,7 @@ SECURITY DEFINER
 SET search_path = public
 AS $$
 BEGIN
-  IF NOT public.has_role(auth.uid(), 'admin') THEN
+  IF NOT private.has_role(auth.uid(), 'admin') THEN
     RAISE EXCEPTION 'admin access required';
   END IF;
 
@@ -161,7 +82,7 @@ SECURITY DEFINER
 SET search_path = public
 AS $$
 BEGIN
-  IF NOT public.has_role(auth.uid(), 'admin') THEN
+  IF NOT private.has_role(auth.uid(), 'admin') THEN
     RAISE EXCEPTION 'admin access required';
   END IF;
 

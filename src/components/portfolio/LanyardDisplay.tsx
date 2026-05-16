@@ -23,7 +23,8 @@ type ToastVariant = "success" | "error" | "info";
 type ToastMessage = { id: number; message: string; variant: ToastVariant; exiting?: boolean };
 
 const STORAGE_KEY = "cardData";
-const ADMIN_PASSWORD = "jayszrs2024";
+const CARD_EDITOR_PASSCODE_SHA256 =
+  "bd8e251df2086eb93ba6b712d9ae54d4df5b8951235d1d0b42e3b2ca8050e9e0";
 
 const defaultCardData: CardData = {
   fullName: "Jay SZRS",
@@ -126,6 +127,14 @@ function loadCardData(): CardData {
   } catch {
     return defaultCardData;
   }
+}
+
+async function sha256(value: string): Promise<string> {
+  const data = new TextEncoder().encode(value);
+  const digest = await crypto.subtle.digest("SHA-256", data);
+  return Array.from(new Uint8Array(digest))
+    .map((byte) => byte.toString(16).padStart(2, "0"))
+    .join("");
 }
 
 function isHttpsUrl(value: string) {
@@ -325,9 +334,10 @@ export function LanyardDisplay() {
     };
   }, [adminOpen]);
 
-  const unlock = (event: FormEvent) => {
+  const unlock = async (event: FormEvent) => {
     event.preventDefault();
-    if (password !== ADMIN_PASSWORD) {
+    const candidateHash = await sha256(password);
+    if (candidateHash !== CARD_EDITOR_PASSCODE_SHA256) {
       setPasswordError(true);
       showToast("Access denied", "error");
       window.setTimeout(() => setPasswordError(false), 450);
@@ -426,7 +436,7 @@ export function LanyardDisplay() {
             </div>
           </div>
         </button>
-        <p className="flip-card-hint">Hover or tap to flip &bull; Click to interact</p>
+        <p className="flip-card-hint">Tap or click to flip &bull; Click to interact</p>
       </div>
 
       <div data-admin-tap-zone className="admin-tap-zone" aria-hidden="true" />

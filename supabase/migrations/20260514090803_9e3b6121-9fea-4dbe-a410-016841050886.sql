@@ -1,6 +1,9 @@
 
 -- ROLES
 CREATE TYPE public.app_role AS ENUM ('admin', 'user');
+CREATE SCHEMA IF NOT EXISTS private;
+REVOKE ALL ON SCHEMA private FROM PUBLIC, anon;
+GRANT USAGE ON SCHEMA private TO authenticated;
 
 CREATE TABLE public.user_roles (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -11,7 +14,7 @@ CREATE TABLE public.user_roles (
 );
 ALTER TABLE public.user_roles ENABLE ROW LEVEL SECURITY;
 
-CREATE OR REPLACE FUNCTION public.has_role(_user_id UUID, _role app_role)
+CREATE OR REPLACE FUNCTION private.has_role(_user_id UUID, _role public.app_role)
 RETURNS BOOLEAN
 LANGUAGE SQL
 STABLE
@@ -21,8 +24,11 @@ AS $$
   SELECT EXISTS (SELECT 1 FROM public.user_roles WHERE user_id = _user_id AND role = _role)
 $$;
 
+REVOKE ALL ON FUNCTION private.has_role(uuid, public.app_role) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION private.has_role(uuid, public.app_role) TO authenticated;
+
 CREATE POLICY "users see own roles" ON public.user_roles FOR SELECT USING (auth.uid() = user_id);
-CREATE POLICY "admins manage roles" ON public.user_roles FOR ALL USING (public.has_role(auth.uid(), 'admin'));
+CREATE POLICY "admins manage roles" ON public.user_roles FOR ALL TO authenticated USING (private.has_role(auth.uid(), 'admin'));
 
 -- Auto-promote first user to admin
 CREATE OR REPLACE FUNCTION public.handle_new_user()
@@ -61,8 +67,8 @@ CREATE TABLE public.profile_settings (
   full_name TEXT NOT NULL DEFAULT 'Jaelani Surya Saputra',
   subtitle TEXT NOT NULL DEFAULT 'Creative Technologist • Informatics Student • Designer • Content Creator',
   about TEXT NOT NULL DEFAULT '',
-  email TEXT NOT NULL DEFAULT 'jaelanisuryasaputra@gmail.com',
-  whatsapp TEXT NOT NULL DEFAULT '62895330152658',
+  email TEXT NOT NULL DEFAULT '',
+  whatsapp TEXT NOT NULL DEFAULT '',
   location TEXT NOT NULL DEFAULT 'Indonesia',
   availability TEXT NOT NULL DEFAULT 'Available for collaboration',
   typing_texts TEXT[] NOT NULL DEFAULT ARRAY['I build digital experiences.','I design creative interfaces.','I explore IT, design, and technology.'],
@@ -75,8 +81,19 @@ CREATE TABLE public.profile_settings (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 ALTER TABLE public.profile_settings ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "anyone can read profile" ON public.profile_settings FOR SELECT USING (true);
-CREATE POLICY "admins update profile" ON public.profile_settings FOR ALL USING (public.has_role(auth.uid(),'admin'));
+CREATE POLICY "admins read profile settings" ON public.profile_settings
+  FOR SELECT TO authenticated
+  USING (private.has_role(auth.uid(),'admin'));
+CREATE POLICY "admins insert profile settings" ON public.profile_settings
+  FOR INSERT TO authenticated
+  WITH CHECK (private.has_role(auth.uid(),'admin'));
+CREATE POLICY "admins update profile settings" ON public.profile_settings
+  FOR UPDATE TO authenticated
+  USING (private.has_role(auth.uid(),'admin'))
+  WITH CHECK (private.has_role(auth.uid(),'admin'));
+CREATE POLICY "admins delete profile settings" ON public.profile_settings
+  FOR DELETE TO authenticated
+  USING (private.has_role(auth.uid(),'admin'));
 INSERT INTO public.profile_settings (about) VALUES ('Hi, I am Jay SZRS. Informatics Engineering student passionate about UI/UX, web development, design, content creation, networking, and cyber security basics.');
 
 -- GENERIC CONTENT TABLES
@@ -96,7 +113,7 @@ CREATE TABLE public.experiences (
 );
 ALTER TABLE public.experiences ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "public read experiences" ON public.experiences FOR SELECT USING (true);
-CREATE POLICY "admins manage experiences" ON public.experiences FOR ALL USING (public.has_role(auth.uid(),'admin'));
+CREATE POLICY "admins manage experiences" ON public.experiences FOR ALL TO authenticated USING (private.has_role(auth.uid(),'admin'));
 CREATE TRIGGER trg_exp_upd BEFORE UPDATE ON public.experiences FOR EACH ROW EXECUTE FUNCTION public.touch_updated_at();
 
 CREATE TABLE public.certifications (
@@ -115,7 +132,7 @@ CREATE TABLE public.certifications (
 );
 ALTER TABLE public.certifications ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "public read certs" ON public.certifications FOR SELECT USING (true);
-CREATE POLICY "admins manage certs" ON public.certifications FOR ALL USING (public.has_role(auth.uid(),'admin'));
+CREATE POLICY "admins manage certs" ON public.certifications FOR ALL TO authenticated USING (private.has_role(auth.uid(),'admin'));
 CREATE TRIGGER trg_cert_upd BEFORE UPDATE ON public.certifications FOR EACH ROW EXECUTE FUNCTION public.touch_updated_at();
 
 CREATE TABLE public.education (
@@ -131,7 +148,7 @@ CREATE TABLE public.education (
 );
 ALTER TABLE public.education ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "public read edu" ON public.education FOR SELECT USING (true);
-CREATE POLICY "admins manage edu" ON public.education FOR ALL USING (public.has_role(auth.uid(),'admin'));
+CREATE POLICY "admins manage edu" ON public.education FOR ALL TO authenticated USING (private.has_role(auth.uid(),'admin'));
 CREATE TRIGGER trg_edu_upd BEFORE UPDATE ON public.education FOR EACH ROW EXECUTE FUNCTION public.touch_updated_at();
 
 CREATE TABLE public.volunteers (
@@ -149,7 +166,7 @@ CREATE TABLE public.volunteers (
 );
 ALTER TABLE public.volunteers ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "public read vol" ON public.volunteers FOR SELECT USING (true);
-CREATE POLICY "admins manage vol" ON public.volunteers FOR ALL USING (public.has_role(auth.uid(),'admin'));
+CREATE POLICY "admins manage vol" ON public.volunteers FOR ALL TO authenticated USING (private.has_role(auth.uid(),'admin'));
 CREATE TRIGGER trg_vol_upd BEFORE UPDATE ON public.volunteers FOR EACH ROW EXECUTE FUNCTION public.touch_updated_at();
 
 CREATE TABLE public.projects (
@@ -171,7 +188,7 @@ CREATE TABLE public.projects (
 );
 ALTER TABLE public.projects ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "public read projects" ON public.projects FOR SELECT USING (true);
-CREATE POLICY "admins manage projects" ON public.projects FOR ALL USING (public.has_role(auth.uid(),'admin'));
+CREATE POLICY "admins manage projects" ON public.projects FOR ALL TO authenticated USING (private.has_role(auth.uid(),'admin'));
 CREATE TRIGGER trg_proj_upd BEFORE UPDATE ON public.projects FOR EACH ROW EXECUTE FUNCTION public.touch_updated_at();
 
 CREATE TABLE public.skills (
@@ -184,7 +201,7 @@ CREATE TABLE public.skills (
 );
 ALTER TABLE public.skills ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "public read skills" ON public.skills FOR SELECT USING (true);
-CREATE POLICY "admins manage skills" ON public.skills FOR ALL USING (public.has_role(auth.uid(),'admin'));
+CREATE POLICY "admins manage skills" ON public.skills FOR ALL TO authenticated USING (private.has_role(auth.uid(),'admin'));
 
 CREATE TABLE public.gallery (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -197,7 +214,7 @@ CREATE TABLE public.gallery (
 );
 ALTER TABLE public.gallery ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "public read gallery" ON public.gallery FOR SELECT USING (true);
-CREATE POLICY "admins manage gallery" ON public.gallery FOR ALL USING (public.has_role(auth.uid(),'admin'));
+CREATE POLICY "admins manage gallery" ON public.gallery FOR ALL TO authenticated USING (private.has_role(auth.uid(),'admin'));
 
 CREATE TABLE public.contact_messages (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -210,9 +227,9 @@ CREATE TABLE public.contact_messages (
 );
 ALTER TABLE public.contact_messages ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "anyone can submit" ON public.contact_messages FOR INSERT WITH CHECK (true);
-CREATE POLICY "admins read messages" ON public.contact_messages FOR SELECT USING (public.has_role(auth.uid(),'admin'));
-CREATE POLICY "admins update messages" ON public.contact_messages FOR UPDATE USING (public.has_role(auth.uid(),'admin'));
-CREATE POLICY "admins delete messages" ON public.contact_messages FOR DELETE USING (public.has_role(auth.uid(),'admin'));
+CREATE POLICY "admins read messages" ON public.contact_messages FOR SELECT TO authenticated USING (private.has_role(auth.uid(),'admin'));
+CREATE POLICY "admins update messages" ON public.contact_messages FOR UPDATE TO authenticated USING (private.has_role(auth.uid(),'admin'));
+CREATE POLICY "admins delete messages" ON public.contact_messages FOR DELETE TO authenticated USING (private.has_role(auth.uid(),'admin'));
 
 -- STORAGE BUCKETS
 INSERT INTO storage.buckets (id, name, public) VALUES
@@ -226,8 +243,11 @@ INSERT INTO storage.buckets (id, name, public) VALUES
 CREATE POLICY "public read all buckets" ON storage.objects FOR SELECT
   USING (bucket_id IN ('cv','certificates','badges','gallery','documents','avatars'));
 CREATE POLICY "admins upload" ON storage.objects FOR INSERT
-  WITH CHECK (bucket_id IN ('cv','certificates','badges','gallery','documents','avatars') AND public.has_role(auth.uid(),'admin'));
+  TO authenticated
+  WITH CHECK (bucket_id IN ('cv','certificates','badges','gallery','documents','avatars') AND private.has_role(auth.uid(),'admin'));
 CREATE POLICY "admins update files" ON storage.objects FOR UPDATE
-  USING (bucket_id IN ('cv','certificates','badges','gallery','documents','avatars') AND public.has_role(auth.uid(),'admin'));
+  TO authenticated
+  USING (bucket_id IN ('cv','certificates','badges','gallery','documents','avatars') AND private.has_role(auth.uid(),'admin'));
 CREATE POLICY "admins delete files" ON storage.objects FOR DELETE
-  USING (bucket_id IN ('cv','certificates','badges','gallery','documents','avatars') AND public.has_role(auth.uid(),'admin'));
+  TO authenticated
+  USING (bucket_id IN ('cv','certificates','badges','gallery','documents','avatars') AND private.has_role(auth.uid(),'admin'));

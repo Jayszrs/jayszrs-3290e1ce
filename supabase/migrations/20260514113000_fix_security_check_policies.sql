@@ -4,23 +4,27 @@ DROP POLICY IF EXISTS "admins update profile" ON public.profile_settings;
 CREATE POLICY "admins read profile settings"
   ON public.profile_settings
   FOR SELECT
-  USING (public.has_role(auth.uid(), 'admin'));
+  TO authenticated
+  USING (private.has_role(auth.uid(), 'admin'));
 
 CREATE POLICY "admins insert profile settings"
   ON public.profile_settings
   FOR INSERT
-  WITH CHECK (public.has_role(auth.uid(), 'admin'));
+  TO authenticated
+  WITH CHECK (private.has_role(auth.uid(), 'admin'));
 
 CREATE POLICY "admins update profile settings"
   ON public.profile_settings
   FOR UPDATE
-  USING (public.has_role(auth.uid(), 'admin'))
-  WITH CHECK (public.has_role(auth.uid(), 'admin'));
+  TO authenticated
+  USING (private.has_role(auth.uid(), 'admin'))
+  WITH CHECK (private.has_role(auth.uid(), 'admin'));
 
 CREATE POLICY "admins delete profile settings"
   ON public.profile_settings
   FOR DELETE
-  USING (public.has_role(auth.uid(), 'admin'));
+  TO authenticated
+  USING (private.has_role(auth.uid(), 'admin'));
 
 CREATE TABLE IF NOT EXISTS public.profile_public (
   id UUID PRIMARY KEY,
@@ -56,18 +60,21 @@ DROP POLICY IF EXISTS "admins delete public profile" ON public.profile_public;
 CREATE POLICY "admins insert public profile"
   ON public.profile_public
   FOR INSERT
-  WITH CHECK (public.has_role(auth.uid(), 'admin'));
+  TO authenticated
+  WITH CHECK (private.has_role(auth.uid(), 'admin'));
 
 CREATE POLICY "admins update public profile"
   ON public.profile_public
   FOR UPDATE
-  USING (public.has_role(auth.uid(), 'admin'))
-  WITH CHECK (public.has_role(auth.uid(), 'admin'));
+  TO authenticated
+  USING (private.has_role(auth.uid(), 'admin'))
+  WITH CHECK (private.has_role(auth.uid(), 'admin'));
 
 CREATE POLICY "admins delete public profile"
   ON public.profile_public
   FOR DELETE
-  USING (public.has_role(auth.uid(), 'admin'));
+  TO authenticated
+  USING (private.has_role(auth.uid(), 'admin'));
 
 INSERT INTO public.profile_public (
   id,
@@ -203,20 +210,24 @@ CREATE POLICY "users read own role"
 CREATE POLICY "admins read all roles"
   ON public.user_roles
   FOR SELECT
-  USING (public.has_role(auth.uid(), 'admin'));
+  TO authenticated
+  USING (private.has_role(auth.uid(), 'admin'));
 
 CREATE POLICY "admins insert roles"
   ON public.user_roles
   FOR INSERT
-  WITH CHECK (public.has_role(auth.uid(), 'admin'));
+  TO authenticated
+  WITH CHECK (private.has_role(auth.uid(), 'admin'));
 
 CREATE POLICY "admins update roles"
   ON public.user_roles
   FOR UPDATE
-  USING (public.has_role(auth.uid(), 'admin'))
-  WITH CHECK (public.has_role(auth.uid(), 'admin'));
+  TO authenticated
+  USING (private.has_role(auth.uid(), 'admin'))
+  WITH CHECK (private.has_role(auth.uid(), 'admin'));
 
 CREATE POLICY "admins delete roles"
   ON public.user_roles
   FOR DELETE
-  USING (public.has_role(auth.uid(), 'admin'));
+  TO authenticated
+  USING (private.has_role(auth.uid(), 'admin'));
