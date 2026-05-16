@@ -526,7 +526,7 @@ function Hero() {
   const opacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
 
   return (
-    <section id="home" ref={ref} className="relative min-h-screen flex items-center pt-24 pb-16">
+    <section id="home" ref={ref} className="relative min-h-screen flex items-center pt-28 pb-16">
       <div className="hero-particle hero-particle--1" />
       <div className="hero-particle hero-particle--2" />
       <div className="hero-particle hero-particle--3" />
@@ -534,9 +534,9 @@ function Hero() {
       <div className="hero-particle hero-particle--5" />
       <motion.div
         style={{ opacity }}
-        className="relative w-full max-w-full px-6 md:pl-16 lg:pl-20 xl:pl-32 grid lg:grid-cols-[1.3fr_1fr] gap-12 items-center"
+        className="relative lg:ml-8 xl:ml-16 max-w-7xl px-4 grid lg:grid-cols-[1.2fr_1fr] gap-12 items-center w-full"
       >
-        <motion.div style={{ y: yText }} className="liquid-hero-copy glass space-y-6 w-full">
+        <motion.div style={{ y: yText }} className="liquid-hero-copy glass space-y-6">
           <div className="font-mono text-xs text-muted-foreground flex items-center gap-2">
             <span
               className="size-2 rounded-full bg-foreground animate-pulse"
@@ -787,23 +787,4 @@ function SocialIcon({ type }: { type: "github" | "instagram" | "linkedin" }) {
       <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
     </svg>
   );
-}
-
-function showPageToast(message: string, variant: "success" | "error" | "info" = "info") {
-  const container =
-    document.querySelector(".global-toast-container") ||
-    (() => {
-      const node = document.createElement("div");
-      node.className = "global-toast-container toast-container";
-      document.body.appendChild(node);
-      return node;
-    })();
-  const toast = document.createElement("div");
-  toast.className = `toast toast--${variant}`;
-  toast.textContent = message;
-  container.appendChild(toast);
-  window.setTimeout(() => {
-    toast.classList.add("toast--exit");
-    toast.addEventListener("animationend", () => toast.remove(), { once: true });
-  }, 3500);
 }
