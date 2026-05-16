@@ -20,6 +20,7 @@ export type Database = {
           category: string | null
           certificate_url: string | null
           created_at: string
+          credential_id: string | null
           description: string | null
           id: string
           issuer: string
@@ -34,6 +35,7 @@ export type Database = {
           category?: string | null
           certificate_url?: string | null
           created_at?: string
+          credential_id?: string | null
           description?: string | null
           id?: string
           issuer: string
@@ -48,6 +50,7 @@ export type Database = {
           category?: string | null
           certificate_url?: string | null
           created_at?: string
+          credential_id?: string | null
           description?: string | null
           id?: string
           issuer?: string
@@ -91,8 +94,12 @@ export type Database = {
       }
       education: {
         Row: {
+          activities: string | null
           created_at: string
           description: string | null
+          document_url: string | null
+          field_of_study: string | null
+          grade: string | null
           id: string
           institution: string
           logo_url: string | null
@@ -102,8 +109,12 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          activities?: string | null
           created_at?: string
           description?: string | null
+          document_url?: string | null
+          field_of_study?: string | null
+          grade?: string | null
           id?: string
           institution: string
           logo_url?: string | null
@@ -113,8 +124,12 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          activities?: string | null
           created_at?: string
           description?: string | null
+          document_url?: string | null
+          field_of_study?: string | null
+          grade?: string | null
           id?: string
           institution?: string
           logo_url?: string | null
@@ -133,8 +148,12 @@ export type Database = {
           date_range: string
           description: string | null
           document_url: string | null
+          duration_months: number | null
+          employment_type: string | null
           id: string
           image_url: string | null
+          location: string | null
+          location_type: string | null
           order_index: number
           status: string
           title: string
@@ -147,8 +166,12 @@ export type Database = {
           date_range: string
           description?: string | null
           document_url?: string | null
+          duration_months?: number | null
+          employment_type?: string | null
           id?: string
           image_url?: string | null
+          location?: string | null
+          location_type?: string | null
           order_index?: number
           status?: string
           title: string
@@ -161,8 +184,12 @@ export type Database = {
           date_range?: string
           description?: string | null
           document_url?: string | null
+          duration_months?: number | null
+          employment_type?: string | null
           id?: string
           image_url?: string | null
+          location?: string | null
+          location_type?: string | null
           order_index?: number
           status?: string
           title?: string
@@ -368,6 +395,7 @@ export type Database = {
           created_at: string
           description: string | null
           document_url: string | null
+          duration_months: number | null
           id: string
           image_url: string | null
           name: string
@@ -381,6 +409,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           document_url?: string | null
+          duration_months?: number | null
           id?: string
           image_url?: string | null
           name: string
@@ -394,6 +423,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           document_url?: string | null
+          duration_months?: number | null
           id?: string
           image_url?: string | null
           name?: string
