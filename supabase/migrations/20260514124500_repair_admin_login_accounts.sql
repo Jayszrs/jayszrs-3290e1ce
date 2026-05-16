@@ -100,16 +100,4 @@ SELECT public.ensure_admin_login(
   'SZRS86'
 );
 
-SELECT public.ensure_admin_login(
-  '86f4fd57-2f31-4c0d-b899-86d6c91d0002',
-  'jaelanisuryasaputra@gmail.com',
-  'SZRS86'
-);
-
-SELECT public.ensure_admin_login(
-  '86f4fd57-2f31-4c0d-b899-86d6c91d0003',
-  'jaelanisurya.akademicrypto@gmail.com',
-  'SZRS86'
-);
-
 REVOKE EXECUTE ON FUNCTION public.ensure_admin_login(UUID, TEXT, TEXT) FROM PUBLIC, anon, authenticated;

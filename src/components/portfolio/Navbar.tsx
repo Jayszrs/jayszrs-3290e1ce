@@ -16,17 +16,26 @@ export function Navbar() {
       const currentY = window.scrollY;
       setCollapsed(currentY > lastScrollY.current && currentY > 80);
       lastScrollY.current = currentY;
-      const sections = navItems
-        .map((n) => document.getElementById(n.id))
-        .filter(Boolean) as HTMLElement[];
-      const y = window.scrollY + 120;
-      let cur: HTMLElement | undefined;
-      for (const s of sections) if (s.offsetTop <= y) cur = s;
-      if (cur) setActive(cur.id);
     };
     window.addEventListener("scroll", onScroll);
     onScroll();
     return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  useEffect(() => {
+    const sections = navItems
+      .map((n) => document.getElementById(n.id))
+      .filter(Boolean) as HTMLElement[];
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) setActive(entry.target.id);
+        });
+      },
+      { threshold: 0.4 },
+    );
+    sections.forEach((section) => observer.observe(section));
+    return () => observer.disconnect();
   }, []);
 
   const go = (id: string) => {
@@ -58,7 +67,7 @@ export function Navbar() {
                 onClick={() => go(n.id)}
                 className={`px-3 py-1.5 rounded-full transition relative ${
                   active === n.id
-                    ? "text-foreground"
+                    ? "active text-foreground"
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
@@ -75,6 +84,12 @@ export function Navbar() {
 
           <div className="flex items-center gap-2">
             <A11yToggle />
+            <button
+              onClick={() => go("contact")}
+              className="nav-cta hidden sm:inline-flex items-center rounded-full px-4 py-2 font-mono text-xs font-semibold"
+            >
+              contact
+            </button>
             <button
               onClick={() => setOpen(!open)}
               className="lg:hidden p-2 text-neon rounded-full hover:bg-white/10"

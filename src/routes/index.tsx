@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { motion, useScroll, useTransform } from "framer-motion";
-import { createContext, useContext, useEffect, useRef, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
+import type { FormEvent } from "react";
 import type { ReactNode } from "react";
 import {
   Download,
@@ -20,6 +21,7 @@ import {
   GraduationCap,
   Heart,
   Sparkles,
+  ChevronUp,
 } from "lucide-react";
 
 import jayPhoto from "@/assets/jay-profile.jpg";
@@ -31,7 +33,6 @@ import { Typewriter } from "@/components/portfolio/Typewriter";
 import { MonoMatrixBg } from "@/components/portfolio/MonoMatrixBg";
 import { DetailDialog } from "@/components/portfolio/DetailDialog";
 import { NeonWordmark } from "@/components/portfolio/NeonWordmark";
-import { LanyardBuilder } from "@/components/portfolio/LanyardBuilder";
 import { LanyardDisplay } from "@/components/portfolio/LanyardDisplay";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -289,6 +290,8 @@ function Index() {
   return (
     <PortfolioContentProvider>
       <div className="liquid-app relative min-h-screen overflow-hidden">
+        <LoadingScreen />
+        <CustomCursor />
         <svg aria-hidden="true" className="pointer-events-none fixed size-0">
           <filter id="liquid-distortion">
             <feTurbulence
@@ -334,6 +337,7 @@ function Index() {
           <Contact />
           <Footer />
         </main>
+        <BackToTop />
       </div>
     </PortfolioContentProvider>
   );
@@ -377,11 +381,144 @@ function useLiquidGlassEffects() {
       window.removeEventListener("pointermove", onPointerMove);
     };
   }, []);
+
+  useEffect(() => {
+    const revealItems = Array.from(
+      document.querySelectorAll<HTMLElement>(
+        ".glass, .glass-badge, .skill-pill, .section-caption, .section-heading",
+      ),
+    );
+
+    revealItems.forEach((item) => item.classList.add("reveal-on-scroll"));
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          const element = entry.target as HTMLElement;
+          element.classList.add("is-visible");
+          Array.from(element.parentElement?.children || []).forEach((child, index) => {
+            if (child instanceof HTMLElement && child.classList.contains("reveal-on-scroll")) {
+              child.style.transitionDelay = `${index * 75}ms`;
+            }
+          });
+          observer.unobserve(element);
+        });
+      },
+      { threshold: 0.18 },
+    );
+
+    revealItems.forEach((item) => observer.observe(item));
+    return () => observer.disconnect();
+  }, []);
+}
+
+function LoadingScreen() {
+  const [visible, setVisible] = useState(true);
+
+  useEffect(() => {
+    document.body.classList.add("is-loading");
+    const hide = () => {
+      setVisible(false);
+      document.body.classList.remove("is-loading");
+    };
+    const timer = window.setTimeout(hide, 1800);
+    window.addEventListener("load", hide, { once: true });
+    return () => {
+      window.clearTimeout(timer);
+      window.removeEventListener("load", hide);
+      document.body.classList.remove("is-loading");
+    };
+  }, []);
+
+  if (!visible) return null;
+
+  return (
+    <div className="page-loader">
+      <div className="page-loader__inner">
+        <div className="page-loader__monogram">JS</div>
+        <div className="page-loader__track">
+          <span />
+        </div>
+        <div className="page-loader__text">loading portfolio...</div>
+      </div>
+    </div>
+  );
+}
+
+function CustomCursor() {
+  useEffect(() => {
+    if (!window.matchMedia("(pointer: fine)").matches) return;
+
+    const ring = document.createElement("div");
+    const dot = document.createElement("div");
+    ring.className = "custom-cursor-ring";
+    dot.className = "custom-cursor-dot";
+    document.body.append(ring, dot);
+
+    let x = 0;
+    let y = 0;
+    let raf = 0;
+
+    const update = () => {
+      ring.style.transform = `translate3d(${x - 14}px, ${y - 14}px, 0)`;
+      dot.style.transform = `translate3d(${x - 3}px, ${y - 3}px, 0)`;
+      raf = 0;
+    };
+
+    const onMove = (event: MouseEvent) => {
+      x = event.clientX;
+      y = event.clientY;
+      if (!raf) raf = window.requestAnimationFrame(update);
+    };
+    const onOver = (event: MouseEvent) => {
+      const clickable = (event.target as HTMLElement | null)?.closest?.(
+        "a, button, [role='button']",
+      );
+      ring.classList.toggle("is-hovering", Boolean(clickable));
+    };
+
+    window.addEventListener("mousemove", onMove, { passive: true });
+    window.addEventListener("mouseover", onOver, { passive: true });
+
+    return () => {
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("mouseover", onOver);
+      if (raf) window.cancelAnimationFrame(raf);
+      ring.remove();
+      dot.remove();
+    };
+  }, []);
+
+  return null;
+}
+
+function BackToTop() {
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setVisible(window.scrollY > 400);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  return (
+    <button
+      type="button"
+      className={`back-to-top ${visible ? "is-visible" : ""}`}
+      onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+      aria-label="Back to top"
+    >
+      <ChevronUp className="size-5" />
+    </button>
+  );
 }
 
 /* ---------- HERO ---------- */
 function Hero() {
   const { profile } = usePortfolioContent();
+  const [cvOpen, setCvOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
   const yPhoto = useTransform(scrollYProgress, [0, 1], [0, 120]);
@@ -390,6 +527,11 @@ function Hero() {
 
   return (
     <section id="home" ref={ref} className="relative min-h-screen flex items-center pt-28 pb-16">
+      <div className="hero-particle hero-particle--1" />
+      <div className="hero-particle hero-particle--2" />
+      <div className="hero-particle hero-particle--3" />
+      <div className="hero-particle hero-particle--4" />
+      <div className="hero-particle hero-particle--5" />
       <motion.div
         style={{ opacity }}
         className="relative mx-auto max-w-6xl px-4 grid lg:grid-cols-[1.2fr_1fr] gap-12 items-center"
@@ -430,7 +572,7 @@ function Hero() {
             </a>
             <button
               className="liquid-button inline-flex items-center gap-2 px-5 py-3 font-mono text-sm text-muted-foreground hover:text-neon transition"
-              onClick={() => alert("CV upload tersedia di /admin (next iteration)")}
+              onClick={() => setCvOpen(true)}
             >
               <Download className="size-4" /> CV
             </button>
@@ -487,8 +629,120 @@ function Hero() {
           ▼
         </motion.span>
       </div>
+      <CvPreviewModal open={cvOpen} onOpenChange={setCvOpen} />
     </section>
   );
+}
+
+function CvPreviewModal({
+  open,
+  onOpenChange,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
+  const [loading, setLoading] = useState(true);
+  const [closing, setClosing] = useState(false);
+  // TODO: Replace CV_PDF_URL with your hosted PDF link.
+  // Options: Google Drive (share -> "Anyone with link" -> copy direct link), Dropbox, or any public HTTPS URL.
+  // Google Drive format: https://drive.google.com/uc?export=download&id=FILE_ID
+  const CV_PDF_URL = "https://drive.google.com/uc?export=download&id=FILE_ID";
+  const viewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(CV_PDF_URL)}&embedded=true`;
+
+  const close = useCallback(() => {
+    setClosing(true);
+    window.setTimeout(() => onOpenChange(false), 250);
+  }, [onOpenChange]);
+
+  useEffect(() => {
+    if (!open) return;
+    setClosing(false);
+    setLoading(true);
+    document.body.style.overflow = "hidden";
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") close();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      document.body.style.overflow = "";
+    };
+  }, [close, open]);
+
+  if (!open) return null;
+
+  return (
+    <div className={`cv-overlay ${closing ? "is-closing" : ""}`} onMouseDown={close}>
+      <div className="cv-modal glass" onMouseDown={(event) => event.stopPropagation()}>
+        <div className="cv-modal__header">
+          <h3>Curriculum Vitae</h3>
+          <button type="button" onClick={close} aria-label="Close CV preview">
+            ×
+          </button>
+        </div>
+        <div className="cv-frame-wrap">
+          {loading && <div className="cv-skeleton" />}
+          <iframe
+            src={viewerUrl}
+            width="100%"
+            height="68vh"
+            style={{ border: "none", borderRadius: 14, background: "rgba(0,0,0,0.30)" }}
+            title="Jay SZRS - Curriculum Vitae"
+            onLoad={() => setLoading(false)}
+          />
+        </div>
+        <div className="cv-modal__footer">
+          <a href={CV_PDF_URL} download className="liquid-button liquid-button-primary">
+            Download CV
+          </a>
+          <button type="button" onClick={close} className="liquid-button">
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SocialIcon({ type }: { type: "github" | "instagram" | "linkedin" }) {
+  if (type === "github") {
+    return (
+      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z" />
+      </svg>
+    );
+  }
+  if (type === "instagram") {
+    return (
+      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z" />
+      </svg>
+    );
+  }
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+    </svg>
+  );
+}
+
+function showPageToast(message: string, variant: "success" | "error" | "info" = "info") {
+  const container =
+    document.querySelector(".global-toast-container") ||
+    (() => {
+      const node = document.createElement("div");
+      node.className = "global-toast-container toast-container";
+      document.body.appendChild(node);
+      return node;
+    })();
+  const toast = document.createElement("div");
+  toast.className = `toast toast--${variant}`;
+  toast.textContent = message;
+  container.appendChild(toast);
+  window.setTimeout(() => {
+    toast.classList.add("toast--exit");
+    toast.addEventListener("animationend", () => toast.remove(), { once: true });
+  }, 3500);
 }
 
 /* ---------- LANYARD ---------- */
@@ -607,7 +861,9 @@ function Experience() {
               <div className={`pl-12 md:pl-0 w-full ${i % 2 ? "md:text-left" : "md:text-right"}`}>
                 <div className="absolute left-2 md:left-1/2 top-3 -translate-x-1/2 size-4 rounded-full bg-neon glow-neon" />
                 <div className="glass rounded-xl p-5 hover:border-neon/60 transition group w-full">
-                  <div className={`flex items-center gap-2 font-mono text-xs text-neon ${i % 2 ? "justify-start" : "md:justify-end"}`}>
+                  <div
+                    className={`flex items-center gap-2 font-mono text-xs text-neon ${i % 2 ? "justify-start" : "md:justify-end"}`}
+                  >
                     <Calendar className="size-3" /> {e.date}
                     <span
                       className={`glass-badge px-2 py-0.5 rounded-full text-[10px] ${e.status === "Active" ? "text-neon border border-neon/40" : "text-muted-foreground"} ${i % 2 ? "ml-auto md:ml-0" : "ml-auto md:ml-2"}`}
@@ -635,7 +891,11 @@ function Experience() {
           <div className="space-y-4">
             {active.imageUrl && (
               <div className="w-full rounded-xl overflow-hidden glass p-2 max-h-[300px] flex items-center justify-center">
-                 <img src={active.imageUrl} alt={active.title} className="max-w-full max-h-full object-contain" />
+                <img
+                  src={active.imageUrl}
+                  alt={active.title}
+                  className="max-w-full max-h-full object-contain"
+                />
               </div>
             )}
             <p>{active.description}</p>
@@ -669,6 +929,39 @@ function Experience() {
 }
 
 /* ---------- CERTIFICATION ---------- */
+function CertificationLogo({ issuer, title }: { issuer: string; title: string }) {
+  const normalized = `${issuer} ${title}`.toLowerCase();
+  const logo = normalized.includes("dicoding")
+    ? "https://www.dicoding.com/images/marketing/dicoding_logo.png"
+    : normalized.includes("cisco")
+      ? "https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/Cisco_logo_blue_2016.svg/320px-Cisco_logo_blue_2016.svg.png"
+      : normalized.includes("coursera")
+        ? "https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/Coursera-Logo_600x600.svg/320px-Coursera-Logo_600x600.svg.png"
+        : normalized.includes("skillshare")
+          ? "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2b/Skillshare_logo.svg/320px-Skillshare_logo.svg.png"
+          : "";
+
+  if (!logo) {
+    return (
+      <svg
+        className="cert-logo cert-logo--svg"
+        width="28"
+        height="28"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="#FF4500"
+        strokeWidth="2"
+        aria-hidden="true"
+      >
+        <path d="M8 21h8M12 17v4M17 3H7l1 7a4 4 0 0 0 8 0l1-7z" />
+        <path d="M5 3H3v4a3 3 0 0 0 3 3M19 3h2v4a3 3 0 0 1-3 3" />
+      </svg>
+    );
+  }
+
+  return <img src={logo} alt={`${issuer} logo`} className="cert-logo" loading="lazy" />;
+}
+
 function Certification() {
   const { certifications } = usePortfolioContent();
   const [open, setOpen] = useState<number | null>(null);
@@ -692,6 +985,7 @@ function Certification() {
             transition={{ delay: i * 0.05 }}
             className="group relative glass rounded-xl p-5 text-left hover:border-neon/60 hover:-translate-y-1 transition-all"
           >
+            <CertificationLogo issuer={c.issuer} title={c.title} />
             <div className="flex items-start justify-between">
               <div className="size-12 rounded-lg bg-foreground/10 border border-foreground/40 flex items-center justify-center overflow-hidden">
                 {c.badgeUrl ? (
@@ -725,7 +1019,11 @@ function Certification() {
           <div className="space-y-4">
             {active.badgeUrl && (
               <div className="w-full max-w-[200px] aspect-square rounded-xl overflow-hidden glass p-2 mx-auto">
-                 <img src={active.badgeUrl} alt={active.title} className="w-full h-full object-contain" />
+                <img
+                  src={active.badgeUrl}
+                  alt={active.title}
+                  className="w-full h-full object-contain"
+                />
               </div>
             )}
             <p>
@@ -785,8 +1083,18 @@ function Certification() {
 /* ---------- EDUCATION ---------- */
 function Education() {
   const { education } = usePortfolioContent();
+  const smanEducation = {
+    institution: "SMAN 71 Jakarta",
+    major: "IPA - Ilmu Pengetahuan Alam (Science)",
+    period: "2020 - 2023",
+    description:
+      "Focused on sciences with active participation in school's IT club and creative media extracurricular. Built early foundation in digital design, photography, and technology.",
+    logoUrl: "",
+    documentUrl: "",
+  };
+  const displayEducation = education.map((ed, index) => (index === 1 ? smanEducation : ed));
   const [open, setOpen] = useState<number | null>(null);
-  const active = open !== null ? education[open] : null;
+  const active = open !== null ? displayEducation[open] : null;
   return (
     <Section
       id="education"
@@ -795,7 +1103,7 @@ function Education() {
       description="Academic journey & focus areas."
     >
       <div className="space-y-4">
-        {education.map((ed, i) => (
+        {displayEducation.map((ed, i) => (
           <motion.button
             type="button"
             onClick={() => setOpen(i)}
@@ -817,6 +1125,15 @@ function Education() {
               <h3 className="mt-1 text-xl font-semibold">{ed.institution}</h3>
               <div className="text-sm text-muted-foreground font-mono">{ed.major}</div>
               <p className="mt-3 text-foreground/80 line-clamp-2">{ed.description}</p>
+              {i === 1 && (
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {["Science", "Jakarta", "2020-2023"].map((tag) => (
+                    <span key={tag} className="glass-badge px-2.5 py-1 text-[10px] font-mono">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
           </motion.button>
         ))}
@@ -832,7 +1149,11 @@ function Education() {
           <div className="space-y-4">
             {active.logoUrl && (
               <div className="w-full max-w-[200px] aspect-square rounded-xl overflow-hidden glass p-2 mx-auto">
-                 <img src={active.logoUrl} alt={active.institution} className="w-full h-full object-contain" />
+                <img
+                  src={active.logoUrl}
+                  alt={active.institution}
+                  className="w-full h-full object-contain"
+                />
               </div>
             )}
             <p>{active.description}</p>
@@ -891,11 +1212,17 @@ function Volunteer() {
           >
             {v.imageUrl && (
               <div className="w-full h-32 overflow-hidden border-b border-border/50 shrink-0 bg-black/20">
-                <img src={v.imageUrl} alt={v.name} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition duration-500" />
+                <img
+                  src={v.imageUrl}
+                  alt={v.name}
+                  className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition duration-500"
+                />
               </div>
             )}
             <div className="p-5 flex-1 flex flex-col">
-              <Heart className={`size-5 text-neon mb-3 group-hover:scale-110 transition ${v.imageUrl ? 'hidden' : ''}`} />
+              <Heart
+                className={`size-5 text-neon mb-3 group-hover:scale-110 transition ${v.imageUrl ? "hidden" : ""}`}
+              />
               <div className="font-mono text-[10px] text-muted-foreground">
                 {v.category} · {v.year}
               </div>
@@ -916,7 +1243,11 @@ function Volunteer() {
           <div className="space-y-4">
             {active.imageUrl && (
               <div className="w-full rounded-xl overflow-hidden glass p-2 max-h-[300px] flex items-center justify-center">
-                 <img src={active.imageUrl} alt={active.name} className="max-w-full max-h-full object-contain" />
+                <img
+                  src={active.imageUrl}
+                  alt={active.name}
+                  className="max-w-full max-h-full object-contain"
+                />
               </div>
             )}
             <p>
@@ -986,14 +1317,16 @@ function Projects() {
                 <span className="text-muted-foreground">{String(i + 1).padStart(2, "0")}</span>
                 {p.thumbnailUrl ? (
                   <div className="size-8 rounded overflow-hidden shrink-0">
-                     <img src={p.thumbnailUrl} alt={p.name} className="w-full h-full object-cover" />
+                    <img src={p.thumbnailUrl} alt={p.name} className="w-full h-full object-cover" />
                   </div>
                 ) : (
                   <FileCode className="size-4 text-neon mx-2" />
                 )}
                 <span className="text-foreground group-hover:text-neon transition">{p.name}</span>
               </div>
-              <div className="text-sm text-muted-foreground md:pl-8 line-clamp-1">{p.description}</div>
+              <div className="text-sm text-muted-foreground md:pl-8 line-clamp-1">
+                {p.description}
+              </div>
               <div className="flex items-center gap-2">
                 {p.stack.slice(0, 2).map((s) => (
                   <span
@@ -1021,7 +1354,11 @@ function Projects() {
           <div className="space-y-4">
             {active.thumbnailUrl && (
               <div className="w-full rounded-xl overflow-hidden glass p-2 max-h-[300px] flex items-center justify-center">
-                 <img src={active.thumbnailUrl} alt={active.name} className="max-w-full max-h-full object-contain" />
+                <img
+                  src={active.thumbnailUrl}
+                  alt={active.name}
+                  className="max-w-full max-h-full object-contain"
+                />
               </div>
             )}
             <p>{active.description}</p>
@@ -1050,17 +1387,32 @@ function Projects() {
             </div>
             <div className="flex flex-wrap gap-2 pt-2">
               {active.demoUrl && (
-                <a href={active.demoUrl} target="_blank" rel="noopener" className="liquid-button inline-flex items-center gap-2 px-4 py-2 glass border border-neon text-neon font-mono text-xs rounded-full hover:bg-neon hover:text-black transition">
+                <a
+                  href={active.demoUrl}
+                  target="_blank"
+                  rel="noopener"
+                  className="liquid-button inline-flex items-center gap-2 px-4 py-2 glass border border-neon text-neon font-mono text-xs rounded-full hover:bg-neon hover:text-black transition"
+                >
                   <ExternalLink className="size-4" /> Live Demo
                 </a>
               )}
               {active.githubUrl && (
-                <a href={active.githubUrl} target="_blank" rel="noopener" className="liquid-button inline-flex items-center gap-2 px-4 py-2 glass border border-foreground/40 text-foreground font-mono text-xs rounded-full hover:bg-foreground hover:text-black transition">
+                <a
+                  href={active.githubUrl}
+                  target="_blank"
+                  rel="noopener"
+                  className="liquid-button inline-flex items-center gap-2 px-4 py-2 glass border border-foreground/40 text-foreground font-mono text-xs rounded-full hover:bg-foreground hover:text-black transition"
+                >
                   <Github className="size-4" /> Repository
                 </a>
               )}
               {active.documentationUrl && (
-                <a href={active.documentationUrl} target="_blank" rel="noopener" className="liquid-button inline-flex items-center gap-2 px-4 py-2 glass border border-orange-500/40 text-orange-400 font-mono text-xs rounded-full hover:bg-orange-500 hover:text-black transition">
+                <a
+                  href={active.documentationUrl}
+                  target="_blank"
+                  rel="noopener"
+                  className="liquid-button inline-flex items-center gap-2 px-4 py-2 glass border border-orange-500/40 text-orange-400 font-mono text-xs rounded-full hover:bg-orange-500 hover:text-black transition"
+                >
                   <Download className="size-4" /> View Docs
                 </a>
               )}
@@ -1071,6 +1423,83 @@ function Projects() {
     </Section>
   );
 }
+function SkillIcon({ name }: { name: string }) {
+  const deviconBase = "https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/";
+  const normalized = name.toLowerCase();
+  const devicons: Record<string, string> = {
+    html: "html5/html5-original.svg",
+    html5: "html5/html5-original.svg",
+    css: "css3/css3-original.svg",
+    css3: "css3/css3-original.svg",
+    javascript: "javascript/javascript-original.svg",
+    "react.js": "react/react-original.svg",
+    react: "react/react-original.svg",
+    php: "php/php-original.svg",
+    mysql: "mysql/mysql-original.svg",
+    java: "java/java-original.svg",
+    "vs code": "vscode/vscode-original.svg",
+    netbeans: "netbeans/netbeans-original.svg",
+    figma: "figma/figma-original.svg",
+    photoshop: "photoshop/photoshop-original.svg",
+    illustrator: "illustrator/illustrator-plain.svg",
+    "premiere pro": "premierepro/premierepro-original.svg",
+    premiere: "premierepro/premierepro-original.svg",
+    github: "github/github-original.svg",
+    git: "git/git-original.svg",
+  };
+  const simpleIcons: Record<string, string> = {
+    canva: "https://cdn.simpleicons.org/canva/FF4500",
+    "cisco pt": "https://cdn.simpleicons.org/cisco/FF4500",
+    cisco: "https://cdn.simpleicons.org/cisco/FF4500",
+    tailwind: "https://cdn.simpleicons.org/tailwindcss/FF4500",
+  };
+
+  if (normalized === "capcut") {
+    return (
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="currentColor"
+        color="#FF6A00"
+        aria-hidden="true"
+      >
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z" />
+        <polyline points="14 2 14 8 20 8" />
+        <line x1="9" y1="15" x2="15" y2="15" />
+      </svg>
+    );
+  }
+
+  if (normalized.includes("networking") || normalized.includes("subnetting")) {
+    return (
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="#FF6A00"
+        strokeWidth="2"
+        aria-hidden="true"
+      >
+        <rect x="2" y="2" width="6" height="6" rx="1" />
+        <rect x="16" y="2" width="6" height="6" rx="1" />
+        <rect x="9" y="16" width="6" height="6" rx="1" />
+        <path d="M5 8v3a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8" />
+        <line x1="12" y1="12" x2="12" y2="16" />
+      </svg>
+    );
+  }
+
+  const src = devicons[normalized]
+    ? `${deviconBase}${devicons[normalized]}`
+    : simpleIcons[normalized];
+
+  if (src) return <img src={src} alt="" loading="lazy" />;
+
+  return <Sparkles className="size-[18px]" aria-hidden="true" />;
+}
+
 function Skills() {
   const { skills } = usePortfolioContent();
   return (
@@ -1097,6 +1526,7 @@ function Skills() {
                   key={s}
                   className="skill-pill px-3 py-1.5 rounded-full text-xs font-mono border border-border text-foreground/90 hover:border-neon hover:text-neon transition cursor-default"
                 >
+                  <SkillIcon name={s} />
                   {s}
                 </span>
               ))}
@@ -1111,6 +1541,38 @@ function Skills() {
 /* ---------- CONTACT ---------- */
 function Contact() {
   const { profile } = usePortfolioContent();
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [sending, setSending] = useState(false);
+
+  const submit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const formData = new FormData(form);
+    const nextErrors: Record<string, string> = {};
+
+    ["name", "email", "subject", "message"].forEach((field) => {
+      if (!String(formData.get(field) || "").trim()) nextErrors[field] = "This field is required";
+    });
+
+    const email = String(formData.get("email") || "");
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      nextErrors.email = "Please enter a valid email address";
+    }
+
+    setErrors(nextErrors);
+    if (Object.keys(nextErrors).length) {
+      showPageToast("Failed to send. Try again.", "error");
+      return;
+    }
+
+    setSending(true);
+    window.setTimeout(() => {
+      setSending(false);
+      form.reset();
+      showPageToast("Message sent!", "success");
+    }, 900);
+  };
+
   return (
     <Section
       id="contact"
@@ -1167,63 +1629,84 @@ function Contact() {
           </div>
           <div className="mt-5 flex gap-3 text-muted-foreground">
             <a
-              href="#"
+              href="https://github.com/Jayszrs"
+              target="_blank"
+              rel="noopener noreferrer"
               className="glass social-glass inline-flex size-10 items-center justify-center hover:text-neon transition"
             >
-              <Github className="size-5" />
+              <SocialIcon type="github" />
             </a>
             <a
-              href="#"
+              href="https://www.linkedin.com/in/jayszrs/"
+              target="_blank"
+              rel="noopener noreferrer"
               className="glass social-glass inline-flex size-10 items-center justify-center hover:text-neon transition"
             >
-              <Linkedin className="size-5" />
+              <SocialIcon type="linkedin" />
             </a>
             <a
-              href="#"
+              href="https://www.instagram.com/jayszrs/"
+              target="_blank"
+              rel="noopener noreferrer"
               className="glass social-glass inline-flex size-10 items-center justify-center hover:text-neon transition"
             >
-              <Instagram className="size-5" />
+              <SocialIcon type="instagram" />
             </a>
           </div>
         </TerminalBox>
 
         <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            alert("Message form akan tersimpan ke database setelah backend admin aktif.");
-          }}
+          onSubmit={submit}
+          noValidate
           className="glass rounded-2xl p-6 space-y-4 lg:col-start-2"
         >
           <div className="font-mono text-xs text-neon">// send.message</div>
           <div className="grid sm:grid-cols-2 gap-3">
-            <input
-              required
-              placeholder="name"
-              className="border border-border rounded-xl px-3 py-2.5 text-sm font-mono outline-none focus:border-neon transition"
-            />
-            <input
-              required
-              type="email"
-              placeholder="email"
-              className="border border-border rounded-xl px-3 py-2.5 text-sm font-mono outline-none focus:border-neon transition"
-            />
+            <label className="contact-field">
+              <input name="name" placeholder="name" className={errors.name ? "is-error" : ""} />
+              {errors.name && <span>{errors.name}</span>}
+            </label>
+            <label className="contact-field">
+              <input
+                name="email"
+                type="email"
+                placeholder="email"
+                className={errors.email ? "is-error" : ""}
+              />
+              {errors.email && <span>{errors.email}</span>}
+            </label>
           </div>
-          <input
-            required
-            placeholder="subject"
-            className="w-full border border-border rounded-xl px-3 py-2.5 text-sm font-mono outline-none focus:border-neon transition"
-          />
-          <textarea
-            required
-            rows={5}
-            placeholder="message..."
-            className="w-full border border-border rounded-xl px-3 py-2.5 text-sm font-mono outline-none focus:border-neon transition resize-none"
-          />
+          <label className="contact-field">
+            <input
+              name="subject"
+              placeholder="subject"
+              className={`w-full ${errors.subject ? "is-error" : ""}`}
+            />
+            {errors.subject && <span>{errors.subject}</span>}
+          </label>
+          <label className="contact-field">
+            <textarea
+              name="message"
+              rows={5}
+              placeholder="message..."
+              className={`w-full resize-none ${errors.message ? "is-error" : ""}`}
+            />
+            {errors.message && <span>{errors.message}</span>}
+          </label>
           <button
             type="submit"
+            disabled={sending}
             className="liquid-button liquid-button-primary w-full inline-flex items-center justify-center gap-2 px-5 py-3 font-mono text-sm font-semibold rounded-full"
           >
-            transmit <ArrowRight className="size-4" />
+            {sending ? (
+              <>
+                <span className="form-spinner" /> Sending...
+              </>
+            ) : (
+              <>
+                transmit <ArrowRight className="size-4" />
+              </>
+            )}
           </button>
         </form>
       </div>
@@ -1235,10 +1718,19 @@ function Contact() {
 function Footer() {
   return (
     <footer className="relative border-t border-border mt-20">
+      <div className="footer-watermark">JAY SZRS</div>
       <div className="mx-auto max-w-6xl px-4 py-10 grid md:grid-cols-2 gap-6 items-center font-mono text-xs">
         <div className="text-muted-foreground">
           © 2026 <span className="text-neon">Jay SZRS</span>. Built with passion, creativity, and
-          technology.
+          technology.{" "}
+          <button
+            type="button"
+            className="footer-admin-trigger"
+            onClick={() => window.dispatchEvent(new Event("open-card-admin"))}
+            aria-label="Open card editor"
+          >
+            ⚙
+          </button>
         </div>
         <div className="md:text-right space-y-1 text-muted-foreground">
           <div>

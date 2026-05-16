@@ -1,12 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { createClient } from "@supabase/supabase-js";
 
-const ADMIN_EMAILS = [
-  "jayszrs@admin.local",
-  "jaelanisuryasaputra@gmail.com",
-  "jaelanisurya.akademicrypto@gmail.com",
-] as const;
-
 const CONTENT_TABLES = [
   "certifications",
   "experiences",
@@ -14,7 +8,14 @@ const CONTENT_TABLES = [
   "volunteers",
   "projects",
 ] as const;
-const STORAGE_BUCKETS = ["cv", "certificates", "badges", "gallery", "documents", "avatars"] as const;
+const STORAGE_BUCKETS = [
+  "cv",
+  "certificates",
+  "badges",
+  "gallery",
+  "documents",
+  "avatars",
+] as const;
 
 type ContentTable = (typeof CONTENT_TABLES)[number];
 type StorageBucket = (typeof STORAGE_BUCKETS)[number];
@@ -50,9 +51,7 @@ function readContentMutationInput(input: unknown): ContentMutationInput {
 
   return {
     accessToken: String(fields.accessToken || ""),
-    table: CONTENT_TABLES.includes(table as ContentTable)
-      ? (table as ContentTable)
-      : "projects",
+    table: CONTENT_TABLES.includes(table as ContentTable) ? (table as ContentTable) : "projects",
     action: action === "update" || action === "delete" ? action : "insert",
     id: typeof fields.id === "string" ? fields.id : undefined,
     payload:
@@ -82,8 +81,19 @@ async function assertSeedAdmin(accessToken: string) {
   const admin = createAdminClient();
   const { data, error } = await admin.auth.getUser(accessToken);
 
-  if (error || !data.user || !ADMIN_EMAILS.includes(data.user.email?.toLowerCase() as any)) {
+  if (error || !data.user) {
     throw new Error("Session admin tidak valid. Sign out lalu login ulang.");
+  }
+
+  const { data: role, error: roleError } = await admin
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", data.user.id)
+    .eq("role", "admin")
+    .maybeSingle();
+
+  if (roleError || !role) {
+    throw new Error("Session admin tidak valid. Role admin tidak ditemukan.");
   }
 
   return admin;
@@ -148,7 +158,9 @@ export const uploadAdminFile = createServerFn({ method: "POST" })
 
     return {
       accessToken: String(fields.accessToken || ""),
-      bucket: STORAGE_BUCKETS.includes(bucket as StorageBucket) ? (bucket as StorageBucket) : "documents",
+      bucket: STORAGE_BUCKETS.includes(bucket as StorageBucket)
+        ? (bucket as StorageBucket)
+        : "documents",
       path: String(fields.path || ""),
       contentType: String(fields.contentType || "application/octet-stream"),
       base64: String(fields.base64 || ""),
@@ -210,7 +222,10 @@ export const setAdminUserRoleFallback = createServerFn({ method: "POST" })
     if (!data.userId) throw new Error("User ID kosong.");
     const admin = await assertSeedAdmin(data.accessToken);
 
-    const { error: deleteError } = await admin.from("user_roles").delete().eq("user_id", data.userId);
+    const { error: deleteError } = await admin
+      .from("user_roles")
+      .delete()
+      .eq("user_id", data.userId);
     if (deleteError) throw new Error(deleteError.message);
 
     const { error: insertError } = await admin
