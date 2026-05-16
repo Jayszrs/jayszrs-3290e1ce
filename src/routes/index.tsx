@@ -32,6 +32,7 @@ import { MonoMatrixBg } from "@/components/portfolio/MonoMatrixBg";
 import { DetailDialog } from "@/components/portfolio/DetailDialog";
 import { NeonWordmark } from "@/components/portfolio/NeonWordmark";
 import { LanyardBuilder } from "@/components/portfolio/LanyardBuilder";
+import { LanyardDisplay } from "@/components/portfolio/LanyardDisplay";
 import { supabase } from "@/integrations/supabase/client";
 import {
   profile as fallbackProfile,
@@ -471,11 +472,11 @@ function Lanyard() {
   return (
     <Section
       id="lanyard"
-      command="build.lanyard()"
-      title="ID Badge Creator"
-      description="Create your personalized digital lanyard / ID badge"
+      command="display.lanyard()"
+      title="Digital Credential"
+      description="Your personalized ID badge & digital credential"
     >
-      <LanyardBuilder />
+      <LanyardDisplay />
     </Section>
   );
 }
