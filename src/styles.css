@@ -111,12 +111,10 @@
     inset 0 1px 0 rgba(255, 160, 90, 0.45);
 
   --accent-gradient: linear-gradient(135deg, #ff8c00 0%, #ff4500 50%, #cc2200 100%);
-  --accent-gradient-soft: linear-gradient(
-    135deg,
-    rgba(255, 140, 0, 0.26),
-    rgba(255, 69, 0, 0.2),
-    rgba(204, 34, 0, 0.24)
-  );
+  --accent-gradient-soft: linear-gradient(135deg,
+      rgba(255, 140, 0, 0.26),
+      rgba(255, 69, 0, 0.2),
+      rgba(204, 34, 0, 0.24));
   --gradient-fire: linear-gradient(135deg, #ff4500 0%, #cc2200 100%);
   --gradient-text: linear-gradient(135deg, #ff8c00, #ff4500, #cc2200);
   --gradient-ember: linear-gradient(180deg, #ff6a00 0%, #cc2200 50%, #080808 100%);
@@ -165,12 +163,10 @@
     z-index: 0;
     pointer-events: none;
     background:
-      radial-gradient(
-        ellipse 70% 50% at 50% 100%,
+      radial-gradient(ellipse 70% 50% at 50% 100%,
         rgba(204, 34, 0, 0.3) 0%,
         rgba(255, 69, 0, 0.12) 40%,
-        transparent 70%
-      ),
+        transparent 70%),
       radial-gradient(ellipse 40% 30% at 85% 10%, rgba(255, 106, 0, 0.15) 0%, transparent 60%),
       radial-gradient(ellipse 35% 25% at 10% 90%, rgba(204, 34, 0, 0.12) 0%, transparent 60%);
     transform: translate3d(0, calc(var(--liquid-scroll) * 0.12), 0);
@@ -325,14 +321,12 @@
     z-index: 2;
     height: 1px;
     pointer-events: none;
-    background: linear-gradient(
-      90deg,
-      transparent,
-      rgba(255, 160, 80, 0.5) 25%,
-      rgba(255, 200, 120, 0.85) 50%,
-      rgba(255, 160, 80, 0.5) 75%,
-      transparent
-    );
+    background: linear-gradient(90deg,
+        transparent,
+        rgba(255, 160, 80, 0.5) 25%,
+        rgba(255, 200, 120, 0.85) 50%,
+        rgba(255, 160, 80, 0.5) 75%,
+        transparent);
     border-radius: 999px;
     transform: translateX(var(--shine-shift, 0));
     transition: transform 0.3s ease;
@@ -360,9 +354,7 @@
     transition: var(--transition-spring);
   }
 
-  .glass:not(.liquid-navbar):not(.liquid-hero-copy):not(.cv-modal):not(.admin-modal):not(
-      footer
-    ):hover {
+  .glass:not(.liquid-navbar):not(.liquid-hero-copy):not(.cv-modal):not(.admin-modal):not(footer):hover {
     transform: translateY(-7px) scale(1.016);
   }
 
@@ -394,19 +386,15 @@
   }
 
   .liquid-light-field--one {
-    background: radial-gradient(
-      ellipse 48% 34% at 18% 12%,
-      rgba(255, 106, 0, 0.16),
-      transparent 68%
-    );
+    background: radial-gradient(ellipse 48% 34% at 18% 12%,
+        rgba(255, 106, 0, 0.16),
+        transparent 68%);
   }
 
   .liquid-light-field--two {
-    background: radial-gradient(
-      ellipse 46% 34% at 82% 88%,
-      rgba(204, 34, 0, 0.18),
-      transparent 70%
-    );
+    background: radial-gradient(ellipse 46% 34% at 82% 88%,
+        rgba(204, 34, 0, 0.18),
+        transparent 70%);
     transform: translate3d(0, calc(var(--liquid-scroll) * 0.2), 0);
   }
 
@@ -421,12 +409,10 @@
     z-index: 0;
     pointer-events: none;
     background:
-      linear-gradient(
-        115deg,
+      linear-gradient(115deg,
         transparent 0 28%,
         rgba(255, 150, 80, 0.05) 31%,
-        transparent 34% 100%
-      ),
+        transparent 34% 100%),
       linear-gradient(72deg, transparent 0 52%, rgba(255, 69, 0, 0.04) 55%, transparent 60% 100%);
     opacity: 0.34;
     transform: translate3d(0, calc(var(--liquid-scroll) * -0.08), 0);
@@ -507,30 +493,33 @@
       inset 0 1px 0 rgba(255, 200, 120, 0.4);
   }
 
-  /* FIX ACCURACY: Jadikan kontainer pembungkusnya flex-centered agar kapsul di dalamnya ikut ke tengah */
+  /* FIX TOTAL: Rentangkan shell horizontal 100% penuh dan gunakan flex center murni */
   .liquid-navbar-shell {
     position: fixed;
     top: 16px;
-    left: 50%;
+    left: 0;
+    right: 0;
     z-index: 1000;
-    width: min(1120px, calc(100vw - 32px));
-    max-width: calc(100vw - 32px);
-    transform: translateX(-50%);
+    width: 100%;
     display: flex;
     justify-content: center;
+    pointer-events: none;
+    /* Supaya area transparan di luar kapsul tidak memblokir klik background */
     transition:
       transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
       top 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .liquid-navbar-shell.is-collapsed {
-    transform: translateX(-50%) scale(0.97);
+    transform: scale(0.97);
+    /* Menghapus translateX(-50%) pemicu konflik animasi */
   }
 
-  /* Menciutkan ukuran bar ke max-content agar membentuk kapsul/pills dinamis melayang di tengah */
   .liquid-navbar {
     width: max-content;
-    max-width: 100%;
+    max-width: min(1120px, calc(100vw - 32px));
+    pointer-events: auto;
+    /* Mengembalikan fungsi klik pada kapsul menu */
     padding: 10px 24px;
     border-radius: var(--radius-pill);
     -webkit-backdrop-filter: blur(32px) saturate(180%) brightness(1.08);
@@ -538,7 +527,7 @@
     animation: fire-shimmer 5s ease infinite;
   }
 
-  .liquid-navbar > div {
+  .liquid-navbar>div {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -572,7 +561,7 @@
     color: #ff6a00;
   }
 
-  .liquid-navbar nav button.active > span:first-child,
+  .liquid-navbar nav button.active>span:first-child,
   .liquid-navbar nav button.active::before {
     background: rgba(255, 69, 0, 0.16);
     border-color: rgba(255, 100, 30, 0.35);
@@ -606,13 +595,11 @@
   }
 
   .scanlines {
-    background-image: repeating-linear-gradient(
-      0deg,
-      transparent 0px,
-      transparent 4px,
-      rgba(255, 140, 50, 0.03) 5px,
-      transparent 6px
-    );
+    background-image: repeating-linear-gradient(0deg,
+        transparent 0px,
+        transparent 4px,
+        rgba(255, 140, 50, 0.03) 5px,
+        transparent 6px);
   }
 
   .noise::before {
@@ -764,15 +751,12 @@ footer {
   -webkit-backdrop-filter: blur(28px) saturate(170%);
   backdrop-filter: blur(28px) saturate(170%);
   border-top: 1px solid transparent !important;
-  border-image: linear-gradient(
-      90deg,
+  border-image: linear-gradient(90deg,
       transparent,
       rgba(255, 100, 30, 0.3) 20%,
       rgba(255, 150, 80, 0.5) 50%,
       rgba(255, 100, 30, 0.3) 80%,
-      transparent
-    )
-    1;
+      transparent) 1;
   box-shadow:
     inset 0 1px 0 rgba(255, 150, 80, 0.25),
     0 -20px 80px rgba(204, 34, 0, 0.18);
@@ -784,12 +768,10 @@ footer::before {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: linear-gradient(
-    to top,
-    rgba(204, 34, 0, 0.22) 0%,
-    rgba(255, 69, 0, 0.08) 40%,
-    transparent 70%
-  );
+  background: linear-gradient(to top,
+      rgba(204, 34, 0, 0.22) 0%,
+      rgba(255, 69, 0, 0.08) 40%,
+      transparent 70%);
 }
 
 footer a,
@@ -1791,24 +1773,29 @@ input.is-success {
   0% {
     border-color: rgba(255, 69, 0, 0.3);
   }
+
   33% {
     border-color: rgba(255, 140, 0, 0.45);
   }
+
   66% {
     border-color: rgba(204, 34, 0, 0.3);
   }
+
   100% {
     border-color: rgba(255, 69, 0, 0.3);
   }
 }
 
 @keyframes fire-pulse {
+
   0%,
   100% {
     box-shadow:
       0 4px 24px rgba(255, 69, 0, 0.45),
       inset 0 1px 0 rgba(255, 180, 100, 0.35);
   }
+
   50% {
     box-shadow:
       0 4px 32px rgba(255, 69, 0, 0.7),
@@ -1817,10 +1804,12 @@ input.is-success {
 }
 
 @keyframes hue-breathe {
+
   0%,
   100% {
     filter: hue-rotate(0deg);
   }
+
   50% {
     filter: hue-rotate(15deg);
   }
@@ -1831,9 +1820,11 @@ input.is-success {
     transform: translateY(0);
     opacity: 0;
   }
+
   20% {
     opacity: 0.8;
   }
+
   100% {
     transform: translateY(-120px);
     opacity: 0;
@@ -1844,6 +1835,7 @@ input.is-success {
   from {
     width: 0%;
   }
+
   to {
     width: 100%;
   }
@@ -1853,6 +1845,7 @@ input.is-success {
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -1862,6 +1855,7 @@ input.is-success {
   from {
     opacity: 1;
   }
+
   to {
     opacity: 0;
   }
@@ -1872,6 +1866,7 @@ input.is-success {
     transform: translateY(36px);
     opacity: 0;
   }
+
   to {
     transform: translateY(0);
     opacity: 1;
@@ -1883,6 +1878,7 @@ input.is-success {
     transform: translateY(0);
     opacity: 1;
   }
+
   to {
     transform: translateY(30px);
     opacity: 0;
@@ -1893,15 +1889,19 @@ input.is-success {
   0% {
     transform: translateX(-8px);
   }
+
   25% {
     transform: translateX(8px);
   }
+
   50% {
     transform: translateX(-5px);
   }
+
   75% {
     transform: translateX(5px);
   }
+
   100% {
     transform: translateX(0);
   }
@@ -1911,6 +1911,7 @@ input.is-success {
   from {
     transform: translateX(120%);
   }
+
   to {
     transform: translateX(0);
   }
@@ -1920,6 +1921,7 @@ input.is-success {
   from {
     transform: translateX(0);
   }
+
   to {
     transform: translateX(120%);
   }
@@ -1941,22 +1943,27 @@ input.is-success {
   0% {
     border-color: rgba(255, 69, 0, 0.3);
   }
+
   33% {
     border-color: rgba(255, 140, 0, 0.45);
   }
+
   66% {
     border-color: rgba(204, 34, 0, 0.3);
   }
+
   100% {
     border-color: rgba(255, 69, 0, 0.3);
   }
 }
 
 @keyframes liquid-hue {
+
   0%,
   100% {
     filter: hue-rotate(0deg);
   }
+
   50% {
     filter: hue-rotate(30deg);
   }
@@ -1969,6 +1976,7 @@ input.is-success {
       100% 0%;
     transform: translate3d(0, calc(var(--liquid-scroll) * -0.08), 0) scale(1);
   }
+
   100% {
     background-position:
       28% 16%,
@@ -1978,11 +1986,13 @@ input.is-success {
 }
 
 @keyframes float-particle {
+
   0%,
   100% {
     transform: translateY(0) translateX(0);
     opacity: 0.35;
   }
+
   50% {
     transform: translateY(-30px) translateX(10px);
     opacity: 0.78;
@@ -1990,10 +2000,12 @@ input.is-success {
 }
 
 @keyframes neon-pulse {
+
   0%,
   100% {
     box-shadow: 0 0 10px rgba(255, 106, 0, 0.3);
   }
+
   50% {
     box-shadow: 0 0 28px rgba(255, 69, 0, 0.4);
   }
@@ -2003,6 +2015,7 @@ input.is-success {
   0% {
     transform: translateY(-100%);
   }
+
   100% {
     transform: translateY(100vh);
   }
@@ -2012,32 +2025,39 @@ input.is-success {
   from {
     width: 0;
   }
+
   to {
     width: calc(var(--wordmark-characters) * 1ch);
   }
 }
 
 @keyframes neon-wordmark-caret {
+
   0%,
   100% {
     border-color: rgba(255, 150, 80, 0.85);
   }
+
   50% {
     border-color: transparent;
   }
 }
 
 @keyframes neon-wordmark-idle {
+
   0%,
   100% {
     opacity: 0.92;
   }
+
   48% {
     opacity: 1;
   }
+
   50% {
     opacity: 0.78;
   }
+
   52% {
     opacity: 1;
   }
@@ -2052,23 +2072,23 @@ input.is-success {
     inset: -20%;
   }
 
-  /* FIX ACCURACY MOBILE: Pastikan penengah shell flexbox aktif juga di layar HP */
   .liquid-navbar-shell {
-    width: min(680px, calc(100vw - 24px));
-    max-width: calc(100vw - 24px);
+    width: 100%;
+    max-width: 100%;
     top: auto;
     bottom: 16px;
+    left: 0;
+    right: 0;
     display: flex;
     justify-content: center;
   }
 
   .liquid-navbar-shell.is-collapsed {
-    transform: translateX(-50%) scale(0.96);
+    transform: scale(0.96);
   }
 
   .liquid-navbar {
-    width: max-content;
-    max-width: 100%;
+    max-width: calc(100vw - 24px);
     padding: 8px 14px;
     -webkit-backdrop-filter: blur(30px) saturate(170%);
     backdrop-filter: blur(30px) saturate(170%);
