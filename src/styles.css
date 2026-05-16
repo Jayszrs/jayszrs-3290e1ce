@@ -36,7 +36,7 @@
   --color-neon: var(--neon);
   --color-neon-soft: var(--neon-soft);
   --color-lime: var(--lime);
-  --color-dark-green: var(--dark Green);
+  --color-dark-green: var(--dark-green);
   --color-surface: var(--surface);
   --color-surface-elevated: var(--surface-elevated);
 
@@ -507,6 +507,7 @@
       inset 0 1px 0 rgba(255, 200, 120, 0.4);
   }
 
+  /* FIX ACCURACY: Jadikan kontainer pembungkusnya flex-centered agar kapsul di dalamnya ikut ke tengah */
   .liquid-navbar-shell {
     position: fixed;
     top: 16px;
@@ -515,6 +516,8 @@
     width: min(1120px, calc(100vw - 32px));
     max-width: calc(100vw - 32px);
     transform: translateX(-50%);
+    display: flex;
+    justify-content: center;
     transition:
       transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
       top 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -524,10 +527,10 @@
     transform: translateX(-50%) scale(0.97);
   }
 
-  /* PERUBAHAN DI SINI: Balik ke lebar penuh (100%) agar memanjang sempurna */
+  /* Menciutkan ukuran bar ke max-content agar membentuk kapsul/pills dinamis melayang di tengah */
   .liquid-navbar {
-    width: 100%;
-    max-width: 1120px;
+    width: max-content;
+    max-width: 100%;
     padding: 10px 24px;
     border-radius: var(--radius-pill);
     -webkit-backdrop-filter: blur(32px) saturate(180%) brightness(1.08);
@@ -535,18 +538,15 @@
     animation: fire-shimmer 5s ease infinite;
   }
 
-  /* Mengembalikan flex layout agar item di dalam navbar bisa menyebar ke ujung kanan-kiri */
   .liquid-navbar > div {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 16px;
+    justify-content: center;
+    gap: 20px;
   }
 
-  /* Mengaktifkan flex:1 kembali agar area navigasi menu mengisi ruang tengah dan melempar logo/cta ke pojok luar */
   .liquid-navbar nav {
     display: flex;
-    flex: 1;
     align-items: center;
     justify-content: center;
     min-width: 0;
@@ -2052,10 +2052,14 @@ input.is-success {
     inset: -20%;
   }
 
+  /* FIX ACCURACY MOBILE: Pastikan penengah shell flexbox aktif juga di layar HP */
   .liquid-navbar-shell {
     width: min(680px, calc(100vw - 24px));
+    max-width: calc(100vw - 24px);
     top: auto;
     bottom: 16px;
+    display: flex;
+    justify-content: center;
   }
 
   .liquid-navbar-shell.is-collapsed {
@@ -2063,7 +2067,8 @@ input.is-success {
   }
 
   .liquid-navbar {
-    max-width: calc(100vw - 24px);
+    width: max-content;
+    max-width: 100%;
     padding: 8px 14px;
     -webkit-backdrop-filter: blur(30px) saturate(170%);
     backdrop-filter: blur(30px) saturate(170%);
@@ -2072,7 +2077,8 @@ input.is-success {
   .liquid-mobile-menu {
     top: auto;
     bottom: calc(100% + 0.75rem);
-    right: 0;
+    right: 50%;
+    transform: translateX(50%);
   }
 
   .flip-card-shell {
