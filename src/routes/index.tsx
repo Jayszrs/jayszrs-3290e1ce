@@ -1,14 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { toast } from "sonner";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import type { ReactNode } from "react";
+import { toast } from "sonner";
 import {
   Download,
   Mail,
   MessageCircle,
   ArrowRight,
+  User,
   Github,
   Instagram,
   Linkedin,
@@ -325,9 +326,9 @@ function Index() {
         <div className="fixed inset-0 z-0 pointer-events-none bg-[linear-gradient(to_bottom,rgba(5,5,8,0.1),rgba(5,5,8,0.72))]" />
         <div className="fixed inset-0 z-0 scanlines pointer-events-none opacity-10" />
         <Navbar />
-        <div className="relative z-10">
+        <main className="relative z-10">
           <Hero />
-          <Lanyard />
+          <LanyardDisplay />
           <About />
           <Experience />
           <Certification />
@@ -337,7 +338,7 @@ function Index() {
           <Skills />
           <Contact />
           <Footer />
-        </div>
+        </main>
         <BackToTop />
       </div>
     </PortfolioContentProvider>
@@ -537,19 +538,18 @@ function Hero() {
         style={{ opacity }}
         className="relative mx-auto max-w-6xl px-4 grid lg:grid-cols-[1.2fr_1fr] gap-12 items-center w-full"
       >
-        {/* Konten Kiri - Bersih & Rapi */}
         <motion.div style={{ y: yText }} className="liquid-hero-copy glass space-y-6 text-left w-full">
           <div className="text-xs font-semibold tracking-widest text-neon uppercase flex items-center gap-2">
-            <Sparkles className="size-3.5" /> Welcome to my creative space
+            <Sparkles className="size-3.5" /> Creative Showcase Portfolio
           </div>
 
           <h1 className="max-w-[920px]" aria-label="JAY SZRS">
             <NeonWordmark size="hero" />
           </h1>
 
-          <p className="text-muted-foreground text-sm md:text-base font-mono">{profile.role}</p>
+          <p className="text-muted-foreground text-sm md:text-base font-display font-medium tracking-wide">{profile.role}</p>
 
-          <div className="text-base md:text-lg font-display font-medium min-h-[1.5em] text-foreground/90">
+          <div className="font-display text-base md:text-lg min-h-[1.5em] text-foreground/90 font-medium">
             <Typewriter words={profile.typing} />
           </div>
 
@@ -575,19 +575,17 @@ function Hero() {
             </button>
           </div>
 
-          {/* Elegant Block Baru Pengganti Terminal Box */}
-          <div className="border-l-2 border-neon/40 pl-4 py-1 space-y-3 mt-4">
+          <div className="border-l-2 border-neon/40 pl-4 py-1.5 space-y-3 mt-4">
             <p className="text-foreground/80 text-sm md:text-base font-display leading-relaxed">
-              Informatics student, designer, content creator, and IT enthusiast dedicated to crafting innovative digital experiences at the intersection of clean code and beautiful design.
+              Informatics student, designer, content creator, and IT enthusiast dedicated to creating impactful digital experiences by combining robust coding with minimal visual harmony.
             </p>
-            <div className="flex items-center gap-2 text-xs font-mono text-muted-foreground">
-              <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
-              Available for collaboration, internship, and creative tech projects.
+            <div className="flex items-center gap-2 text-xs font-display text-muted-foreground tracking-wide font-medium">
+              <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              Open for full-time collaboration, internships, and creative tech projects.
             </div>
           </div>
         </motion.div>
 
-        {/* Konten Kanan - Center Simetris */}
         <motion.div style={{ y: yPhoto }} className="relative mx-auto w-full max-w-sm flex justify-center items-center">
           <div className="absolute -inset-4 rounded-3xl bg-gradient-to-br from-neon/30 via-transparent to-lime/20 blur-2xl" />
           <div className="relative glass rounded-2xl p-3 border border-neon/40 w-full">
@@ -621,194 +619,6 @@ function Hero() {
       </div>
       <CvPreviewModal open={cvOpen} onOpenChange={setCvOpen} />
     </section>
-  );
-}
-
-function CvPreviewModal({
-  open,
-  onOpenChange,
-}: {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-}) {
-  const [loading, setLoading] = useState(true);
-  const [closing, setClosing] = useState(false);
-  const CV_PDF_URL = "https://drive.google.com/uc?export=download&id=FILE_ID";
-  const hasHostedCv = CV_PDF_URL.startsWith("https://") && !CV_PDF_URL.includes("FILE_ID");
-  const viewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(CV_PDF_URL)}&embedded=true`;
-
-  const close = useCallback(() => {
-    setClosing(true);
-    window.setTimeout(() => onOpenChange(false), 250);
-  }, [onOpenChange]);
-
-  useEffect(() => {
-    if (!open) return;
-    setClosing(false);
-    setLoading(hasHostedCv);
-    document.body.style.overflow = "hidden";
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") close();
-    };
-    window.addEventListener("keydown", onKeyDown);
-    return () => {
-      window.removeEventListener("keydown", onKeyDown);
-      document.body.style.overflow = "";
-    };
-  }, [close, hasHostedCv, open]);
-
-  if (!open) return null;
-
-  return (
-    <div className={`cv-overlay ${closing ? "is-closing" : ""}`} onMouseDown={close}>
-      <div className="cv-modal glass" onMouseDown={(event) => event.stopPropagation()}>
-        <div className="cv-modal__header">
-          <h3>Curriculum Vitae</h3>
-          <button type="button" onClick={close} aria-label="Close CV preview">
-            ×
-          </button>
-        </div>
-        <div className="cv-frame-wrap">
-          {hasHostedCv ? (
-            <>
-              {loading && <div className="cv-skeleton" />}
-              <iframe
-                src={viewerUrl}
-                width="100%"
-                height="68vh"
-                style={{ border: "none", borderRadius: 14, background: "rgba(0,0,0,0.30)" }}
-                title="Jay SZRS - Curriculum Vitae"
-                onLoad={() => setLoading(false)}
-              />
-            </>
-          ) : (
-            <article className="cv-live-preview" aria-label="Jay SZRS CV preview">
-              <header>
-                <div>
-                  <p>Curriculum Vitae</p>
-                  <h4>Jay SZRS</h4>
-                  <span>Creative Technologist / Informatics Student</span>
-                </div>
-                <div className="cv-live-preview__mark">JS</div>
-              </header>
-              <section>
-                <h5>Profile</h5>
-                <p>
-                  Informatics Engineering student focused on UI/UX, web development, graphic design,
-                  video editing, content creation, networking, programming, and cyber security
-                  basics.
-                </p>
-              </section>
-              <div className="cv-live-preview__grid">
-                <section>
-                  <h5>Education</h5>
-                  <strong>Universitas Bani Saleh</strong>
-                  <p>Informatics Engineering / 2023 - Present</p>
-                  <strong>SMAN 71 Jakarta</strong>
-                  <p>IPA - Ilmu Pengetahuan Alam / 2020 - 2023</p>
-                </section>
-                <section>
-                  <h5>Contact</h5>
-                  <p>Indonesia</p>
-                  <p>github.com/Jayszrs</p>
-                  <p>linkedin.com/in/jayszrs</p>
-                  <p>jaelanisuryasaputra@gmail.com</p>
-                </section>
-              </div>
-              <section>
-                <h5>Skills</h5>
-                <div className="cv-live-preview__skills">
-                  {[
-                    "HTML",
-                    "CSS",
-                    "JavaScript",
-                    "React.js",
-                    "PHP",
-                    "MySQL",
-                    "Java",
-                    "Figma",
-                    "Photoshop",
-                    "Networking",
-                  ].map((skill) => (
-                    <span key={skill}>{skill}</span>
-                  ))}
-                </div>
-              </section>
-            </article>
-          )}
-        </div>
-        <div className="cv-modal__footer">
-          {hasHostedCv && (
-            <a
-              href={CV_PDF_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="liquid-button liquid-button-primary"
-            >
-              Open PDF
-            </a>
-          )}
-          <button type="button" onClick={close} className="liquid-button">
-            Close
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function SocialIcon({ type }: { type: "github" | "instagram" | "linkedin" }) {
-  if (type === "github") {
-    return (
-      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-        <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z" />
-      </svg>
-    );
-  }
-  if (type === "instagram") {
-    return (
-      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z" />
-      </svg>
-    );
-  }
-  return (
-    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-      <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
-    </svg>
-  );
-}
-
-function showPageToast(message: string, variant: "success" | "error" | "info" = "info") {
-  const container =
-    document.querySelector(".global-toast-container") ||
-    (() => {
-      const node = document.createElement("div");
-      node.className = "global-toast-container toast-container";
-      document.body.appendChild(node);
-      return node;
-    })();
-  const toast = document.createElement("div");
-  toast.className = `toast toast--${variant}`;
-  toast.textContent = message;
-  container.appendChild(toast);
-  window.setTimeout(() => {
-    toast.classList.add("toast--exit");
-    toast.addEventListener("animationend", () => toast.remove(), { once: true });
-  }, 3500);
-}
-
-/* ---------- LANYARD ---------- */
-function Lanyard() {
-  return (
-    <Section
-      id="lanyard"
-      command="display.lanyard()"
-      title="Digital Credential"
-      description="Your personalized ID badge & digital credential"
-    >
-      <LanyardDisplay />
-    </Section>
   );
 }
 
@@ -951,27 +761,41 @@ function Experience() {
                 />
               </div>
             )}
-            <p>{active.description}</p>
+            <p className="text-foreground/90 text-sm leading-relaxed whitespace-pre-wrap">{active.description}</p>
             <div className="grid grid-cols-2 gap-3 font-mono text-xs">
               <div className="glass rounded-md p-3">
                 <div className="text-muted-foreground">company</div>
-                <div>{active.company}</div>
+                <div className="text-foreground font-semibold">{active.company}</div>
               </div>
               <div className="glass rounded-md p-3">
                 <div className="text-muted-foreground">status</div>
-                <div>{active.status}</div>
+                <div className="text-foreground font-semibold">{active.status}</div>
               </div>
             </div>
+            
+            {/* LinkedIn-style media showcase block */}
             {active.documentUrl && (
-              <div className="flex justify-center mt-4">
-                <a
-                  href={active.documentUrl}
-                  target="_blank"
-                  rel="noopener"
-                  className="liquid-button inline-flex items-center gap-2 px-4 py-2 glass border border-neon/40 text-neon font-mono text-xs rounded-full hover:opacity-90 transition"
-                >
-                  <Download className="size-4" /> View / Download Document
-                </a>
+              <div className="mt-4 pt-4 border-t border-border/30">
+                <div className="text-xs font-mono text-neon mb-2">// attachments & documentation</div>
+                <div className="glass rounded-xl p-3 flex items-center justify-between gap-4 border border-border/40 bg-white/5 hover:bg-white/10 transition group">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="size-10 rounded-lg bg-neon/10 border border-neon/30 flex items-center justify-center shrink-0">
+                      <FileCode className="size-5 text-neon" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="text-sm font-semibold truncate text-foreground">Experience Attachment Document</div>
+                      <div className="text-xs text-muted-foreground truncate font-mono">Reference verification file</div>
+                    </div>
+                  </div>
+                  <a
+                    href={active.documentUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="liquid-button inline-flex items-center gap-1.5 px-4 py-2 font-mono text-xs rounded-full shrink-0 group-hover:scale-105 transition"
+                  >
+                    View <ExternalLink className="size-3" />
+                  </a>
+                </div>
               </div>
             )}
           </div>
@@ -979,40 +803,6 @@ function Experience() {
       </DetailDialog>
     </Section>
   );
-}
-
-/* ---------- CERTIFICATION ---------- */
-function CertificationLogo({ issuer, title }: { issuer: string; title: string }) {
-  const normalized = `${issuer} ${title}`.toLowerCase();
-  const logo = normalized.includes("dicoding")
-    ? "https://www.dicoding.com/images/marketing/dicoding_logo.png"
-    : normalized.includes("cisco")
-      ? "https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/Cisco_logo_blue_2016.svg/320px-Cisco_logo_blue_2016.svg.png"
-      : normalized.includes("coursera")
-        ? "https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/Coursera-Logo_600x600.svg/320px-Coursera-Logo_600x600.svg.png"
-        : normalized.includes("skillshare")
-          ? "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2b/Skillshare_logo.svg/320px-Skillshare_logo.svg.png"
-          : "";
-
-  if (!logo) {
-    return (
-      <svg
-        className="cert-logo cert-logo--svg"
-        width="28"
-        height="28"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="#FF4500"
-        strokeWidth="2"
-        aria-hidden="true"
-      >
-        <path d="M8 21h8M12 17v4M17 3H7l1 7a4 4 0 0 0 8 0l1-7z" />
-        <path d="M5 3H3v4a3 3 0 0 0 3 3M19 3h2v4a3 3 0 0 1-3 3" />
-      </svg>
-    );
-  }
-
-  return <img src={logo} alt={`${issuer} logo`} className="cert-logo" loading="lazy" />;
 }
 
 /* ---------- CERTIFICATION ---------- */
@@ -1084,49 +874,49 @@ function Certification() {
               Sertifikasi <span className="text-neon">{active.title}</span> diterbitkan oleh{" "}
               <span className="text-foreground">{active.issuer}</span> pada tahun {active.year}.
             </p>
-            {active.description && <p>{active.description}</p>}
+            {active.description && <p className="text-sm text-muted-foreground whitespace-pre-wrap">{active.description}</p>}
             <div className="grid grid-cols-2 gap-3 font-mono text-xs">
               <div className="glass rounded-md p-3">
                 <div className="text-muted-foreground">issuer</div>
-                <div>{active.issuer}</div>
+                <div className="text-foreground font-semibold">{active.issuer}</div>
               </div>
               <div className="glass rounded-md p-3">
                 <div className="text-muted-foreground">year</div>
-                <div>{active.year}</div>
+                <div className="text-foreground font-semibold">{active.year}</div>
               </div>
               {active.credentialId && (
                 <div className="glass rounded-md p-3 col-span-2">
-                  <div className="text-muted-foreground">credential</div>
-                  <div>{active.credentialId}</div>
+                  <div className="text-muted-foreground">credential id</div>
+                  <div className="text-foreground font-semibold break-all">{active.credentialId}</div>
                 </div>
               )}
-              <div className="glass rounded-md p-3 col-span-2">
-                <div className="text-muted-foreground">category</div>
-                <div>{active.category}</div>
+            </div>
+            
+            {/* LinkedIn-style documentation media showcase block */}
+            {(active.certificateUrl || active.verificationUrl) && (
+              <div className="mt-4 pt-4 border-t border-border/30">
+                <div className="text-xs font-mono text-neon mb-2">// attachments & credentials</div>
+                <div className="glass rounded-xl p-3 flex items-center justify-between gap-4 border border-border/40 bg-white/5 hover:bg-white/10 transition group">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="size-10 rounded-lg bg-neon/10 border border-neon/30 flex items-center justify-center shrink-0">
+                      <Award className="size-5 text-neon" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="text-sm font-semibold truncate text-foreground">Verified Achievement Certificate</div>
+                      <div className="text-xs text-muted-foreground truncate font-mono">Official license transcript attachment</div>
+                    </div>
+                  </div>
+                  <a
+                    href={active.certificateUrl || active.verificationUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="liquid-button inline-flex items-center gap-1.5 px-4 py-2 font-mono text-xs rounded-full shrink-0 group-hover:scale-105 transition"
+                  >
+                    Verify <ExternalLink className="size-3" />
+                  </a>
+                </div>
               </div>
-            </div>
-            <div className="flex flex-wrap gap-2 pt-2">
-              {active.verificationUrl && (
-                <a
-                  href={active.verificationUrl}
-                  target="_blank"
-                  rel="noopener"
-                  className="liquid-button liquid-button-primary inline-flex items-center gap-2 px-4 py-2 font-mono text-xs rounded-full hover:opacity-90"
-                >
-                  <ExternalLink className="size-3" /> Verify Certificate
-                </a>
-              )}
-              {active.certificateUrl && (
-                <a
-                  href={active.certificateUrl}
-                  target="_blank"
-                  rel="noopener"
-                  className="liquid-button inline-flex items-center gap-2 px-4 py-2 glass border border-neon/40 text-neon font-mono text-xs rounded-full hover:bg-neon hover:text-black transition"
-                >
-                  <Download className="size-3" /> View / Download Document
-                </a>
-              )}
-            </div>
+            )}
           </div>
         )}
       </DetailDialog>
@@ -1146,7 +936,7 @@ function Education() {
     logoUrl: "",
     documentUrl: "",
   };
-  const displayEducation = education.map((ed, index) => (index === 1 ? smanEducation : ed));
+  const displayEducation = education.map((ed, i) => (i === 1 ? smanEducation : ed));
   const [open, setOpen] = useState<number | null>(null);
   const active = open !== null ? displayEducation[open] : null;
   return (
@@ -1210,27 +1000,41 @@ function Education() {
                 />
               </div>
             )}
-            <p>{active.description}</p>
+            <p className="text-foreground/90 text-sm leading-relaxed whitespace-pre-wrap">{active.description}</p>
             <div className="grid grid-cols-2 gap-3 font-mono text-xs">
               <div className="glass rounded-md p-3">
                 <div className="text-muted-foreground">period</div>
-                <div>{active.period}</div>
+                <div className="text-foreground font-semibold">{active.period}</div>
               </div>
               <div className="glass rounded-md p-3">
                 <div className="text-muted-foreground">major</div>
-                <div>{active.major}</div>
+                <div className="text-foreground font-semibold truncate">{active.major}</div>
               </div>
             </div>
+            
+            {/* LinkedIn-style media & documentation box layout upgrade */}
             {active.documentUrl && (
-              <div className="flex justify-center mt-4">
-                <a
-                  href={active.documentUrl}
-                  target="_blank"
-                  rel="noopener"
-                  className="liquid-button inline-flex items-center gap-2 px-4 py-2 glass border border-neon/40 text-neon font-mono text-xs rounded-full hover:opacity-90 transition"
-                >
-                  <Download className="size-4" /> View / Download Document
-                </a>
+              <div className="mt-4 pt-4 border-t border-border/30">
+                <div className="text-xs font-mono text-neon mb-2">// attachments & documentation</div>
+                <div className="glass rounded-xl p-3 flex items-center justify-between gap-4 border border-border/40 bg-white/5 hover:bg-white/10 transition group">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="size-10 rounded-lg bg-neon/10 border border-neon/30 flex items-center justify-center shrink-0">
+                      <FileCode className="size-5 text-neon" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="text-sm font-semibold truncate text-foreground">Academic Verification File</div>
+                      <div className="text-xs text-muted-foreground truncate font-mono">Transcript or diploma credential attachment</div>
+                    </div>
+                  </div>
+                  <a
+                    href={active.documentUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="liquid-button inline-flex items-center gap-1.5 px-4 py-2 font-mono text-xs rounded-full shrink-0 group-hover:scale-105 transition"
+                  >
+                    View <ExternalLink className="size-3" />
+                  </a>
+                </div>
               </div>
             )}
           </div>
@@ -1304,32 +1108,41 @@ function Volunteer() {
                 />
               </div>
             )}
-            <p>
-              Berkontribusi sebagai <span className="text-neon">{active.role}</span> dalam kegiatan{" "}
-              <span className="text-foreground">{active.name}</span> ({active.category},{" "}
-              {active.year}).
-            </p>
-            {active.description && <p>{active.description}</p>}
+            <p className="text-foreground/90 text-sm leading-relaxed whitespace-pre-wrap">{active.description}</p>
             <div className="grid grid-cols-2 gap-3 font-mono text-xs">
               <div className="glass rounded-md p-3">
                 <div className="text-muted-foreground">role</div>
-                <div>{active.role}</div>
+                <div className="text-foreground font-semibold">{active.role}</div>
               </div>
               <div className="glass rounded-md p-3">
                 <div className="text-muted-foreground">category</div>
-                <div>{active.category}</div>
+                <div className="text-foreground font-semibold">{active.category}</div>
               </div>
             </div>
+            
+            {/* LinkedIn-style verification file component */}
             {active.documentUrl && (
-              <div className="flex justify-center mt-4">
-                <a
-                  href={active.documentUrl}
-                  target="_blank"
-                  rel="noopener"
-                  className="liquid-button inline-flex items-center gap-2 px-4 py-2 glass border border-neon/40 text-neon font-mono text-xs rounded-full hover:opacity-90 transition"
-                >
-                  <Download className="size-4" /> View / Download Document
-                </a>
+              <div className="mt-4 pt-4 border-t border-border/30">
+                <div className="text-xs font-mono text-neon mb-2">// attachments & documentation</div>
+                <div className="glass rounded-xl p-3 flex items-center justify-between gap-4 border border-border/40 bg-white/5 hover:bg-white/10 transition group">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="size-10 rounded-lg bg-neon/10 border border-neon/30 flex items-center justify-center shrink-0">
+                      <FileCode className="size-5 text-neon" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="text-sm font-semibold truncate text-foreground">Organization Credential File</div>
+                      <div className="text-xs text-muted-foreground truncate font-mono">Certificate documentation attachment</div>
+                    </div>
+                  </div>
+                  <a
+                    href={active.documentUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="liquid-button inline-flex items-center gap-1.5 px-4 py-2 font-mono text-xs rounded-full shrink-0 group-hover:scale-105 transition"
+                  >
+                    View <ExternalLink className="size-3" />
+                  </a>
+                </div>
               </div>
             )}
           </div>
@@ -1474,7 +1287,7 @@ function Projects() {
           </div>
         )}
       </DetailDialog>
-    </Section>
+    </div>
   );
 }
 
@@ -1798,5 +1611,138 @@ function Footer() {
         </div>
       </div>
     </footer>
+  );
+}
+
+function CvPreviewModal({
+  open,
+  onOpenChange,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
+  const [loading, setLoading] = useState(true);
+  const [closing, setClosing] = useState(false);
+  const CV_PDF_URL = "https://drive.google.com/uc?export=download&id=FILE_ID";
+  const hasHostedCv = CV_PDF_URL.startsWith("https://") && !CV_PDF_URL.includes("FILE_ID");
+  const viewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(CV_PDF_URL)}&embedded=true`;
+
+  const close = useCallback(() => {
+    setClosing(true);
+    window.setTimeout(() => onOpenChange(false), 250);
+  }, [onOpenChange]);
+
+  useEffect(() => {
+    if (!open) return;
+    setClosing(false);
+    setLoading(hasHostedCv);
+    document.body.style.overflow = "hidden";
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") close();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      document.body.style.overflow = "";
+    };
+  }, [close, hasHostedCv, open]);
+
+  if (!open) return null;
+
+  return (
+    <div className={`cv-overlay ${closing ? "is-closing" : ""}`} onMouseDown={close}>
+      <div className="cv-modal glass" onMouseDown={(event) => event.stopPropagation()}>
+        <div className="cv-modal__header">
+          <h3>Curriculum Vitae</h3>
+          <button type="button" onClick={close} aria-label="Close CV preview">
+            ×
+          </button>
+        </div>
+        <div className="cv-frame-wrap">
+          {hasHostedCv ? (
+            <>
+              {loading && <div className="cv-skeleton" />}
+              <iframe
+                src={viewerUrl}
+                width="100%"
+                height="68vh"
+                style={{ border: "none", borderRadius: 14, background: "rgba(0,0,0,0.30)" }}
+                title="Jay SZRS - Curriculum Vitae"
+                onLoad={() => setLoading(false)}
+              />
+            </>
+          ) : (
+            <article className="cv-live-preview" aria-label="Jay SZRS CV preview">
+              <header>
+                <div>
+                  <p>Curriculum Vitae</p>
+                  <h4>Jay SZRS</h4>
+                  <span>Creative Technologist / Informatics Student</span>
+                </div>
+                <div className="cv-live-preview__mark">JS</div>
+              </header>
+              <section>
+                <h5>Profile</h5>
+                <p>
+                  Informatics Engineering student focused on UI/UX, web development, graphic design,
+                  video editing, content creation, networking, programming, and cyber security
+                  basics.
+                </p>
+              </section>
+              <div className="cv-live-preview__grid">
+                <section>
+                  <h5>Education</h5>
+                  <strong>Universitas Bani Saleh</strong>
+                  <p>Informatics Engineering / 2023 - Present</p>
+                  <strong>SMAN 71 Jakarta</strong>
+                  <p>IPA - Ilmu Pengetahuan Alam / 2020 - 2023</p>
+                </section>
+                <section>
+                  <h5>Contact</h5>
+                  <p>Indonesia</p>
+                  <p>github.com/Jayszrs</p>
+                  <p>linkedin.com/in/jayszrs</p>
+                  <p>jaelanisuryasaputra@gmail.com</p>
+                </section>
+              </div>
+              <section>
+                <h5>Skills</h5>
+                <div className="cv-live-preview__skills">
+                  {[
+                    "HTML",
+                    "CSS",
+                    "JavaScript",
+                    "React.js",
+                    "PHP",
+                    "MySQL",
+                    "Java",
+                    "Figma",
+                    "Photoshop",
+                    "Networking",
+                  ].map((skill) => (
+                    <span key={skill}>{skill}</span>
+                  ))}
+                </div>
+              </section>
+            </article>
+          )}
+        </div>
+        <div className="cv-modal__footer">
+          {hasHostedCv && (
+            <a
+              href={CV_PDF_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="liquid-button liquid-button-primary"
+            >
+              Open PDF
+            </a>
+          )}
+          <button type="button" onClick={close} className="liquid-button">
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
