@@ -362,7 +362,7 @@ function Dashboard() {
       <MonoMatrixBg className="opacity-[0.12]" />
       <div className="fixed inset-0 z-0 pointer-events-none bg-[linear-gradient(to_bottom,rgba(0,0,0,0.15),rgba(0,0,0,0.88))]" />
       <Toaster position="top-center" />
-      
+
       {/* PERUBAHAN UTAMA: Memaksa tinggi flex pembungkus sidebar & content mengikuti screen */}
       <div className="relative z-10 flex h-screen w-full overflow-hidden">
         <aside className="w-64 glass border-r border-border h-full p-4 hidden md:flex flex-col justify-between overflow-y-auto shrink-0">
@@ -570,7 +570,9 @@ function Dashboard() {
             >
               <div className="min-w-0">
                 <div className="font-semibold truncate">{user.email || user.user_id}</div>
-                <div className="text-xs text-muted-foreground font-mono truncate">{user.user_id}</div>
+                <div className="text-xs text-muted-foreground font-mono truncate">
+                  {user.user_id}
+                </div>
               </div>
               <select
                 value={user.role}
@@ -601,7 +603,9 @@ function Dashboard() {
     useEffect(() => {
       Promise.all(
         [...TABLES.map((t) => t.key), "contact_messages", "skills", "gallery"].map(async (k) => {
-          const { count } = await supabase.from(k as any).select("*", { count: "exact", head: true });
+          const { count } = await supabase
+            .from(k as any)
+            .select("*", { count: "exact", head: true });
           return [k, count || 0] as const;
         }),
       ).then((arr) => setCounts(Object.fromEntries(arr)));
@@ -638,7 +642,10 @@ function Dashboard() {
 
     const save = async () => {
       setBusy(true);
-      const { error } = await supabase.from("profile_settings").update(profile).eq("id", profile.id);
+      const { error } = await supabase
+        .from("profile_settings")
+        .update(profile)
+        .eq("id", profile.id);
       setBusy(false);
 
       if (error) {
@@ -649,7 +656,9 @@ function Dashboard() {
             data: { accessToken: token, id: profile.id, payload: profile },
           });
         } catch (fallbackError) {
-          return toast.error(fallbackError instanceof Error ? fallbackError.message : error.message);
+          return toast.error(
+            fallbackError instanceof Error ? fallbackError.message : error.message,
+          );
         }
       }
 
@@ -855,7 +864,9 @@ function Dashboard() {
             },
           });
         } catch (fallbackError) {
-          return toast.error(fallbackError instanceof Error ? fallbackError.message : error.message);
+          return toast.error(
+            fallbackError instanceof Error ? fallbackError.message : error.message,
+          );
         }
       }
 
@@ -876,7 +887,9 @@ function Dashboard() {
             data: { accessToken: token, table: config.key, action: "delete", id },
           });
         } catch (fallbackError) {
-          return toast.error(fallbackError instanceof Error ? fallbackError.message : error.message);
+          return toast.error(
+            fallbackError instanceof Error ? fallbackError.message : error.message,
+          );
         }
       }
 
@@ -900,7 +913,10 @@ function Dashboard() {
 
         <div className="space-y-2">
           {rows.map((r) => (
-            <div key={r.id} className="glass rounded-lg p-4 flex items-center justify-between gap-4">
+            <div
+              key={r.id}
+              className="glass rounded-lg p-4 flex items-center justify-between gap-4"
+            >
               <div className="flex-1 min-w-0">
                 <div className="font-semibold truncate">{r.title || r.name || r.institution}</div>
                 <div className="text-xs text-muted-foreground font-mono truncate">
@@ -914,7 +930,10 @@ function Dashboard() {
                 >
                   edit
                 </button>
-                <button onClick={() => del(r.id)} className="text-xs font-mono p-1 text-destructive">
+                <button
+                  onClick={() => del(r.id)}
+                  className="text-xs font-mono p-1 text-destructive"
+                >
                   <Trash2 className="size-3" />
                 </button>
               </div>
@@ -924,11 +943,11 @@ function Dashboard() {
 
         {editing && (
           <div
-            className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4"
+            className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-start justify-center overflow-y-auto p-4 py-6"
             onClick={() => setEditing(null)}
           >
             <div
-              className="glass max-w-lg w-full rounded-2xl p-6 space-y-3 max-h-[90vh] overflow-y-auto"
+              className="admin-edit-modal glass max-w-lg w-full rounded-2xl p-6 space-y-3"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="font-mono text-xs text-neon">
@@ -961,7 +980,7 @@ function Dashboard() {
                         }
                         className="w-full bg-surface/60 border border-border rounded px-3 py-2 text-sm font-mono mt-1 focus:border-neon outline-none"
                       />
-                  )}
+                    )}
                   </div>
                 );
               })}
@@ -1102,7 +1121,8 @@ function Dashboard() {
               <div className="flex items-center justify-between gap-2">
                 <div>
                   <div className="font-semibold">
-                    {m.name} <span className="text-muted-foreground text-sm">&lt;{m.email}&gt;</span>
+                    {m.name}{" "}
+                    <span className="text-muted-foreground text-sm">&lt;{m.email}&gt;</span>
                   </div>
                   <div className="text-xs font-mono text-neon">{m.subject}</div>
                 </div>

@@ -1382,6 +1382,14 @@ input.is-success {
   border: 0;
 }
 
+.admin-edit-modal {
+  max-height: calc(100dvh - 48px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
 .admin-edit-form legend {
   margin-top: 20px;
   margin-bottom: 8px;
