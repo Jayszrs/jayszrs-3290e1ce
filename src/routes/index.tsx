@@ -538,7 +538,10 @@ function Hero() {
         style={{ opacity }}
         className="relative mx-auto max-w-6xl px-4 grid lg:grid-cols-[1.2fr_1fr] gap-12 items-center w-full"
       >
-        <motion.div style={{ y: yText }} className="liquid-hero-copy glass space-y-6 text-left w-full">
+        <motion.div
+          style={{ y: yText }}
+          className="liquid-hero-copy glass space-y-6 text-left w-full"
+        >
           <div className="text-xs font-semibold tracking-widest text-neon uppercase flex items-center gap-2">
             <Sparkles className="size-3.5" /> Creative Showcase Portfolio
           </div>
@@ -547,7 +550,9 @@ function Hero() {
             <NeonWordmark size="hero" />
           </h1>
 
-          <p className="text-muted-foreground text-sm md:text-base font-display font-medium tracking-wide">{profile.role}</p>
+          <p className="text-muted-foreground text-sm md:text-base font-display font-medium tracking-wide">
+            {profile.role}
+          </p>
 
           <div className="font-display text-base md:text-lg min-h-[1.5em] text-foreground/90 font-medium">
             <Typewriter words={profile.typing} />
@@ -577,7 +582,9 @@ function Hero() {
 
           <div className="border-l-2 border-neon/40 pl-4 py-1.5 space-y-3 mt-4">
             <p className="text-foreground/80 text-sm md:text-base font-display leading-relaxed">
-              Informatics student, designer, content creator, and IT enthusiast dedicated to creating impactful digital experiences by combining robust coding with minimal visual harmony.
+              Informatics student, designer, content creator, and IT enthusiast dedicated to
+              creating impactful digital experiences by combining robust coding with minimal visual
+              harmony.
             </p>
             <div className="flex items-center gap-2 text-xs font-display text-muted-foreground tracking-wide font-medium">
               <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
@@ -586,7 +593,10 @@ function Hero() {
           </div>
         </motion.div>
 
-        <motion.div style={{ y: yPhoto }} className="relative mx-auto w-full max-w-sm flex justify-center items-center">
+        <motion.div
+          style={{ y: yPhoto }}
+          className="relative mx-auto w-full max-w-sm flex justify-center items-center"
+        >
           <div className="absolute -inset-4 rounded-3xl bg-gradient-to-br from-neon/30 via-transparent to-lime/20 blur-2xl" />
           <div className="relative glass rounded-2xl p-3 border border-neon/40 w-full">
             <div className="glass-badge absolute -top-3 left-4 px-2 py-0.5 border border-neon/50 rounded-full font-mono text-[10px] text-neon">
@@ -761,7 +771,9 @@ function Experience() {
                 />
               </div>
             )}
-            <p className="text-foreground/90 text-sm leading-relaxed whitespace-pre-wrap">{active.description}</p>
+            <p className="text-foreground/90 text-sm leading-relaxed whitespace-pre-wrap">
+              {active.description}
+            </p>
             <div className="grid grid-cols-2 gap-3 font-mono text-xs">
               <div className="glass rounded-md p-3">
                 <div className="text-muted-foreground">company</div>
@@ -772,19 +784,25 @@ function Experience() {
                 <div className="text-foreground font-semibold">{active.status}</div>
               </div>
             </div>
-            
+
             {/* LinkedIn-style media showcase block */}
             {active.documentUrl && (
               <div className="mt-4 pt-4 border-t border-border/30">
-                <div className="text-xs font-mono text-neon mb-2">// attachments & documentation</div>
+                <div className="text-xs font-mono text-neon mb-2">
+                  // attachments & documentation
+                </div>
                 <div className="glass rounded-xl p-3 flex items-center justify-between gap-4 border border-border/40 bg-white/5 hover:bg-white/10 transition group">
                   <div className="flex items-center gap-3 min-w-0">
                     <div className="size-10 rounded-lg bg-neon/10 border border-neon/30 flex items-center justify-center shrink-0">
                       <FileCode className="size-5 text-neon" />
                     </div>
                     <div className="min-w-0">
-                      <div className="text-sm font-semibold truncate text-foreground">Experience Attachment Document</div>
-                      <div className="text-xs text-muted-foreground truncate font-mono">Reference verification file</div>
+                      <div className="text-sm font-semibold truncate text-foreground">
+                        Experience Attachment Document
+                      </div>
+                      <div className="text-xs text-muted-foreground truncate font-mono">
+                        Reference verification file
+                      </div>
                     </div>
                   </div>
                   <a
@@ -874,7 +892,11 @@ function Certification() {
               Sertifikasi <span className="text-neon">{active.title}</span> diterbitkan oleh{" "}
               <span className="text-foreground">{active.issuer}</span> pada tahun {active.year}.
             </p>
-            {active.description && <p className="text-sm text-muted-foreground whitespace-pre-wrap">{active.description}</p>}
+            {active.description && (
+              <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                {active.description}
+              </p>
+            )}
             <div className="grid grid-cols-2 gap-3 font-mono text-xs">
               <div className="glass rounded-md p-3">
                 <div className="text-muted-foreground">issuer</div>
@@ -887,11 +909,13 @@ function Certification() {
               {active.credentialId && (
                 <div className="glass rounded-md p-3 col-span-2">
                   <div className="text-muted-foreground">credential id</div>
-                  <div className="text-foreground font-semibold break-all">{active.credentialId}</div>
+                  <div className="text-foreground font-semibold break-all">
+                    {active.credentialId}
+                  </div>
                 </div>
               )}
             </div>
-            
+
             {/* LinkedIn-style documentation media showcase block */}
             {(active.certificateUrl || active.verificationUrl) && (
               <div className="mt-4 pt-4 border-t border-border/30">
@@ -902,8 +926,12 @@ function Certification() {
                       <Award className="size-5 text-neon" />
                     </div>
                     <div className="min-w-0">
-                      <div className="text-sm font-semibold truncate text-foreground">Verified Achievement Certificate</div>
-                      <div className="text-xs text-muted-foreground truncate font-mono">Official license transcript attachment</div>
+                      <div className="text-sm font-semibold truncate text-foreground">
+                        Verified Achievement Certificate
+                      </div>
+                      <div className="text-xs text-muted-foreground truncate font-mono">
+                        Official license transcript attachment
+                      </div>
                     </div>
                   </div>
                   <a
@@ -1000,7 +1028,9 @@ function Education() {
                 />
               </div>
             )}
-            <p className="text-foreground/90 text-sm leading-relaxed whitespace-pre-wrap">{active.description}</p>
+            <p className="text-foreground/90 text-sm leading-relaxed whitespace-pre-wrap">
+              {active.description}
+            </p>
             <div className="grid grid-cols-2 gap-3 font-mono text-xs">
               <div className="glass rounded-md p-3">
                 <div className="text-muted-foreground">period</div>
@@ -1011,19 +1041,25 @@ function Education() {
                 <div className="text-foreground font-semibold truncate">{active.major}</div>
               </div>
             </div>
-            
+
             {/* LinkedIn-style media & documentation box layout upgrade */}
             {active.documentUrl && (
               <div className="mt-4 pt-4 border-t border-border/30">
-                <div className="text-xs font-mono text-neon mb-2">// attachments & documentation</div>
+                <div className="text-xs font-mono text-neon mb-2">
+                  // attachments & documentation
+                </div>
                 <div className="glass rounded-xl p-3 flex items-center justify-between gap-4 border border-border/40 bg-white/5 hover:bg-white/10 transition group">
                   <div className="flex items-center gap-3 min-w-0">
                     <div className="size-10 rounded-lg bg-neon/10 border border-neon/30 flex items-center justify-center shrink-0">
                       <FileCode className="size-5 text-neon" />
                     </div>
                     <div className="min-w-0">
-                      <div className="text-sm font-semibold truncate text-foreground">Academic Verification File</div>
-                      <div className="text-xs text-muted-foreground truncate font-mono">Transcript or diploma credential attachment</div>
+                      <div className="text-sm font-semibold truncate text-foreground">
+                        Academic Verification File
+                      </div>
+                      <div className="text-xs text-muted-foreground truncate font-mono">
+                        Transcript or diploma credential attachment
+                      </div>
                     </div>
                   </div>
                   <a
@@ -1108,7 +1144,9 @@ function Volunteer() {
                 />
               </div>
             )}
-            <p className="text-foreground/90 text-sm leading-relaxed whitespace-pre-wrap">{active.description}</p>
+            <p className="text-foreground/90 text-sm leading-relaxed whitespace-pre-wrap">
+              {active.description}
+            </p>
             <div className="grid grid-cols-2 gap-3 font-mono text-xs">
               <div className="glass rounded-md p-3">
                 <div className="text-muted-foreground">role</div>
@@ -1119,19 +1157,25 @@ function Volunteer() {
                 <div className="text-foreground font-semibold">{active.category}</div>
               </div>
             </div>
-            
+
             {/* LinkedIn-style verification file component */}
             {active.documentUrl && (
               <div className="mt-4 pt-4 border-t border-border/30">
-                <div className="text-xs font-mono text-neon mb-2">// attachments & documentation</div>
+                <div className="text-xs font-mono text-neon mb-2">
+                  // attachments & documentation
+                </div>
                 <div className="glass rounded-xl p-3 flex items-center justify-between gap-4 border border-border/40 bg-white/5 hover:bg-white/10 transition group">
                   <div className="flex items-center gap-3 min-w-0">
                     <div className="size-10 rounded-lg bg-neon/10 border border-neon/30 flex items-center justify-center shrink-0">
                       <FileCode className="size-5 text-neon" />
                     </div>
                     <div className="min-w-0">
-                      <div className="text-sm font-semibold truncate text-foreground">Organization Credential File</div>
-                      <div className="text-xs text-muted-foreground truncate font-mono">Certificate documentation attachment</div>
+                      <div className="text-sm font-semibold truncate text-foreground">
+                        Organization Credential File
+                      </div>
+                      <div className="text-xs text-muted-foreground truncate font-mono">
+                        Certificate documentation attachment
+                      </div>
                     </div>
                   </div>
                   <a
@@ -1287,7 +1331,7 @@ function Projects() {
           </div>
         )}
       </DetailDialog>
-    </div>
+    </Section>
   );
 }
 
